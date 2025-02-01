@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include("partials/header", {}) -%>
+
+<body>
+  <h1><%= message %></h1>
+  <p>Usuario: <%= user ? user.username : "Invitado" %></p><br>
+  <p>Si quiere visualizar todas las clases de productos que ofrecemos acceda, en el menú superior, a la sección <span style= "color:blue"> categorías.</span></p>
+  <p>Actualmente, no está activo el registro, tan solo se permite el login con una serie de usuarios contemplados.</p>
+  
+  
+  
+  
+  <script type="module" src="/js/script.js"></script>
+
+  <%- include("partials/footer", {}) -%>
+</body>
+</html>

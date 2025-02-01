@@ -1,0 +1,11 @@
+
+<script src="/socket.io/socket.io.js"></script>
+<script type="module" src="/js/script.js"></script>
+
+<%- include("partials/header", {}) -%>
+
+<body>
+  <h1><%= message %></h1>
+  <p>Usuario: <span id="player-name"><%= user ? user.username : "Invitado" %></span></p><br>
+  <p></p>
+
