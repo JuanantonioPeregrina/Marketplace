@@ -1,18 +1,167 @@
 <!DOCTYPE html>
-<html lang="en">
-<%- include("partials/header", {}) -%>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace - Bienvenido</title>
 
-<body>
-  <h1><%= message %></h1>
-  <p>Usuario: <%= user ? user.username : "Invitado" %></p><br>
-  <p>Si quiere visualizar todas las clases de productos que ofrecemos acceda, en el menú superior, a la sección <span style= "color:blue"> categorías.</span></p>
-  <p>Actualmente, no está activo el registro, tan solo se permite el login con una serie de usuarios contemplados.</p>
-  
-  
-  
-  
-  <script type="module" src="/js/script.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-  <%- include("partials/footer", {}) -%>
+    <!-- Ant Design CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.23.2/antd.min.css">
+
+    <style>
+        /* HERO SECTION */
+        .hero-section {
+            background: linear-gradient(to right, #1E3A8A, #2563EB);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-title {
+            font-size: 2.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: auto;
+        }
+
+        .btn-primary {
+            background: #F59E0B;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: #D97706;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            border: 2px solid white;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: #1E3A8A;
+        }
+
+        /* SECCIÓN DE INFORMACIÓN */
+        .info-section {
+            background: #F8FAFC;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+
+        .content-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 2rem;
+        }
+
+        .category-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .category-item:hover {
+            transform: scale(1.05);
+        }
+
+        .category-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .category-item p {
+            position: absolute;
+            bottom: 10px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <%- include("partials/header", {}) -%>
+
+    <!-- Contenido principal -->
+    <main class="max-w-7xl mx-auto flex-grow px-6">
+
+        <!-- Hero Section -->
+        <section class="hero-section mt-10">
+            <h1 class="hero-title">Bienvenido a Marketplace</h1>
+            <p class="hero-subtitle">Publica tus necesidades y recibe ofertas personalizadas de los mejores vendedores.</p>
+            <div class="flex justify-center gap-4 mt-6 flex-wrap">
+                <a href="/categorias" class="btn-primary">Explora Categorías</a>
+                <a href="/login" class="btn-secondary">Iniciar Sesión</a>
+            </div>
+        </section>
+
+        <!-- Información sobre la plataforma -->
+        <section class="info-section shadow-lg">
+            <h2 class="text-2xl font-semibold">¿Cómo Funciona?</h2>
+            <div class="content-box text-gray-700 mt-4">
+                <p>
+                    🚀 En nuestra plataforma, los compradores publican sus necesidades y los vendedores compiten ofreciendo **propuestas personalizadas**.
+                </p>
+                <p class="mt-2">
+                    💡 En lugar de elegir entre opciones predefinidas, **tú decides** lo que necesitas y los vendedores **te envían sus mejores ofertas** con precios, tiempos de entrega y condiciones ajustadas.
+                </p>
+                <p class="mt-2">
+                    🔒 Nuestra plataforma se desarrolla con **Django y Python**, asegurando una gestión segura de usuarios, pagos protegidos y seguimiento de pedidos.
+                </p>
+            </div>
+        </section>
+
+        
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-4 mt-16 text-center">
+        © 2025 Marketplace - Todos los derechos reservados.
+    </footer>
+
 </body>
 </html>

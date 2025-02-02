@@ -5,7 +5,7 @@ html, body {
     padding-top: 80px; /* Separación del header */
     height: 100%;
     font-family: Arial, sans-serif;
-    background-color: rgb(133, 131, 131); /* Fondo gris */
+    background-color: rgb(252, 252, 252); /* Fondo gris */
     display: flex;
     flex-direction: column; /* Organizar en columnas */
     align-items: center;
