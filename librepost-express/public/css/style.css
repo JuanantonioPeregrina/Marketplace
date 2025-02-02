@@ -2,14 +2,11 @@
 html, body {
     margin: 0;
     padding: 0;
-    padding-top: 80px; /* Separación del header */
-    height: 100%;
     font-family: Arial, sans-serif;
     background-color: rgb(252, 252, 252); /* Fondo gris */
     display: flex;
     flex-direction: column; /* Organizar en columnas */
-    align-items: center;
-    justify-content: center;
+    min-height: 100vh; /* Asegura que el body ocupe toda la pantalla */
 }
 
 /* Header */
@@ -27,56 +24,26 @@ header {
 
 /* Contenedor principal */
 main {
-    margin-top: 100px; /* Separación debajo del header */
-    text-align: center;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 100px;
+    margin-top: 80px; /* Ajuste del margen debajo del header */
+    flex: 1; /* Permite que main ocupe todo el espacio disponible */
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 2rem; /* Espacio extra para evitar solapamiento del footer */
 }
-
-
 
 /* Estilos para el footer */
 footer {
-    background-color: #333;
+    background: #111827; /* Color oscuro */
     color: white;
-    padding: 10px;
-    width: 100%;
     text-align: center;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    margin-top: 200px;
-
-}
-
-.viva-category--overlay--1K_w2EO {
-    position: absolute;
-    top: 0;
-    left: 0;
+    padding: 1rem 0;
+    margin-top: auto; /* Hace que el footer se pegue al final sin montarse */
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.05);
-    opacity: 0;
-    -webkit-transition: opacity 0.3s ease;
-    transition: opacity 0.3s ease;
-  }
-  .viva-category--overlay--1K_w2EO {
-    opacity: 1;
-  }
-
-  .viva-category--title--2kX9hSS {
-    width: 135px;
-    font-weight: 600;
-  }
-
-  body {
-    font-family: Arial, sans-serif;
 }
 
+/* Estilos de la cuadrícula de categorías */
 .category-container {
     max-width: 1200px;
     margin: auto;
@@ -90,8 +57,9 @@ h2 {
 
 .categories-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Hace que las categorías sean responsivas */
+    gap: 20px;
+    justify-content: center;
 }
 
 .category-item {
@@ -99,16 +67,20 @@ h2 {
     overflow: hidden;
     border-radius: 8px;
     transition: transform 0.3s ease-in-out;
+    width: 100%; /* Para que no se encojan los elementos */
 }
+
 .category-item:hover {
     transform: scale(1.05);
 }
+
 .category-item img {
     width: 100%;
-    height: 100%;
+    height: 200px; /* Tamaño uniforme */
     object-fit: cover;
     border-radius: 8px;
 }
+
 .category-item p {
     position: absolute;
     bottom: 10px;
@@ -120,4 +92,3 @@ h2 {
     font-size: 1rem;
     font-weight: bold;
 }
-
