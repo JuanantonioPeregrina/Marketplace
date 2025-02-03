@@ -3,123 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketplace - Clasificación de Tareas</title>
+    <title><%= title %></title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Socket.io -->
-    <script src="/socket.io/socket.io.js"></script>
-    <!-- JS Personalizado -->
-    <script type="module" src="/js/script.js"></script>
-    <!-- Ant Design CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.23.2/antd.min.css">
-    <!-- Ant Design JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/4.23.2/antd.min.js"></script>
-
-    <style>
-        /* Efecto hover en las categorías */
-        .category-item {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .category-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-    </style>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 
 <body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
-    <!-- Header fijo -->
-    
-        <%- include("partials/header", {}) -%>
+    <!-- Header -->
+    <%- include("partials/header") %>
 
+    <!-- Contenido principal -->
+    <main class="max-w-7xl mx-auto pt-24 px-6">
+        <% if (categoriaNombre && descripcion && imagen) { %>
+            <!-- Vista de Categoría Específica -->
+            <h1 class="text-4xl font-bold text-center mb-6"><%= categoriaNombre %></h1>
+            <p class="text-center text-gray-700 mb-6"><%= descripcion %></p>
 
-    <!-- Contenido principal con margen superior ajustado -->
-    <div class="max-w-7xl mx-auto pt-24 px-6">
-        <h1 class="text-4xl font-bold text-center mb-3">Explora Nuestros Servicios</h1>
+            <div class="relative w-full h-[300px] overflow-hidden rounded-lg shadow-lg">
+                <img src="<%= imagen %>" alt="<%= categoriaNombre %>" class="w-full h-full object-cover">
+            </div>
+        <% } else { %>
+            <!-- Vista de Lista de Categorías -->
+            <h1 class="text-4xl font-bold text-center mb-6">Explora Nuestras Categorías</h1>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <% for (let key in categorias) { %>
+                    <a href="/categorias/<%= key %>" class="block">
+                        <div class="relative w-full h-[250px] overflow-hidden rounded-lg shadow-lg hover:scale-105 transition-transform">
+                            <img src="<%= categorias[key].imagen %>" alt="<%= categorias[key].nombre %>" class="w-full h-full object-cover">
+                            <div class="absolute bottom-3 left-3 bg-black/80 text-white px-3 py-1 rounded-md text-sm">
+                                <%= categorias[key].nombre %>
+                            </div>
+                        </div>
+                    </a>
+                <% } %>
+            </div>
+        <% } %>
+    </main>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Diseño Gráfico -->
-            <a href="/categorias/diseño-grafico" class="block">
-            <div class="relative w-full h-[250px] overflow-hidden rounded-lg shadow-lg hover:scale-105 transition-transform">
-                <img src="/images/pexels-george-milton-7015034.jpg" alt="Diseño Gráfico" class="w-full h-full object-cover">
-                <div class="absolute bottom-3 left-3 bg-black/80 text-white px-3 py-1 rounded-md text-sm">Diseño Gráfico</div>
-            </div>
-            </a>
-            <!-- Desarrollo Web -->
-            <a href="/categorias/diseño-grafico" class="block">
-            <div class="relative w-full h-[250px] overflow-hidden rounded-lg shadow-lg hover:scale-105 transition-transform">
-                <img src="/images/desarrollo-web.jpg" alt="Desarrollo Web" class="w-full h-full object-cover">
-                <div class="absolute bottom-3 left-3 bg-black/80 text-white px-3 py-1 rounded-md text-sm">Desarrollo Web</div>
-            </div>
-          </a>
-            <!-- Redacción y Traducción -->
-            <a href="/categorias/diseño-grafico" class="block">
-            <div class="relative w-full h-[250px] overflow-hidden rounded-lg shadow-lg hover:scale-105 transition-transform">
-                <img src="/images/pexels-olha-ruskykh-7504771.jpg" alt="Redacción y Traducción" class="w-full h-full object-cover">
-                <div class="absolute bottom-3 left-3 bg-black/80 text-white px-3 py-1 rounded-md text-sm">Redacción y Traducción</div>
-            </div>
-          </a>
-            <a href="/categorias/diseño-grafico" class="block">
-            <!-- Marketing Digital -->
-            <div class="relative w-full h-[250px] overflow-hidden rounded-lg shadow-lg hover:scale-105 transition-transform">
-                <img src="/images/pexels-artempodrez-5716001.jpg" alt="Marketing Digital" class="w-full h-full object-cover">
-                <div class="absolute bottom-3 left-3 bg-black/80 text-white px-3 py-1 rounded-md text-sm">Marketing Digital</div>
-            </div>
-          </a>
-            <!-- Servicios Locales -->
-            <a href="/categorias/diseño-grafico" class="block">
-            <div class="relative w-full h-[250px] overflow-hidden rounded-lg shadow-lg hover:scale-105 transition-transform">
-                <img src="/images/pexels-filatova-1861817299-30482688.jpg" alt="Servicios Locales" class="w-full h-full object-cover">
-                <div class="absolute bottom-3 left-3 bg-black/80 text-white px-3 py-1 rounded-md text-sm">Servicios Locales</div>
-            </div>
-          </a>
-            <!-- Fotografía y Video -->
-            <a href="/categorias/fotografia-y-video" class="block">
-            <div class="relative w-full h-[250px] overflow-hidden rounded-lg shadow-lg hover:scale-105 transition-transform">
-                <img src="/images/pexels-mographe-30469936.jpg" alt="Fotografía y Video" class="w-full h-full object-cover">
-                <div class="absolute bottom-3 left-3 bg-black/80 text-white px-3 py-1 rounded-md text-sm">Fotografía y Video</div>
-            </div>
-          </a>
-        </div>
-    </div>
-
-    <!-- Clasificación de Servicios -->
-    <section class="mt-16 max-w-7xl mx-auto px-6 pb-20">
-        <h2 class="text-3xl font-bold mb-8 text-center">Clasificación de Servicios</h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="p-6 bg-white shadow-lg rounded-lg">
-                <h3 class="text-xl font-semibold mb-3">🎨 Diseño Gráfico</h3>
-                <ul class="list-disc ml-6 text-gray-700">
-                    <li>Branding Corporativo</li>
-                    <li>Diseño Publicitario</li>
-                    <li>Ilustraciones Creativas</li>
-                </ul>
-            </div>
-
-            <div class="p-6 bg-white shadow-lg rounded-lg">
-                <h3 class="text-xl font-semibold mb-3">💻 Desarrollo Web</h3>
-                <ul class="list-disc ml-6 text-gray-700">
-                    <li>Páginas Corporativas</li>
-                    <li>Apps Móviles</li>
-                    <li>Tiendas Online</li>
-                </ul>
-            </div>
-
-            <div class="p-6 bg-white shadow-lg rounded-lg">
-                <h3 class="text-xl font-semibold mb-3">✍️ Redacción y Traducción</h3>
-                <ul class="list-disc ml-6 text-gray-700">
-                    <li>Creación de Contenidos</li>
-                    <li>Traducción Profesional</li>
-                    <li>Corrección de Textos</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    
+    <!-- Footer -->
+    <%- include("partials/footer") %>
 </body>
-
-<%- include("partials/footer", {}) -%>
 </html>

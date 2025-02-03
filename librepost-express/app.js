@@ -77,6 +77,7 @@ app.use((req, res, next) => {
 app.use('/', indexRouter);
 app.use('/login', loginRouter);
 
+
 app.use('/categorias', categoriasRouter);
 app.use('/about', aboutRouter);
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
