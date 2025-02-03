@@ -1,3 +1,4 @@
+/*
 const express = require('express');
 const router = express.Router();
 const database = require('../database');
@@ -20,3 +21,48 @@ router.post('/', async (req, res) => {
 });
 
 module.exports = router;
+*/
+const express = require('express');
+const bcrypt = require('bcrypt');
+const router = express.Router();
+const User = require('../database/models/user.model'); // Importa el modelo de usuario
+
+router.get('/', function(req, res) {
+    res.render('login', { user: req.session.user, title: "LibrePost" });
+});
+
+router.post('/', async (req, res) => {
+    const { user, pass } = req.body;
+
+    try {
+        const foundUser = await User.findOne({ username: user });
+
+        console.log("🔍 Usuario encontrado:", foundUser); // DEBUG
+
+        if (!foundUser) {
+            console.log("❌ Usuario no encontrado");
+            req.session.error = "Usuario no encontrado.";
+            return res.redirect('/login');
+        }
+
+        const match = await bcrypt.compare(pass, foundUser.password);
+
+        console.log("🔍 Contraseña correcta:", match); // DEBUG
+
+        if (match) {
+            req.session.user = { username: foundUser.username };
+            req.session.message = "¡Login correcto!";
+            return res.redirect('/restricted');
+        } else {
+            console.log("❌ Contraseña incorrecta");
+            req.session.error = "Contraseña incorrecta.";
+            return res.redirect('/login');
+        }
+    } catch (error) {
+        console.error("❌ Error en el login:", error);
+        res.status(500).send("Error en el servidor.");
+    }
+});
+
+module.exports = router;
+

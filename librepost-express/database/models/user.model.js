@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+/*const bcrypt = require('bcrypt');
 
 users = {};
 
@@ -32,3 +32,29 @@ users.isLoginRight = async function(username, password){
 }
 
 module.exports = users;
+*/
+
+const mongoose = require("../index"); // Importa la conexión a la DB
+const bcrypt = require('bcrypt');
+
+const UserSchema = new mongoose.Schema({
+    username: { type: String, unique: true, required: true },
+    password: { type: String, required: true },
+    last_Login: { type: Date, default: Date.now }
+});
+
+// Hash de contraseña antes de guardar el usuario
+UserSchema.pre("save", async function (next) {
+    if (this.isModified("password")) {
+        this.password = await bcrypt.hash(this.password, 10);
+    }
+    next();
+});
+
+// Método para verificar la contraseña
+UserSchema.methods.comparePassword = function (password) {
+    return bcrypt.compare(password, this.password);
+};
+
+const User = mongoose.model("User", UserSchema);
+module.exports = User;
