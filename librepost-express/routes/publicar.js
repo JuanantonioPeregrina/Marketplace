@@ -1,47 +1,45 @@
 const express = require('express');
-const multer = require('multer'); // Para manejar imágenes
+const multer = require('multer');
 const path = require('path');
 
 const router = express.Router();
 
-let anuncios = []; // Array temporal para almacenar los anuncios
+// Objeto para almacenar los anuncios por categoría
+const anunciosPorCategoria = {};
 
 // Configuración de Multer para subir imágenes
 const storage = multer.diskStorage({
     destination: "./public/uploads",
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // Renombrar archivo
+        cb(null, Date.now() + path.extname(file.originalname));
     }
 });
 
 const upload = multer({ storage });
 
-// Mostrar la página de publicación (solo usuarios autenticados)
+// Mostrar la página de publicación
 router.get("/", (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login'); // Si no está autenticado, redirige a login
-    }
     res.render("publicar", { title: "Publicar - LibrePost", user: req.session.user });
 });
 
-//Manejar la publicación de anuncios
+// Manejar la publicación de anuncios
 router.post("/", upload.single("imagen"), (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login'); // Si no está autenticado, redirige a login
-    }
-
-    const { titulo, descripcion, precio } = req.body;
+    const { titulo, descripcion, precio, categoria } = req.body;
     const imagen = req.file ? `/uploads/${req.file.filename}` : null;
 
-    if (!titulo || !descripcion || !precio || !imagen) {
+    if (!titulo || !descripcion || !precio || !categoria || !imagen) {
         return res.status(400).send("Todos los campos son obligatorios.");
     }
 
-    // Guardar el anuncio en el array
-    anuncios.push({ titulo, descripcion, precio, imagen });
+    // Si no hay anuncios para esta categoría, inicializamos un array
+    if (!anunciosPorCategoria[categoria]) {
+        anunciosPorCategoria[categoria] = [];
+    }
 
-    res.redirect("/anuncios"); // Redirigir a la página donde se listan los anuncios
+    // Guardar el anuncio en la categoría correspondiente
+    anunciosPorCategoria[categoria].push({ titulo, descripcion, precio, imagen });
+
+    res.redirect(`/categorias/${categoria}`);
 });
 
-// Exportar la ruta y los anuncios almacenados
-module.exports = { router, anuncios };
+module.exports = { router, anunciosPorCategoria };

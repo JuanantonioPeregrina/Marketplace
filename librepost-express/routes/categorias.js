@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { anunciosPorCategoria } = require('./publicar'); // Importamos los anuncios
 
 // Datos de cada categoría
 const categoriasData = {
@@ -56,13 +57,16 @@ router.get("/:categoria", (req, res) => {
         return res.status(404).send("Categoría no encontrada");
     }
 
+    
     res.render("categorias", {
         title: `LibrePost - ${datos.nombre}`,
         categorias: categoriasData,
         categoriaNombre: datos.nombre, //  Ahora se pasa correctamente
         descripcion: datos.descripcion,
         imagen: datos.imagen,
+        anuncios: anunciosPorCategoria[categoria] || [],
         user: req.session.user || { username: "Invitado" }
+
     });
 });
 
