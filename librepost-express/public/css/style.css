@@ -22,6 +22,10 @@ header {
     font-size: 1.2em;
 }
 
+.h1 {
+ color: black;
+    
+}
 /* Contenedor principal */
 main {
     margin-top: 80px; /* Ajuste del margen debajo del header */

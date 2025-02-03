@@ -35,19 +35,19 @@ const categoriasData = {
     }
 };
 
-// 📌 **Ruta para la lista general de categorías**
+//  **Ruta para la lista general de categorías**
 router.get("/", (req, res) => {
     res.render("categorias", {
         title: "Categorías - LibrePost",
-        categorias: categoriasData, // 👈 Se pasa toda la lista de categorías
-        categoriaNombre: null, // 👈 Se pasa null para evitar el error
+        categorias: categoriasData, //  Se pasa toda la lista de categorías
+        categoriaNombre: null, //  Se pasa null para evitar el error
         descripcion: null,
         imagen: null,
         user: req.session.user || { username: "Invitado" }
     });
 });
 
-// 📌 **Ruta dinámica para acceder a una categoría específica**
+// **Ruta dinámica para acceder a una categoría específica**
 router.get("/:categoria", (req, res) => {
     const categoria = req.params.categoria;
     const datos = categoriasData[categoria];
@@ -59,7 +59,7 @@ router.get("/:categoria", (req, res) => {
     res.render("categorias", {
         title: `LibrePost - ${datos.nombre}`,
         categorias: categoriasData,
-        categoriaNombre: datos.nombre, // 👈 Ahora se pasa correctamente
+        categoriaNombre: datos.nombre, //  Ahora se pasa correctamente
         descripcion: datos.descripcion,
         imagen: datos.imagen,
         user: req.session.user || { username: "Invitado" }

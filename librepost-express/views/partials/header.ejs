@@ -14,14 +14,16 @@
         </a>
 
         <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-          <li><a href="/" class="nav-link px-2 text-secondary">Home</a></li>
+          <li><a href="/" class="nav-link px-2 text-white">Home</a></li>
           <li><a href="/categorias" class="nav-link px-2 text-white">Categorías </a></li>
           <li><a href="/about" class="nav-link px-2 text-white">Conócenos</a></li>
           <li><a href="#" class="nav-link px-2 text-white">FAQs</a></li>
          
             <% if (user && user.username !== "Invitado") { %>
-            <li><a class="nav-link px-2 text-white" href="/restricted">Restringido</a></li>
-            <li class="right"><a class="btn btn-warning" href="/logout">Logout</a></li>
+            <li><a class="nav-link px-2 text-secondary" href="/restricted">Restringido</a></li>
+            
+           
+            
             
             <% } else { %>
            <!-- <li class="right"><a href="/login">Login</a></li> -->
@@ -37,10 +39,11 @@
           <% if (!user || user.username === "Invitado") { %>
             <a href="/login" class="btn btn-outline-light me-2">Login</a>
             <a href="/signup" class="btn btn-warning">Sign-up</a>
+            <% } else { %>
+              <a class="btn btn-outline-light me-2" href="/publicar">Publicar</a>
+            <a class="btn btn-warning" href="/logout">Cerrar sesión</a>
             <% } %>
-            
-          
-        </div>
+          </div>
         
     </div>
   </header>
