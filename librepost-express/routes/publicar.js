@@ -17,13 +17,20 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Mostrar la página de publicación
+// Mostrar la página de publicación (solo si el usuario está autenticado)
 router.get("/", (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/login"); // Redirige al login si no está autenticado
+    }
     res.render("publicar", { title: "Publicar - LibrePost", user: req.session.user });
 });
 
-// Manejar la publicación de anuncios
+// Manejar la publicación de anuncios (solo si el usuario está autenticado)
 router.post("/", upload.single("imagen"), (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/login"); // Redirige al login si no está autenticado
+    }
+
     const { titulo, descripcion, precio, categoria } = req.body;
     const imagen = req.file ? `/uploads/${req.file.filename}` : null;
 
