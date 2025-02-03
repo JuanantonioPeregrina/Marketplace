@@ -1,0 +1,33 @@
+<%- include("partials/header") %>
+
+<main class="container mx-auto px-4 py-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Publicar Anuncio</h1>
+
+    <form action="/publicar" method="POST" enctype="multipart/form-data" class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <div class="mb-4">
+            <label for="titulo" class="block font-semibold">Título:</label>
+            <input type="text" id="titulo" name="titulo" required class="w-full p-2 border border-gray-300 rounded">
+        </div>
+
+        <div class="mb-4">
+            <label for="descripcion" class="block font-semibold">Descripción:</label>
+            <textarea id="descripcion" name="descripcion" required class="w-full p-2 border border-gray-300 rounded"></textarea>
+        </div>
+
+        <div class="mb-4">
+            <label for="precio" class="block font-semibold">Precio (€):</label>
+            <input type="number" id="precio" name="precio" required class="w-full p-2 border border-gray-300 rounded">
+        </div>
+
+        <div class="mb-4">
+            <label for="imagen" class="block font-semibold">Subir Imagen:</label>
+            <input type="file" id="imagen" name="imagen" accept="image/*" required class="w-full p-2 border border-gray-300 rounded">
+        </div>
+
+        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Publicar
+        </button>
+    </form>
+</main>
+
+<%- include("partials/footer") %>

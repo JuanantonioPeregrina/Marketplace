@@ -1,0 +1,18 @@
+<%- include("partials/header") %>
+
+<main class="container mx-auto px-4 py-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Anuncios Publicados</h1>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% anuncios.forEach(anuncio => { %>
+            <div class="bg-white p-4 rounded-lg shadow-lg">
+                <img src="<%= anuncio.imagen %>" alt="Imagen de <%= anuncio.titulo %>" class="anuncio-imagen">
+                <h2 class="text-xl font-semibold mt-2"><%= anuncio.titulo %></h2>
+                <p class="text-gray-700"><%= anuncio.descripcion %></p>
+                <p class="text-green-600 font-bold mt-2">€<%= anuncio.precio %></p>
+            </div>
+        <% }); %>
+    </div>
+</main>
+
+<%- include("partials/footer") %>

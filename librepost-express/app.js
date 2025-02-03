@@ -14,6 +14,11 @@ const categoriasRouter = require('./routes/categorias'); //con socket.io
 const loginRouter = require('./routes/login'); // Ajusta la ruta según la ubicación de tu archivo
 const restrictedRouter = require('./routes/restricted');
 const aboutRouter = require('./routes/about');
+const publicarRouter = require('./routes/publicar').router;
+const anunciosRouter = require('./routes/anuncios');
+
+
+
 
 
 
@@ -80,6 +85,8 @@ app.use('/login', loginRouter);
 
 app.use('/categorias', categoriasRouter);
 app.use('/about', aboutRouter);
+app.use('/publicar', publicarRouter);
+app.use('/anuncios', anunciosRouter);
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)
 app.use('/logout', (req,res) =>{

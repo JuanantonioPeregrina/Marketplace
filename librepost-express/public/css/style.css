@@ -96,3 +96,14 @@ h2 {
     font-size: 1rem;
     font-weight: bold;
 }
+
+
+.anuncio-imagen {
+    width: 100%; /* La imagen ocupará todo el ancho del contenedor */
+    max-width: 400px; /* Establece un ancho máximo para que no se agrande demasiado */
+    height: auto; /* Mantiene la proporción de la imagen */
+    display: block; /* Evita espacios extra */
+    margin: 0 auto; /* Centra la imagen */
+    border-radius: 10px; /* Bordes redondeados opcionales */
+    object-fit: cover; /* Ajusta la imagen sin distorsionar */
+}
