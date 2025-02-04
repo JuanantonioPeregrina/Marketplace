@@ -37,7 +37,7 @@ router.post("/", upload.single("imagen"), async (req, res) => {
     }
 
     try {
-        const nuevoAnuncio = new Anuncio({ titulo, descripcion, precio, imagen, categoria });
+        const nuevoAnuncio = new Anuncio({ titulo, descripcion, precio, imagen, categoria, autor: req.session.user.username, fechaExpiracion: new Date(fechaExpiracion)});// Convertir a formato de fecha
         await nuevoAnuncio.save();
         console.log("📌 Anuncio guardado:", nuevoAnuncio);
         res.redirect(`/categorias/${categoria}`);

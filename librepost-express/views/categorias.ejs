@@ -28,20 +28,25 @@
 
             <!-- 📢 Anuncios en la Categoría -->
             <h2 class="text-2xl font-bold mt-10">Anuncios Publicados</h2>
-            <div class="mt-6 space-y-4">
-                <% if (typeof anuncios !== 'undefined' && anuncios.length > 0) { %>
-                    <% anuncios.forEach(anuncio => { %>
-                        <div class="bg-white p-4 rounded-lg shadow-md">
-                            <img src="<%= anuncio.imagen %>" alt="<%= anuncio.titulo %>" class="w-full h-[250px] object-cover rounded-md mb-4">
-                            <h3 class="text-lg font-bold"><%= anuncio.titulo %></h3>
-                            <p class="text-gray-700"><%= anuncio.descripcion %></p>
-                            <p class="text-lg font-semibold text-blue-600 mt-2">€<%= anuncio.precio %></p>
-                        </div>
-                    <% }) %>
-                <% } else { %>
-                    <p class="text-center text-gray-500">No hay anuncios en esta categoría todavía.</p>
-                <% } %>
+<div class="mt-6 space-y-4">
+    <% if (anuncios.length > 0) { %>
+        <% anuncios.forEach(anuncio => { %>
+            <div class="bg-white p-4 rounded-lg shadow-md">
+                <img src="<%= anuncio.imagen %>" alt="<%= anuncio.titulo %>" class="w-full h-[250px] object-cover rounded-md mb-4">
+                <h3 class="text-lg font-bold"><%= anuncio.titulo %></h3>
+                <p class="text-gray-700"><%= anuncio.descripcion %></p>
+                <p class="text-lg font-semibold text-blue-600 mt-2">€<%= anuncio.precio %></p>
+                <p class="text-sm text-gray-500 mt-2">Publicado por: <strong><%= anuncio.autor %></strong> el <%= new Date(anuncio.fechaPublicacion).toLocaleDateString() %></p>
+                <p class="text-sm text-red-500 mt-2" id="expira-<%= anuncio._id %>"></p>
             </div>
+
+            
+        <% }) %>
+    <% } else { %>
+        <p class="text-center text-gray-500">No hay anuncios en esta categoría todavía.</p>
+    <% } %>
+</div>
+
 
         <% } else { %>
             <!-- 🔵 Modo Vista de TODAS las Categorías -->
