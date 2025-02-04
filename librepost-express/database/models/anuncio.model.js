@@ -8,6 +8,7 @@ const AnuncioSchema = new mongoose.Schema({
     imagen: { type: String, required: true },
     categoria: { type: String, required: true },
     fechaPublicacion: { type: Date, default: Date.now },
+    inscritos: [{ type: String }],// Lista de usuarios inscritos
     fechaExpiracion: { type: Date, required: true } // Se calculará al crear el anuncio
 });
 

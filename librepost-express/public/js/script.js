@@ -25,3 +25,19 @@
 
                 actualizarCuentaRegresiva("<%= anuncio._id %>", "<%= anuncio.fechaExpiracion %>");
             
+                
+                function inscribirse(anuncioId) {
+                    fetch(`/inscribirse/${anuncioId}`, { method: "POST" })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.inscritos) {
+                                const lista = document.getElementById(`inscritos-${anuncioId}`);
+                                if (lista) {
+                                    lista.innerHTML = data.inscritos.map(user => `<li class="text-sm text-gray-700">${user}</li>`).join("");
+                                }
+                            }
+                            alert(data.message);
+                        })
+                        .catch(error => console.error("Error al inscribirse:", error));
+                }
+

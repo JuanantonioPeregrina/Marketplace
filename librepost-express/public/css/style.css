@@ -107,3 +107,8 @@ h2 {
     border-radius: 10px; /* Bordes redondeados opcionales */
     object-fit: cover; /* Ajusta la imagen sin distorsionar */
 }
+
+.text-center {
+    text-align: center;
+}
+

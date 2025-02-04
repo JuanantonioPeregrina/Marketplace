@@ -17,7 +17,7 @@ const aboutRouter = require('./routes/about');
 const publicarRouter = require('./routes/publicar');
 const anunciosRouter = require('./routes/anuncios');
 const registerRouter = require("./routes/registro");
-
+const inscribirseRouter = require("./routes/inscribirse");
 require("./database");
 
 
@@ -91,6 +91,7 @@ app.use('/about', aboutRouter);
 app.use('/publicar', publicarRouter);
 app.use('/anuncios', anunciosRouter);
 app.use("/registro", registerRouter);
+app.use("/inscribirse", inscribirseRouter);
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)
 app.use('/logout', (req,res) =>{
