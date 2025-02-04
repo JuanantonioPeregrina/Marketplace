@@ -24,27 +24,47 @@ router.get("/", (req, res) => {
 });
 
 // Publicar un anuncio en MongoDB
-router.post("/", upload.single("imagen"), async (req, res) => {
+router.post("/", upload.single("imagen"), async (req, res) => {  // ⬅️ Agregar `async`
+    console.log("🔍 Datos recibidos en req.body:", req.body); // Depuración
+
     if (!req.session.user) {
         return res.redirect("/login");
     }
 
-    const { titulo, descripcion, precio, categoria } = req.body;
-    const imagen = req.file ? `/uploads/${req.file.filename}` : null;
+    const { titulo, descripcion, precio, categoria, fechaExpiracion } = req.body;
 
-    if (!titulo || !descripcion || !precio || !categoria || !imagen) {
+    if (!fechaExpiracion) {
+        console.log("❌ Error: `fechaExpiracion` no está en req.body");
+        return res.status(400).send("Error: No se recibió la fecha de expiración.");
+    }
+
+    const imagen = req.file ? `/uploads/${req.file.filename}` : null;
+    const autor = req.session.user.username;
+
+    if (!titulo || !descripcion || !precio || !categoria || !imagen || !fechaExpiracion) {
         return res.status(400).send("Todos los campos son obligatorios.");
     }
 
     try {
-        const nuevoAnuncio = new Anuncio({ titulo, descripcion, precio, imagen, categoria, autor: req.session.user.username, fechaExpiracion: new Date(fechaExpiracion)});// Convertir a formato de fecha
-        await nuevoAnuncio.save();
-        console.log("📌 Anuncio guardado:", nuevoAnuncio);
+        const nuevoAnuncio = new Anuncio({
+            titulo,
+            descripcion,
+            precio,
+            imagen,
+            categoria,
+            fechaExpiracion: new Date(fechaExpiracion), // Convertir a Date
+            autor,
+            inscritos: []
+        });
+
+        await nuevoAnuncio.save();  // ✅ Ahora `await` funcionará porque la función es `async`
+        console.log("✅ Anuncio guardado correctamente.");
         res.redirect(`/categorias/${categoria}`);
     } catch (error) {
         console.error("❌ Error al guardar el anuncio:", error);
-        res.status(500).send("Error al guardar el anuncio.");
+        res.status(500).send("Error interno del servidor.");
     }
 });
+
 
 module.exports = router; // 🔥 CORRECCIÓN: Se exporta solo router

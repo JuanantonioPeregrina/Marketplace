@@ -56,7 +56,7 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(express.json()); // Para manejar JSON
-app.use(express.urlencoded({ extended: false })); // Para manejar datos del formulario
+app.use(express.urlencoded({ extended: true })); // Para manejar datos del formulario
 app.use(session({ // Configuración de la sesión (Guardar datos de usuario en el servidor)
   secret: "Una frase muy secreta",
   resave: false,

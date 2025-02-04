@@ -27,17 +27,27 @@
             
                 
                 function inscribirse(anuncioId) {
-                    fetch(`/inscribirse/${anuncioId}`, { method: "POST" })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.inscritos) {
-                                const lista = document.getElementById(`inscritos-${anuncioId}`);
-                                if (lista) {
-                                    lista.innerHTML = data.inscritos.map(user => `<li class="text-sm text-gray-700">${user}</li>`).join("");
-                                }
-                            }
+                    fetch(`/inscribirse/${anuncioId}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message) {
                             alert(data.message);
-                        })
-                        .catch(error => console.error("Error al inscribirse:", error));
+                            actualizarListaInscritos(anuncioId, data.inscritos);
+                        } else {
+                            alert("Error al inscribirse. Intenta nuevamente.");
+                        }
+                    })
+                    .catch(error => console.error("Error en la inscripción:", error));
                 }
+                
+                function actualizarListaInscritos(anuncioId, inscritos) {
+                    const lista = document.getElementById(`inscritos-${anuncioId}`);
+                    if (lista) {
+                        lista.innerHTML = inscritos.map(user => `<li class="text-sm text-gray-700">${user}</li>`).join("");
+                    }
+                }
+                
 
