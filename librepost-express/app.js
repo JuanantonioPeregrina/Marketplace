@@ -14,7 +14,7 @@ const categoriasRouter = require('./routes/categorias'); //con socket.io
 const loginRouter = require('./routes/login'); // Ajusta la ruta según la ubicación de tu archivo
 const restrictedRouter = require('./routes/restricted');
 const aboutRouter = require('./routes/about');
-const publicarRouter = require('./routes/publicar').router;
+const publicarRouter = require('./routes/publicar');
 const anunciosRouter = require('./routes/anuncios');
 const registerRouter = require("./routes/registro");
 

@@ -1,11 +1,9 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
+const express = require("express");
+const multer = require("multer");
+const path = require("path");
+const Anuncio = require("../database/models/anuncio.model");
 
 const router = express.Router();
-
-// Objeto para almacenar los anuncios por categoría
-const anunciosPorCategoria = {};
 
 // Configuración de Multer para subir imágenes
 const storage = multer.diskStorage({
@@ -17,18 +15,18 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Mostrar la página de publicación (solo si el usuario está autenticado)
+// Verificar autenticación
 router.get("/", (req, res) => {
     if (!req.session.user) {
-        return res.redirect("/login"); // Redirige al login si no está autenticado
+        return res.redirect("/login");
     }
     res.render("publicar", { title: "Publicar - LibrePost", user: req.session.user });
 });
 
-// Manejar la publicación de anuncios (solo si el usuario está autenticado)
-router.post("/", upload.single("imagen"), (req, res) => {
+// Publicar un anuncio en MongoDB
+router.post("/", upload.single("imagen"), async (req, res) => {
     if (!req.session.user) {
-        return res.redirect("/login"); // Redirige al login si no está autenticado
+        return res.redirect("/login");
     }
 
     const { titulo, descripcion, precio, categoria } = req.body;
@@ -38,15 +36,15 @@ router.post("/", upload.single("imagen"), (req, res) => {
         return res.status(400).send("Todos los campos son obligatorios.");
     }
 
-    // Si no hay anuncios para esta categoría, inicializamos un array
-    if (!anunciosPorCategoria[categoria]) {
-        anunciosPorCategoria[categoria] = [];
+    try {
+        const nuevoAnuncio = new Anuncio({ titulo, descripcion, precio, imagen, categoria });
+        await nuevoAnuncio.save();
+        console.log("📌 Anuncio guardado:", nuevoAnuncio);
+        res.redirect(`/categorias/${categoria}`);
+    } catch (error) {
+        console.error("❌ Error al guardar el anuncio:", error);
+        res.status(500).send("Error al guardar el anuncio.");
     }
-
-    // Guardar el anuncio en la categoría correspondiente
-    anunciosPorCategoria[categoria].push({ titulo, descripcion, precio, imagen });
-
-    res.redirect(`/categorias/${categoria}`);
 });
 
-module.exports = { router, anunciosPorCategoria };
+module.exports = router; // 🔥 CORRECCIÓN: Se exporta solo router
