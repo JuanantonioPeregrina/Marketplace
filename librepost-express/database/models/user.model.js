@@ -34,27 +34,27 @@ users.isLoginRight = async function(username, password){
 module.exports = users;
 */
 
-const mongoose = require("../index"); // Importa la conexión a la DB
-const bcrypt = require('bcrypt');
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
-const UserSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     username: { type: String, unique: true, required: true },
     password: { type: String, required: true },
-    last_Login: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now }
 });
 
-// Hash de contraseña antes de guardar el usuario
-UserSchema.pre("save", async function (next) {
-    if (this.isModified("password")) {
-        this.password = await bcrypt.hash(this.password, 10);
+// Middleware para hashear la contraseña antes de guardar
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next();
+
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (err) {
+        next(err);
     }
-    next();
 });
 
-// Método para verificar la contraseña
-UserSchema.methods.comparePassword = function (password) {
-    return bcrypt.compare(password, this.password);
-};
-
-const User = mongoose.model("User", UserSchema);
+const User = mongoose.model("User", userSchema);
 module.exports = User;
