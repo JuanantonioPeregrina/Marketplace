@@ -51,3 +51,20 @@
                 }
                 
 
+                document.addEventListener("DOMContentLoaded", function () {
+                    const notifButton = document.getElementById("notifButton");
+                    const notifDropdown = document.getElementById("notifDropdown");
+                
+                    // Función para alternar la visibilidad del dropdown
+                    notifButton.addEventListener("click", function () {
+                        notifDropdown.classList.toggle("show");
+                    });
+                
+                    // Cerrar el dropdown si se hace clic fuera de él
+                    document.addEventListener("click", function (event) {
+                        if (!notifButton.contains(event.target) && !notifDropdown.contains(event.target)) {
+                            notifDropdown.classList.remove("show");
+                        }
+                    });
+                });
+                

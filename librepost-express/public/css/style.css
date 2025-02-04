@@ -112,3 +112,14 @@ h2 {
     text-align: center;
 }
 
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 40px;
+    min-width: 250px;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
