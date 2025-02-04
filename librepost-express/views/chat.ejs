@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="bg-gray-100 flex h-screen">
+    
+    <!-- Panel Lateral de Conversaciones -->
+    <div class="w-1/4 bg-white shadow-lg overflow-y-auto">
+        <h2 class="text-lg font-bold text-center p-4 bg-gray-200">Mis Conversaciones</h2>
+        <ul id="lista-conversaciones" class="p-4">
+            <% if (conversaciones.length > 0) { %>
+                <% conversaciones.forEach(conversacion => { %>
+                    <li class="p-2 border-b cursor-pointer hover:bg-gray-100" onclick="abrirChat('<%= conversacion.anuncioId %>', '<%= conversacion.contacto %>')">
+                        <strong><%= conversacion.contacto %></strong> - <%= conversacion.anuncioTitulo %>
+                    </li>
+                <% }) %>
+            <% } else { %>
+                <p class="text-gray-500 text-center">No tienes conversaciones activas.</p>
+            <% } %>
+        </ul>
+        
+    </div>
+
+    <!-- Área del Chat -->
+    <div class="w-3/4 flex flex-col">
+        <div id="chat-container" class="hidden flex-1 p-4">
+            <h2 id="chat-titulo" class="text-xl font-bold"></h2>
+            <div id="mensajes" class="h-80 overflow-y-auto bg-white p-4 border rounded shadow-md mt-4"></div>
+
+            <div class="mt-4 flex">
+                <input type="text" id="mensaje" class="flex-1 p-2 border rounded" placeholder="Escribe un mensaje...">
+                <button onclick="enviarMensaje()" class="ml-2 px-4 py-2 bg-blue-500 text-white rounded">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    
+   
+<script>
+    let anuncioIdActual = null;
+    const socket = io();
+    
+    function abrirChat(anuncioId, contacto) {
+        anuncioIdActual = anuncioId;
+        socket.emit('unirse-chat', anuncioId);
+        
+        // Actualizar interfaz
+        document.getElementById("chat-titulo").innerHTML = `
+            Chat sobre: ${document.querySelector(`[data-anuncio-id="${anuncioId}"]`).innerText}
+            <span class="text-sm">(Contacto: ${contacto})</span>
+        `;
+        
+        cargarMensajes(anuncioId);
+    }
+
+    // Escuchar nuevos mensajes en tiempo real
+    socket.on(`mensaje-${anuncioIdActual}`, (mensaje) => {
+        const mensajesDiv = document.getElementById("mensajes");
+        mensajesDiv.innerHTML += `
+            <div class="mb-2 ${mensaje.remitente === '<%= user.username %>' ? 'text-right' : ''}">
+                <span class="text-xs text-gray-500">${new Date(mensaje.fecha).toLocaleTimeString()}</span>
+                <div class="inline-block p-2 rounded-lg ${mensaje.remitente === '<%= user.username %>' ? 'bg-blue-500 text-white' : 'bg-gray-200'}">
+                    ${mensaje.contenido}
+                </div>
+            </div>
+        `;
+        mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+    });
+</script>
+
+</body>
+</html>

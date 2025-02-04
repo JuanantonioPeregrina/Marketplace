@@ -41,13 +41,27 @@
           <% if (!user || user.username === "Invitado") { %>
             <a href="/login" class="btn btn-outline-light me-2">Login</a>
             <a href="/registro" class="btn btn-warning">Sign-up</a>
-            <% } else { %>
-              <a class="btn btn-outline-light me-2" href="/publicar">Publicar</a>
+          <% } else { %>
+            <a class="btn btn-outline-light me-2" href="/publicar">Publicar</a>
             <a class="btn btn-warning" href="/logout">Cerrar sesión</a>
-            <% } %>
-          </div>
+          <% } %>
         
-    </div>
+          <!-- 🔔 Botón de Notificaciones (Colocado dentro de .text-end) -->
+          <div class="relative d-inline-block ms-3">
+              <button id="notifButton" class="btn btn-outline-light position-relative">
+                  <i class="fas fa-bell"></i>
+                  <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger hidden">
+                      0
+                  </span>
+              </button>
+        
+              <!-- Dropdown de notificaciones -->
+              <div id="notifDropdown" class="dropdown-menu dropdown-menu-end p-2 shadow-lg">
+                  <ul id="notifList" class="list-group"></ul>
+              </div>
+          </div>
+        </div>
+      </div>        
   </header>
   
   </head>                     
