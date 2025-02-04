@@ -20,11 +20,6 @@ const registerRouter = require("./routes/registro");
 const inscribirseRouter = require("./routes/inscribirse");
 require("./database");
 
-
-
-
-
-
 // Crear una instancia de Express
 const app = express();
 
@@ -54,6 +49,10 @@ app.set('views', path.join(__dirname, 'views')); // Carpeta donde estarán los a
 app.set('view engine', 'ejs');
 // Middleware para servir archivos estáticos como estilos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
+// Servir CSS desde 'public/css'
+app.use('/css', express.static(path.join(__dirname, "public/css")));
+// Servir JavaScript desde 'public/js'
+app.use('/js', express.static(path.join(__dirname, "public/js")));
 
 app.use(express.json()); // Para manejar JSON
 app.use(express.urlencoded({ extended: true })); // Para manejar datos del formulario

@@ -35,32 +35,66 @@ module.exports = router;
 const express = require("express");
 const router = express.Router();
 const Chat = require("../database/models/chat.model");
+const Anuncio = require("../database/models/anuncio.model");
 
+// Ruta para iniciar una conversación
+router.post("/iniciar", async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: "Debes iniciar sesión" });
+    }
+
+    const { anuncioId, destinatario } = req.body;
+    const remitente = req.session.user.username;
+
+    try {
+        const anuncio = await Anuncio.findById(anuncioId);
+        if (!anuncio) {
+            return res.status(404).json({ success: false, message: "Anuncio no encontrado" });
+        }
+
+        // Solo el autor del anuncio puede iniciar la conversación
+        if (anuncio.autor !== remitente) {
+            return res.status(403).json({ success: false, message: "No tienes permiso para iniciar esta conversación" });
+        }
+
+        // Verificar si ya existe una conversación entre estos dos usuarios
+        let chat = await Chat.findOne({ anuncioId, remitente, destinatario });
+
+        if (!chat) {
+            chat = new Chat({ anuncioId, remitente, destinatario, contenido: [] });
+            await chat.save();
+        }
+
+        res.json({ success: true, chatId: chat._id });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Error al iniciar la conversación." });
+    }
+});
+
+// Ruta para cargar el chat
 router.get("/", async (req, res) => {
     if (!req.session.user) {
         return res.redirect("/login");
     }
+
     const username = req.session.user.username;
+    const { anuncioId, usuario: destinatario } = req.query;
 
-    // Buscar todas las conversaciones en las que participa el usuario
-    const conversacionesRaw = await Chat.find({
-        $or: [{ remitente: username }, { destinatario: username }]
+    const chat = await Chat.findOne({
+        anuncioId,
+        $or: [
+            { remitente: username, destinatario },
+            { remitente: destinatario, destinatario: username }
+        ]
     });
 
-    // Agrupar por anuncioId y el otro usuario
-    const conversaciones = [];
-    conversacionesRaw.forEach(chat => {
-        const contacto = chat.remitente === username ? chat.destinatario : chat.remitente;
-        if (!conversaciones.some(c => c.anuncioId === chat.anuncioId && c.contacto === contacto)) {
-            conversaciones.push({
-                anuncioId: chat.anuncioId,
-                contacto,
-                anuncioTitulo: "Título del Anuncio"
-            });
-        }
-    });
+    if (!chat) {
+        return res.redirect("/categorias");
+    }
 
-    res.render("chat", { conversaciones });
+    res.render("chat", { chat, user: req.session.user });
 });
 
 module.exports = router;

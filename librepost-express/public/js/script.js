@@ -1,27 +1,33 @@
 
-                function actualizarCuentaRegresiva(id, fechaExpiracion) {
-                    const expiraEl = document.getElementById(`expira-${id}`);
-                    const fin = new Date(fechaExpiracion).getTime();
+function actualizarCuentaRegresiva(id, fechaExpiracion) {
+    const expiraEl = document.getElementById(`expira-${id}`);
+    if (!expiraEl) {
+        console.warn(`Elemento con id expira-${id} no encontrado`);
+        return;
+    }
 
-                    function actualizar() {
-                        const ahora = new Date().getTime();
-                        const diferencia = fin - ahora;
+    const fin = new Date(fechaExpiracion).getTime();
 
-                        if (diferencia <= 0) {
-                            expiraEl.innerText = "⚠️ Inscripción cerrada";
-                            return;
-                        }
+    function actualizar() {
+        const ahora = new Date().getTime();
+        const diferencia = fin - ahora;
 
-                        const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
-                        const horas = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+        if (diferencia <= 0) {
+            expiraEl.innerText = "⚠️ Inscripción cerrada";
+            return;
+        }
 
-                        expiraEl.innerText = `⏳ Tiempo restante: ${dias}d ${horas}h ${minutos}m`;
-                    }
+        const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+        const horas = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
 
-                    actualizar();
-                    setInterval(actualizar, 60000);
-                }
+        expiraEl.innerText = `⏳ Tiempo restante: ${dias}d ${horas}h ${minutos}m`;
+    }
+
+    actualizar();
+    setInterval(actualizar, 60000);
+}
+
 
                 actualizarCuentaRegresiva("<%= anuncio._id %>", "<%= anuncio.fechaExpiracion %>");
             
@@ -67,4 +73,23 @@
                         }
                     });
                 });
+                
+                function iniciarChat(anuncioId, destinatario) {
+                    fetch(`/chat/iniciar`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ anuncioId, destinatario })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = `/chat?anuncioId=${anuncioId}&usuario=${destinatario}`;
+                        } else {
+                            alert(data.message || "Error al iniciar la conversación.");
+                        }
+                    })
+                    .catch(error => console.error("Error iniciando el chat:", error));
+                }
+                
+                
                 
