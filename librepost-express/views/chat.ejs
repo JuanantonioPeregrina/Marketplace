@@ -37,35 +37,81 @@
 
             <div class="mt-4 flex">
                 <input type="text" id="mensaje" class="flex-1 p-2 border rounded" placeholder="Escribe un mensaje...">
-                <button onclick="enviarMensaje()" class="ml-2 px-4 py-2 bg-blue-500 text-white rounded">Enviar</button>
+                <button id="btnEnviar" class="ml-2 px-4 py-2 bg-blue-500 text-white rounded">Enviar</button>
+
             </div>
         </div>
     </div>
 
     <script>
-        let anuncioIdActual = null;
-        const socket = io();
-        
-        function abrirChat(anuncioId, contacto) {
-            anuncioIdActual = anuncioId;
-            socket.emit('unirse-chat', anuncioId);
-            
-            // Actualizar interfaz
-            document.getElementById("chat-titulo").innerHTML = `
-                Chat sobre: ${document.querySelector(`[data-anuncio-id="${anuncioId}"]`).innerText}
-                <span class="text-sm">(Contacto: ${contacto})</span>
-            `;
-            
-            cargarMensajes(anuncioId);
-        }
-
-        // Escuchar nuevos mensajes en tiempo real
-        socket.on(`mensaje-${anuncioIdActual}`, (mensaje) => {
+        const socket = io(); // Conectar con el servidor de sockets
+    
+        // Obtener anuncioId y usuario destino desde la variable pasada por el backend
+        let anuncioIdActual = "<%= anuncioId %>";
+        let usuarioDestino = "<%= usuarioDestino %>";
+    
+        console.log("📌 Anuncio ID:", anuncioIdActual);
+        console.log("📌 Usuario Destino:", usuarioDestino);
+    
+        function enviarMensaje() {
+            const inputMensaje = document.getElementById("mensaje");
+            const mensaje = inputMensaje.value.trim();
+    
+            if (!mensaje) return; // Evitar enviar mensajes vacíos
+    
+            const datosMensaje = {
+                anuncioId: anuncioIdActual,
+                remitente: "<%= user.username %>",
+                destinatario: usuarioDestino,
+                contenido: mensaje,
+                fecha: new Date().toISOString()
+            };
+    
+            console.log("📤 Enviando mensaje:", datosMensaje);
+            socket.emit("mensaje", datosMensaje, (ack) => {
+                if (ack.error) {
+                    console.error("❌ Error al enviar mensaje:", ack.error);
+                    alert("Hubo un error al enviar el mensaje.");
+                    return;
+                }
+    
+                console.log("✅ Mensaje enviado correctamente.");
+            });
+    
+            // Agregar mensaje al chat localmente
             const mensajesDiv = document.getElementById("mensajes");
             mensajesDiv.innerHTML += `
-                <div class="mb-2 ${mensaje.remitente === '<%= user.username %>' ? 'text-right' : ''}">
+                <div class="mb-2 text-right">
+                    <span class="text-xs text-gray-500">${new Date().toLocaleTimeString()}</span>
+                    <div class="inline-block p-2 rounded-lg bg-blue-500 text-white">
+                        ${mensaje}
+                    </div>
+                </div>
+            `;
+    
+            inputMensaje.value = ""; // Limpiar input
+            mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+        }
+    
+        // Asegurar que el botón existe antes de asignarle el evento
+        document.addEventListener("DOMContentLoaded", function() {
+            const botonEnviar = document.getElementById("btnEnviar");
+            if (botonEnviar) {
+                botonEnviar.addEventListener("click", enviarMensaje);
+            } else {
+                console.error("⚠️ No se encontró el botón de enviar.");
+            }
+        });
+    
+        // Escuchar mensajes en tiempo real
+        socket.on("mensaje", (mensaje) => {
+            console.log("📥 Mensaje recibido:", mensaje);
+    
+            const mensajesDiv = document.getElementById("mensajes");
+            mensajesDiv.innerHTML += `
+                <div class="mb-2">
                     <span class="text-xs text-gray-500">${new Date(mensaje.fecha).toLocaleTimeString()}</span>
-                    <div class="inline-block p-2 rounded-lg ${mensaje.remitente === '<%= user.username %>' ? 'bg-blue-500 text-white' : 'bg-gray-200'}">
+                    <div class="inline-block p-2 rounded-lg bg-gray-200">
                         ${mensaje.contenido}
                     </div>
                 </div>
@@ -73,6 +119,10 @@
             mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
         });
     </script>
+    
+    
+    
+        
 
 </body>
 </html>

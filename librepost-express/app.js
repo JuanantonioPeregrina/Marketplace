@@ -32,13 +32,38 @@ const io = socketIo(server); // Configurar Socket.IO con el servidor
 
 // Escuchar eventos de conexión de los clientes
 io.on('connection', (socket) => {
-    console.log('Nuevo cliente conectado.');
+  console.log('Nuevo cliente conectado.');
 
-    // Evento para desconexión
-    socket.on('disconnect', () => {
-        console.log('Cliente desconectado.');
-    });
+  socket.on("mensaje", async (datosMensaje) => {
+      console.log("📥 Mensaje recibido en el servidor:", datosMensaje);
+
+      const { anuncioId, remitente, destinatario, contenido, fecha } = datosMensaje;
+
+      try {
+          let chat = await Chat.findOne({ anuncioId, $or: [{ remitente, destinatario }, { remitente: destinatario, destinatario: remitente }] });
+
+          if (!chat) {
+              chat = new Chat({ anuncioId, remitente, destinatario, contenido: [] });
+          }
+
+          chat.contenido.push({ remitente, contenido, fecha });
+          await chat.save();
+
+          console.log("✅ Mensaje guardado en la BD:", chat);
+
+          // Enviar mensaje a los clientes conectados
+          io.emit("mensaje", datosMensaje);
+      } catch (error) {
+          console.error("❌ Error guardando el mensaje:", error);
+      }
+  });
+
+  // Evento para desconexión
+  socket.on('disconnect', () => {
+      console.log('Cliente desconectado.');
+  });
 });
+
 
 
 

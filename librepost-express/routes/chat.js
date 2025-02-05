@@ -74,12 +74,14 @@ router.post("/iniciar", async (req, res) => {
 });
 
 // Ruta para cargar el chat
+
 router.get("/", async (req, res) => {
     if (!req.session.user) {
         return res.redirect("/login");
     }
 
     const username = req.session.user.username;
+    const { anuncioId, usuario } = req.query; // Obtener desde la URL
 
     try {
         // Buscar conversaciones en la base de datos
@@ -90,7 +92,9 @@ router.get("/", async (req, res) => {
         res.render("chat", { 
             title: "Chat - LibrePost",  
             conversaciones, // 🔹 Pasar conversaciones a la vista
-            user: req.session.user 
+            user: req.session.user,
+            anuncioId, // ✅ Ahora pasamos el anuncioId
+            usuarioDestino: usuario // ✅ Ahora pasamos el destinatario
         });
 
     } catch (error) {
