@@ -17,15 +17,18 @@
         <ul id="lista-conversaciones" class="p-4">
             <% if (conversaciones.length > 0) { %>
                 <% conversaciones.forEach(conversacion => { %>
-                    <li class="p-2 border-b cursor-pointer hover:bg-gray-100" 
-                        onclick="abrirChat('<%= conversacion.anuncioId %>', '<%= conversacion.contacto %>')">
-                        <strong><%= conversacion.contacto %></strong> - <%= conversacion.anuncioTitulo %>
-                    </li>
+                    <% if (conversacion.contacto && conversacion.anuncioTitulo) { %>
+                        <li class="p-2 border-b cursor-pointer hover:bg-gray-100" 
+                            onclick="abrirChat('<%= conversacion.anuncioId %>', '<%= conversacion.contacto %>')">
+                            <strong><%= conversacion.contacto %></strong> - <%= conversacion.anuncioTitulo %>
+                        </li>
+                    <% } %>
                 <% }) %>
             <% } else { %>
                 <p class="text-gray-500 text-center">No tienes conversaciones activas.</p>
             <% } %>
         </ul>
+        
         
     </div>
 
@@ -118,13 +121,15 @@
         function agregarMensaje(mensaje) {
     const mensajesDiv = document.getElementById("mensajes");
     const fechaMensaje = new Date(mensaje.fecha);
-    const fechaFormateada = fechaMensaje.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+    const fechaFormateada = fechaMensaje.toLocaleDateString('es-ES', { 
+        year: 'numeric', month: 'long', day: 'numeric' 
+    });
     const horaFormateada = fechaMensaje.toLocaleTimeString('es-ES');
 
     mensajesDiv.innerHTML += `
         <div class="mb-2 ${mensaje.remitente === "<%= user.username %>" ? 'text-right' : 'text-left'}">
             <span class="text-xs text-gray-500">
-                ${fechaFormateada} - ${horaFormateada} - <strong>${mensaje.remitente}</strong>
+                📅 ${fechaFormateada} 🕒 ${horaFormateada} - <strong>${mensaje.remitente}</strong>
             </span>
             <div class="inline-block p-2 rounded-lg ${mensaje.remitente === "<%= user.username %>" ? 'bg-blue-500 text-black' : 'bg-gray-200'}">
                 ${mensaje.contenido}
@@ -133,14 +138,14 @@
     `;
     mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
 
-
-        // 🔔 Notificación si el mensaje es para el usuario actual
+    // 🔔 Notificación si el mensaje es para el usuario actual
     if (mensaje.destinatario === "<%= user.username %>") {
         const notificacion = document.getElementById("notifButton");
         notificacion.innerText = "🔴 Nuevo mensaje!";
         notificacion.style.color = "red";
     }
 }
+
         
     </script>
 </body>
