@@ -8,7 +8,6 @@
     <!-- ✅ Importar el header y los estilos correctamente -->
     <%- include("partials/header") %>
     
-   
 </head>
 <body class="bg-gray-100 flex h-screen">
     
@@ -38,7 +37,6 @@
             <div class="mt-4 flex">
                 <input type="text" id="mensaje" class="flex-1 p-2 border rounded" placeholder="Escribe un mensaje...">
                 <button id="btnEnviar" class="ml-2 px-4 py-2 bg-blue-500 text-white rounded">Enviar</button>
-
             </div>
         </div>
     </div>
@@ -49,10 +47,39 @@
         // Obtener anuncioId y usuario destino desde la variable pasada por el backend
         let anuncioIdActual = "<%= anuncioId %>";
         let usuarioDestino = "<%= usuarioDestino %>";
-    
+
         console.log("📌 Anuncio ID:", anuncioIdActual);
         console.log("📌 Usuario Destino:", usuarioDestino);
-    
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const mensajesDiv = document.getElementById("mensajes");
+
+            // ✅ Obtener mensajes guardados en la BD al cargar la página
+            fetch(`/chat/mensajes?anuncioId=${anuncioIdActual}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log("📥 Mensajes cargados desde la BD:", data.mensajes);
+                        data.mensajes.forEach(mensaje => {
+                            mensajesDiv.innerHTML += `
+                                <div class="mb-2 ${mensaje.remitente === "<%= user.username %>" ? 'text-right' : ''}">
+                                    <span class="text-xs text-gray-500">
+                                        ${new Date(mensaje.fecha).toLocaleTimeString()} - <strong>${mensaje.remitente}</strong>
+                                    </span>
+                                    <div class="inline-block p-2 rounded-lg ${mensaje.remitente === "<%= user.username %>" ? 'bg-blue-500 text-white' : 'bg-gray-200'}">
+                                        ${mensaje.contenido}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+                    } else {
+                        console.error("❌ Error cargando mensajes:", data.message);
+                    }
+                })
+                .catch(error => console.error("❌ Error en fetch:", error));
+        });
+
         function enviarMensaje() {
             const inputMensaje = document.getElementById("mensaje");
             const mensaje = inputMensaje.value.trim();
@@ -102,32 +129,25 @@
                 console.error("⚠️ No se encontró el botón de enviar.");
             }
         });
-    
+
         // Escuchar mensajes en tiempo real
         socket.on("mensaje", (mensaje) => {
-    console.log("📥 Mensaje recibido en el cliente:", mensaje);
+            console.log("📥 Mensaje recibido en el cliente:", mensaje);
 
-    const mensajesDiv = document.getElementById("mensajes");
-    mensajesDiv.innerHTML += `
-        <div class="mb-2">
-            <span class="text-xs text-gray-500">
-                ${new Date(mensaje.fecha).toLocaleTimeString()} - <strong>${mensaje.remitente}</strong>
-            </span>
-            <div class="inline-block p-2 rounded-lg bg-gray-200">
-                ${mensaje.contenido}
-            </div>
-        </div>
-    `;
-    mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
-});
+            const mensajesDiv = document.getElementById("mensajes");
+            mensajesDiv.innerHTML += `
+                <div class="mb-2 ${mensaje.remitente === "<%= user.username %>" ? 'text-right' : ''}">
+                    <span class="text-xs text-gray-500">
+                        ${new Date(mensaje.fecha).toLocaleTimeString()} - <strong>${mensaje.remitente}</strong>
+                    </span>
+                    <div class="inline-block p-2 rounded-lg ${mensaje.remitente === "<%= user.username %>" ? 'bg-blue-500 text-white' : 'bg-gray-200'}">
+                        ${mensaje.contenido}
+                    </div>
+                </div>
+            `;
 
-
-
+            mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+        });
     </script>
-    
-    
-    
-        
-
 </body>
 </html>

@@ -104,4 +104,28 @@ router.get("/", async (req, res) => {
 });
 
 
+// Ruta para obtener los mensajes de una conversación específica
+router.get("/mensajes", async (req, res) => {
+    const { anuncioId } = req.query;
+
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: "Debes iniciar sesión" });
+    }
+
+    try {
+        // Buscar la conversación por `anuncioId`
+        const chat = await Chat.findOne({ anuncioId });
+
+        if (!chat) {
+            return res.json({ success: true, mensajes: [] }); // Si no hay mensajes, retornar vacío
+        }
+
+        res.json({ success: true, mensajes: chat.mensajes });
+    } catch (error) {
+        console.error("❌ Error recuperando mensajes:", error);
+        res.status(500).json({ success: false, message: "Error al recuperar mensajes" });
+    }
+});
+
+
 module.exports = router;
