@@ -80,21 +80,24 @@ router.get("/", async (req, res) => {
     }
 
     const username = req.session.user.username;
-    const { anuncioId, usuario: destinatario } = req.query;
 
-    const chat = await Chat.findOne({
-        anuncioId,
-        $or: [
-            { remitente: username, destinatario },
-            { remitente: destinatario, destinatario: username }
-        ]
-    });
+    try {
+        // Buscar conversaciones en la base de datos
+        const conversaciones = await Chat.find({
+            $or: [{ remitente: username }, { destinatario: username }]
+        });
 
-    if (!chat) {
-        return res.redirect("/categorias");
+        res.render("chat", { 
+            title: "Chat - LibrePost",  
+            conversaciones, // 🔹 Pasar conversaciones a la vista
+            user: req.session.user 
+        });
+
+    } catch (error) {
+        console.error("❌ Error al cargar conversaciones:", error);
+        res.status(500).send("Error al cargar el chat.");
     }
-
-    res.render("chat", { chat, user: req.session.user });
 });
+
 
 module.exports = router;

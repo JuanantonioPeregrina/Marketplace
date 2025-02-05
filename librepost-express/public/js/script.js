@@ -75,6 +75,8 @@ function actualizarCuentaRegresiva(id, fechaExpiracion) {
                 });
                 
                 function iniciarChat(anuncioId, destinatario) {
+                    console.log(`🔹 Iniciando chat con anuncioId: ${anuncioId}, destinatario: ${destinatario}`);
+                
                     fetch(`/chat/iniciar`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -82,14 +84,18 @@ function actualizarCuentaRegresiva(id, fechaExpiracion) {
                     })
                     .then(response => response.json())
                     .then(data => {
+                        console.log("📩 Respuesta del servidor:", data);
                         if (data.success) {
+                            console.log(`✅ Redirigiendo a /chat?anuncioId=${anuncioId}&usuario=${destinatario}`);
                             window.location.href = `/chat?anuncioId=${anuncioId}&usuario=${destinatario}`;
                         } else {
+                            console.error("⚠️ Error al iniciar la conversación:", data.message);
                             alert(data.message || "Error al iniciar la conversación.");
                         }
                     })
-                    .catch(error => console.error("Error iniciando el chat:", error));
+                    .catch(error => console.error("❌ Error iniciando el chat:", error));
                 }
+                
                 
                 
                 

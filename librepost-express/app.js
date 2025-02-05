@@ -18,6 +18,9 @@ const publicarRouter = require('./routes/publicar');
 const anunciosRouter = require('./routes/anuncios');
 const registerRouter = require("./routes/registro");
 const inscribirseRouter = require("./routes/inscribirse");
+const chatRouter = require("./routes/chat");
+
+
 require("./database");
 
 // Crear una instancia de Express
@@ -91,6 +94,7 @@ app.use('/publicar', publicarRouter);
 app.use('/anuncios', anunciosRouter);
 app.use("/registro", registerRouter);
 app.use("/inscribirse", inscribirseRouter);
+app.use("/chat", chatRouter);
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)
 app.use('/logout', (req,res) =>{
