@@ -105,19 +105,24 @@
     
         // Escuchar mensajes en tiempo real
         socket.on("mensaje", (mensaje) => {
-            console.log("📥 Mensaje recibido:", mensaje);
-    
-            const mensajesDiv = document.getElementById("mensajes");
-            mensajesDiv.innerHTML += `
-                <div class="mb-2">
-                    <span class="text-xs text-gray-500">${new Date(mensaje.fecha).toLocaleTimeString()}</span>
-                    <div class="inline-block p-2 rounded-lg bg-gray-200">
-                        ${mensaje.contenido}
-                    </div>
-                </div>
-            `;
-            mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
-        });
+    console.log("📥 Mensaje recibido en el cliente:", mensaje);
+
+    const mensajesDiv = document.getElementById("mensajes");
+    mensajesDiv.innerHTML += `
+        <div class="mb-2">
+            <span class="text-xs text-gray-500">
+                ${new Date(mensaje.fecha).toLocaleTimeString()} - <strong>${mensaje.remitente}</strong>
+            </span>
+            <div class="inline-block p-2 rounded-lg bg-gray-200">
+                ${mensaje.contenido}
+            </div>
+        </div>
+    `;
+    mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+});
+
+
+
     </script>
     
     

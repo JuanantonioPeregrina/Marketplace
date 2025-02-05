@@ -20,6 +20,7 @@ const registerRouter = require("./routes/registro");
 const inscribirseRouter = require("./routes/inscribirse");
 const chatRouter = require("./routes/chat");
 
+const Chat = require("./database/models/chat.model");
 
 require("./database");
 
@@ -31,38 +32,65 @@ const server = http.createServer(app); // Usa tu app Express
 const io = socketIo(server); // Configurar Socket.IO con el servidor
 
 // Escuchar eventos de conexión de los clientes
-io.on('connection', (socket) => {
-  console.log('Nuevo cliente conectado.');
+io.on("connection", (socket) => {
+  console.log("Nuevo cliente conectado.");
+
+  socket.on("unirse-chat", (anuncioId) => {
+      socket.join(anuncioId);
+      console.log(`📌 Cliente unido a la sala del anuncio ${anuncioId}`);
+  });
 
   socket.on("mensaje", async (datosMensaje) => {
-      console.log("📥 Mensaje recibido en el servidor:", datosMensaje);
+    console.log("📥 Mensaje recibido en el servidor:", datosMensaje);
 
-      const { anuncioId, remitente, destinatario, contenido, fecha } = datosMensaje;
+    const { anuncioId, remitente, destinatario, contenido, fecha } = datosMensaje;
 
-      try {
-          let chat = await Chat.findOne({ anuncioId, $or: [{ remitente, destinatario }, { remitente: destinatario, destinatario: remitente }] });
+    try {
+        let chat = await Chat.findOne({
+            anuncioId,
+            $or: [
+                { remitente, destinatario },
+                { remitente: destinatario, destinatario: remitente }
+            ]
+        });
 
-          if (!chat) {
-              chat = new Chat({ anuncioId, remitente, destinatario, contenido: [] });
-          }
+        if (!chat) {
+            console.log("ℹ️ No se encontró un chat, creando uno nuevo...");
+            chat = new Chat({ 
+                anuncioId, 
+                remitente, 
+                destinatario, 
+                mensajes: []  // ✅ Asegurar que `mensajes` existe
+            });
+        }
 
-          chat.contenido.push({ remitente, contenido, fecha });
-          await chat.save();
+        // 🔹 Verificamos si la propiedad `mensajes` está definida
+        if (!Array.isArray(chat.mensajes)) {
+            chat.mensajes = [];
+        }
 
-          console.log("✅ Mensaje guardado en la BD:", chat);
+        // ✅ Guardamos el mensaje dentro de `mensajes`
+        chat.mensajes.push({ remitente, contenido, fecha });
+        await chat.save();
 
-          // Enviar mensaje a los clientes conectados
-          io.emit("mensaje", datosMensaje);
-      } catch (error) {
-          console.error("❌ Error guardando el mensaje:", error);
-      }
-  });
+        console.log("✅ Mensaje guardado correctamente en MongoDB:", chat);
 
-  // Evento para desconexión
-  socket.on('disconnect', () => {
-      console.log('Cliente desconectado.');
+        // Emitimos el mensaje al cliente en tiempo real
+        io.to(anuncioId).emit("mensaje", { remitente, contenido, fecha });
+
+    } catch (error) {
+        console.error("❌ Error guardando el mensaje en MongoDB:", error);
+    }
+});
+
+
+
+  socket.on("disconnect", () => {
+      console.log("Cliente desconectado.");
   });
 });
+
+
 
 
 
