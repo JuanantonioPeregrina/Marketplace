@@ -2,24 +2,30 @@
 html, body {
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: rgb(252, 252, 252); /* Fondo gris */
-    display: flex;
-    flex-direction: column; /* Organizar en columnas */
-    min-height: 100vh; /* Asegura que el body ocupe toda la pantalla */
+    font-family: 'Inter', Arial, sans-serif;
+    background-color: #f8f9fa; /* Fondo gris claro para un look moderno */
+}
+
+/* Contenedor principal */
+main {
+    margin-top: 80px; /* Ajuste del margen debajo del header */
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 2rem;
 }
 
 /* Header */
+/* Ajuste del Header */
 header {
-    width: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: #333;
-    color: white;
-    padding: 10px 0;
-    text-align: center;
-    font-size: 1.2em;
+    padding: 20px 0;
+}
+
+/* Ajuste de separación del título principal */
+h1 {
+    margin-bottom: 20px;
+    letter-spacing: -1px;
 }
 
 .h1 {
@@ -27,15 +33,7 @@ header {
     
 }
 /* Contenedor principal */
-main {
-    margin-top: 80px; /* Ajuste del margen debajo del header */
-    flex: 1; /* Permite que main ocupe todo el espacio disponible */
-    width: 100%;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-bottom: 2rem; /* Espacio extra para evitar solapamiento del footer */
-}
+
 
 /* Estilos para el footer */
 footer {
@@ -108,6 +106,18 @@ h2 {
     object-fit: cover; /* Ajusta la imagen sin distorsionar */
 }
 
+.anuncio-contenido {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Asegura que el texto no se disperse */
+    height: 100%;
+}
+
+.anuncio-contenido a, .anuncio-contenido button {
+    margin-top: 20px !important;
+}
+
+
 .text-center {
     text-align: center;
 }
@@ -122,4 +132,140 @@ h2 {
 
 .dropdown-menu.show {
     display: block;
+}
+
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    justify-content: center;
+}
+
+/* Tarjetas de anuncios */
+.bg-white {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Espaciado uniforme */
+    height: 100%;
+    padding: 20px;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Hace que el botón siempre esté al fondo */
+.bg-white .chat-button {
+    margin-top: auto;
+}
+
+.bg-white:hover {
+    transform: translateY(-5px);
+}
+
+/* Imágenes dentro de los anuncios */
+.bg-gray-200 {
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.bg-gray-200 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Botón principal */
+.bg-blue-600, .bg-gray-400 {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+}
+
+a.bg-blue-600 {
+    text-decoration: none !important; /* Elimina el subrayado */
+    margin-top: 50px !important; ; /* Ajusta el espacio hacia abajo */
+}
+
+.bg-blue-600:hover {
+    background-color: #0056b3;
+}
+
+/* Botón para lista de inscritos */
+.bg-blue-500 {
+    background-color: #3498db;
+}
+
+.bg-blue-500:hover {
+    background-color: #2980b9;
+}
+
+/* Botón de espera */
+.bg-gray-400 {
+    background-color: #bbb;
+}
+
+/* Separación entre elementos */
+.mt-3 {
+    margin-top: 12px;
+}
+
+.mt-4 {
+    margin-top: 16px;
+}
+
+.mt-6 {
+    margin-top: 44px;
+}
+
+/* Precio */
+.text-green-600 {
+    color: #2ecc71;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Publicado por */
+.text-gray-500 {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+/* Lista de inscritos */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+/* Anuncios */
+h2 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 5px;
+    color: #333;
+}
+
+/* Precios */
+.text-green-600 {
+    color: #28a745;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Información de usuario */
+.text-gray-500 {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* Chat icono */
+.text-blue-500 {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.text-blue-500:hover {
+    text-decoration: underline;
 }
