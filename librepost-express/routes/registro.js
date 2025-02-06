@@ -5,7 +5,7 @@ const User = require("../database/models/user.model");
 const router = express.Router();
 
 router.get("/", (req, res) => {
-    res.render("registro", { title: "Registro - LibrePost" });
+    res.render("registro", { title: "Registro - LibrePost", user: req.user || null });
 });
 
 router.post("/", async (req, res) => {

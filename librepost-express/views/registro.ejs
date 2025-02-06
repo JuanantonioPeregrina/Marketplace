@@ -1,22 +1,52 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro - LibrePost</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>Registro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h2>Registro de Usuario</h2>
-    <form action="/registro" method="POST">
-        <label for="username">Usuario:</label>
-        <input type="text" name="username" required>
-        
-        <label for="password">Contraseña:</label>
-        <input type="password" name="password" required>
 
-        <button type="submit">Registrarse</button>
-    </form>
-    <a href="/login">¿Ya tienes cuenta? Inicia sesión aquí</a>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    <%- include("partials/header", {}) %>
+
+    <main class="flex-grow flex items-center justify-center">
+        <div class="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Crear cuenta</h1>
+
+            <% if (message) { %>
+                <p class="text-center text-red-500 font-medium"><%= message %></p>
+            <% } %>
+
+            <form method="post" action="/registro" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-medium">Usuario</label>
+                    <input required type="text" name="username" 
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium">Correo</label>
+                    <input required type="email" name="email" 
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium">Contraseña</label>
+                    <input required type="password" name="password" 
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <button type="submit" 
+                    class="w-full bg-blue-600 text-white p-3 rounded-lg shadow-md hover:bg-blue-700 transition font-semibold">
+                    Registrarse
+                </button>
+            </form>
+
+            <p class="text-center text-gray-600 mt-4">¿Ya tienes cuenta? 
+                <a href="/login" class="text-blue-500 font-medium hover:underline">Inicia sesión aquí</a>
+            </p>
+        </div>
+    </main>
+
+    <%- include("partials/footer", {}) %>
 </body>
 </html>
