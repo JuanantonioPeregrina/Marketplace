@@ -39,7 +39,7 @@
         
 
         <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-          <input type="search" class="form-control form-control-dark text-bg-dark" placeholder="Search..." aria-label="Search">
+          <input type="search" class="form-control form-control-dark text-bg-white" placeholder="Buscar..." aria-label="Search">
         </form>
 
         <div class="text-end">
@@ -69,9 +69,72 @@
   </ul>
 </div>
 
+     </div>
+        <!-- Icono de perfil con menú desplegable -->
+     <div class="user-profile ml-4" id="profile-icon" onclick="toggleProfileMenu()">
+      <% if (user) { %>
+          <img src="<%= imagen_perfil %>" id="imagen_perfil" alt="Foto de perfil" class="profile-pic">
+      <% } else { %>
+          <img src="/images/avatar.webp" id="imagen_perfil" alt="Foto de perfil" class="profile-pic">
+      <% } %>
+  </div>
 
+      </div>                         
+                        
+    
+        <!-- Menú desplegable del usuario -->
+        <div class="profile-menu" id="profile-menu">
+            <% if (user) { %>
+                <p class="username">👤 <%= user.nombre %></p>
+            <% } else { %>
+                <p class="username">🚀 Invitado</p>
+            <% } %>
+    
+            <!-- Opciones del menú -->
+            <div>
+                <% if (user) { %>
+                    <a href="/mi-cuenta">⚙️ Mi Cuenta</a>
+                <% } else { %>
+                    <a href="/iniciosesion">⚙️ Mi Cuenta</a>
+                <% } %>
+            </div>
+            <div>
+                <% if (user) { %>
+                    <a href="/mis-anuncios">📢 Mis Anuncios</a>
+                <% } else { %>
+                    <a href="/iniciosesion">📢 Mis Anuncios</a>
+                <% } %>
+            </div>
+            <div>
+                <% if (user) { %>
+                    <a href="/chats">💬 Mis Chats</a>
+                <% } else { %>
+                    <a href="/iniciosesion">💬 Mis Chats</a>
+                <% } %>
+            </div>
+    
+            <!-- Comprobación si el usuario es administrador -->
+            <% if (user && user.es_admin) { %>
+                <div>
+                    <a href="/gestion-anuncios">🛠️ Gestionar Anuncios</a>
+                </div>
+                <div>
+                    <a href="/soporte">🎧 Soporte</a>
+                </div>
+            <% } %>
+    
+            <a href="/terminos">📜 Términos y Condiciones</a>
+    
+            <% if (user) { %>
+                <a href="/logout">🚪 Cerrar Sesión</a>
+            <% } else { %>
+                <a href="/iniciosesion">🔑 Iniciar Sesión</a>
+            <% } %>
+    
+            <button onclick="toggleProfileMenu()">❌ Cerrar</button>
         </div>
-      </div>        
-  </header>
+    </div>
+    
+    </header>
   
   </head>                     

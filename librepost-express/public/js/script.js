@@ -96,6 +96,20 @@ function actualizarCuentaRegresiva(id, fechaExpiracion) {
                     .catch(error => console.error("❌ Error iniciando el chat:", error));
                 }
                 
+                // Muestra u oculta el menú de perfil
+                function toggleProfileMenu() {
+                    const menu = document.getElementById("profile-menu");
+                    menu.style.display = (menu.style.display === "block") ? "none" : "block";
+                }
                 
+                // Cierra el menú si se hace clic fuera de él
+                document.addEventListener("click", function(event) {
+                    const profileIcon = document.getElementById("profile-icon");
+                    const menu = document.getElementById("profile-menu");
+                    if (!profileIcon.contains(event.target) && !menu.contains(event.target)) {
+                        menu.style.display = "none";
+                    }
+                });
+                              
                 
                 
