@@ -37,41 +37,30 @@ const router = express.Router();
 const Chat = require("../database/models/chat.model");
 const Anuncio = require("../database/models/anuncio.model");
 
-// Ruta para iniciar una conversación
 router.post("/iniciar", async (req, res) => {
-    if (!req.session.user) {
-        return res.status(401).json({ success: false, message: "Debes iniciar sesión" });
-    }
-
     const { anuncioId, destinatario } = req.body;
-    const remitente = req.session.user.username;
+    const remitente = req.session.user.username; // Usuario autenticado
 
     try {
-        const anuncio = await Anuncio.findById(anuncioId);
-        if (!anuncio) {
-            return res.status(404).json({ success: false, message: "Anuncio no encontrado" });
+        let chatExistente = await Chat.findOne({
+            anuncioId,
+            remitente,
+            destinatario,
+        });
+
+        if (!chatExistente) {
+            console.log("🆕 Creando nuevo chat...");
+            chatExistente = new Chat({ anuncioId, remitente, destinatario, mensajes: [] });
+            await chatExistente.save();
         }
 
-        // Solo el autor del anuncio puede iniciar la conversación
-        if (anuncio.autor !== remitente) {
-            return res.status(403).json({ success: false, message: "No tienes permiso para iniciar esta conversación" });
-        }
-
-        // Verificar si ya existe una conversación entre estos dos usuarios
-        let chat = await Chat.findOne({ anuncioId, remitente, destinatario });
-
-        if (!chat) {
-            chat = new Chat({ anuncioId, remitente, destinatario, contenido: [] });
-            await chat.save();
-        }
-
-        res.json({ success: true, chatId: chat._id });
-
+        res.redirect(`/chat?anuncioId=${anuncioId}&usuario=${destinatario}`);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Error al iniciar la conversación." });
+        console.error("❌ Error iniciando chat:", error);
+        res.status(500).send("Error al iniciar chat");
     }
 });
+
 
 // Ruta para cargar el chat
 
@@ -81,20 +70,36 @@ router.get("/", async (req, res) => {
     }
 
     const username = req.session.user.username;
-    const { anuncioId, usuario } = req.query; // Obtener desde la URL
+    let { anuncioId, usuario } = req.query;
 
     try {
-        // Buscar conversaciones en la base de datos
+        const anuncio = await Anuncio.findById(anuncioId);
+
+        if (!anuncio) {
+            return res.status(404).send("Anuncio no encontrado");
+        }
+
+        let usuarioDestino = usuario;
+
+        if (username === anuncio.autor && !anuncio.inscritos.includes(usuario)) {
+            usuarioDestino = anuncio.inscritos.length > 0 ? anuncio.inscritos[0] : null;
+        }
+
+        if (!usuarioDestino) {
+            return res.status(400).send("No hay destinatario válido para este chat.");
+        }
+
+        // Buscar todas las conversaciones del usuario autenticado
         const conversaciones = await Chat.find({
             $or: [{ remitente: username }, { destinatario: username }]
-        });
+        }).lean();
 
         res.render("chat", { 
-            title: "Chat - LibrePost",  
-            conversaciones, // 🔹 Pasar conversaciones a la vista
+            title: "Chat - LibrePost",
             user: req.session.user,
-            anuncioId, // ✅ Ahora pasamos el anuncioId
-            usuarioDestino: usuario // ✅ Ahora pasamos el destinatario
+            anuncioId,
+            usuarioDestino,
+            conversaciones // 🔹 Ahora pasamos conversaciones correctamente
         });
 
     } catch (error) {
@@ -102,6 +107,8 @@ router.get("/", async (req, res) => {
         res.status(500).send("Error al cargar el chat.");
     }
 });
+
+
 
 
 // Ruta para obtener los mensajes de una conversación específica

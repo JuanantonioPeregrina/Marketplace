@@ -1,23 +1,40 @@
 const express = require('express');
 const Anuncio = require('../database/models/anuncio.model');
+const Chat = require('../database/models/chat.model'); // Importamos el modelo de Chat
 const router = express.Router();
 
 router.get("/", async (req, res) => {
     try {
         const anunciosDB = await Anuncio.find({});
-        
-        // Verificar que cada anuncio tiene un _id correcto
-        console.log("Anuncios desde BD:", anunciosDB);
+        const usuario = req.session.user ? req.session.user.username : null; // Usuario autenticado
 
-        const anunciosConDatos = anunciosDB.map(anuncio => ({
-            _id: anuncio._id.toString(), // Asegurar que el ID es un string
-            titulo: anuncio.titulo,
-            descripcion: anuncio.descripcion,
-            imagen: anuncio.imagen,
-            precio: anuncio.precio,
-            autor: anuncio.autor,
-            inscritos: anuncio.inscritos || [] // Verificar que `inscritos` siempre tenga un array
-        }));
+        let anunciosConDatos = [];
+
+        for (let anuncio of anunciosDB) {
+            let chatIniciado = false;
+
+            if (usuario && anuncio.inscritos.includes(usuario)) {
+                // Verificamos si existe un chat entre el anunciante y el usuario autenticado
+                chatIniciado = await Chat.exists({
+                    anuncioId: anuncio._id,
+                    $or: [
+                        { remitente: anuncio.autor, destinatario: usuario },
+                        { remitente: usuario, destinatario: anuncio.autor }
+                    ]
+                });
+            }
+
+            anunciosConDatos.push({
+                _id: anuncio._id.toString(),
+                titulo: anuncio.titulo,
+                descripcion: anuncio.descripcion,
+                imagen: anuncio.imagen,
+                precio: anuncio.precio,
+                autor: anuncio.autor,
+                inscritos: anuncio.inscritos || [],
+                chatIniciado, // Variable que indicará si el chat ya existe
+            });
+        }
 
         res.render("anuncios", { 
             title: "Anuncios - LibrePost", 
@@ -31,8 +48,4 @@ router.get("/", async (req, res) => {
     }
 });
 
-
-
-
 module.exports = router;
-

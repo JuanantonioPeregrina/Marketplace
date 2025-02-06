@@ -10,28 +10,38 @@
                 <h2 class="text-xl font-semibold mt-2"><%= anuncio.titulo %></h2>
                 <p class="text-gray-700"><%= anuncio.descripcion %></p>
                 <p class="text-green-600 font-bold mt-2">€<%= anuncio.precio %></p>
-                
+
                 <p class="text-sm text-gray-500 mt-2">Publicado por: <strong><%= anuncio.autor %></strong></p>
 
-                <!-- 🔹 ESTA LÍNEA SE AGREGA AQUÍ -->
-                <p class="text-sm text-red-500 mt-2" id="expira-<%= anuncio._id %>"></p>
-
-                <!-- 🔎 Debugging: Mostrar usuario autenticado y autor del anuncio -->
                 <p class="text-sm text-blue-500">Usuario autenticado: <%= user ? user.username : "No definido" %></p>
                 <p class="text-sm text-blue-500">Autor del anuncio: <%= anuncio.autor %></p>
 
-                <!-- Lista de inscritos con botón para iniciar conversación -->
+                <!-- 🔹 Mostrar el chat correctamente -->
+                <% if (user && user.username !== anuncio.autor && anuncio.inscritos.includes(user.username)) { %>
+                    <% if (anuncio.chatIniciado) { %>
+                        <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= anuncio.autor %>" 
+                            class="bg-green-500 text-white px-3 py-2 rounded-lg shadow-md block text-center mt-2">
+                            💬 Ir al chat
+                        </a>
+                    <% } else { %>
+                        <button class="bg-gray-400 text-white px-3 py-2 rounded-lg shadow-md opacity-50 cursor-not-allowed block text-center mt-2" disabled>
+                            ⏳ Esperando conversación
+                        </button>
+                    <% } %>
+                <% } %>
+
+               <!-- Lista de inscritos con bocadillo clickeable -->
                 <% if (user && user.username === anuncio.autor) { %>
                     <h4 class="text-md font-semibold mt-4">Usuarios inscritos:</h4>
                     <ul id="inscritos-<%= anuncio._id %>" class="mt-2 space-y-2">
                         <% if (anuncio.inscritos.length > 0) { %>
                             <% anuncio.inscritos.forEach(inscrito => { %>
                                 <li class="text-sm text-gray-700 flex justify-between items-center">
-                                    <span><%= inscrito %></span>
-                                    <button onclick="iniciarChat('<%= anuncio._id %>', '<%= inscrito %>')" 
-                                        class="bg-blue-500 text-white px-2 py-1 rounded text-xs border border-red-500 block">
-                                        💬 Comenzar conversación
-                                    </button>
+                                    <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= inscrito %>" 
+                                       class="text-blue-500 hover:underline flex items-center">
+                                        <span><%= inscrito %></span>
+                                        <span class="ml-2">💬</span> <!-- Bocadillo clickeable -->
+                                    </a>
                                 </li>
                             <% }); %>
                         <% } else { %>
@@ -46,4 +56,6 @@
 </main>
 
 <%- include("partials/footer") %>
+
+
 
