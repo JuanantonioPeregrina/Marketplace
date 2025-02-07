@@ -272,17 +272,20 @@ h2 {
 }
 
 /* Estilos del icono de perfil */
+
+
 .user-profile {
+    
+    margin-left:20px;
+    margin-right: 20px !important;
+    display: flex;
+    align-items: center;
     position: relative;
     cursor: pointer;
     width: 45px;
     height: 45px;
-    border-radius: 50%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
+
 
 .user-profile img {
     width: 100%;
