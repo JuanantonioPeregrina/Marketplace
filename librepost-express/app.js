@@ -160,9 +160,20 @@ app.use('/logout', (req,res) =>{
 });
 
 //Actualizar el nombre de usuario en la vista con el que ha iniciado sesión en vez de hardcodeado Invitado o el mismo nombre para todas las vistas.
-app.use((req, res, next) => {
+/*app.use((req, res, next) => {
   res.locals.user = req.session.user || { username: "Invitado" }; // Si no hay usuario, muestra "Invitado"
   next();              //user.username es el nombre del usuario que se logueó
+});
+*/
+app.use((req, res, next) => {
+  if (req.session.user) {
+      res.locals.user = req.session.user; // Pasa el usuario completo
+      res.locals.imagen_perfil = req.session.user.imagen_perfil || "/images/avatar.webp"; // Si no tiene imagen, usa una por defecto
+  } else {
+      res.locals.user = { username: "Invitado" };
+      res.locals.imagen_perfil = "/images/avatar.webp"; // Imagen por defecto para invitados
+  }
+  next();
 });
 
 
