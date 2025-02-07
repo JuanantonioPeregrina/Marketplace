@@ -85,7 +85,7 @@
         <!-- Menú desplegable del usuario -->
         <div class="profile-menu" id="profile-menu">
             <% if (user) { %>
-                <p class="username">👤 <%= user.nombre %></p>
+                <p class="username">👤  <strong><%= user.username %></strong></p>
             <% } else { %>
                 <p class="username">🚀 Invitado</p>
             <% } %>
