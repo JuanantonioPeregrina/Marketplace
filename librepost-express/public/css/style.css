@@ -299,15 +299,17 @@ h2 {
 .profile-menu {
     display: none;
     position: absolute;
-    right: 0;
-    top: 60px;
+    right: 0; /* Asegura que esté alineado con el icono */
+    top: 50px; /* Ajusta la distancia desde el icono */
     background: white;
     width: 220px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     padding: 10px;
     z-index: 1000;
+    margin-left: 0; /* Elimina el desplazamiento */
 }
+
 
 .profile-menu a, .profile-menu p {
     display: block;

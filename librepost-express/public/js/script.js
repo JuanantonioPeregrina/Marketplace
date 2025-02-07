@@ -99,7 +99,19 @@ function actualizarCuentaRegresiva(id, fechaExpiracion) {
                 // Muestra u oculta el menú de perfil
                 function toggleProfileMenu() {
                     const menu = document.getElementById("profile-menu");
-                    menu.style.display = (menu.style.display === "block") ? "none" : "block";
+                    const icon = document.getElementById("profile-icon");
+                
+                    // Alternar visibilidad
+                    if (menu.style.display === "block") {
+                        menu.style.display = "none";
+                    } else {
+                        // Calcular posición exacta debajo del icono
+                        const rect = icon.getBoundingClientRect();
+                        menu.style.top = `${rect.bottom + 8}px`;  // Ajusta la distancia vertical
+                        menu.style.left = `${rect.left}px`;  // Ajusta la alineación horizontal
+                
+                        menu.style.display = "block";
+                    }
                 }
                 
                 // Cierra el menú si se hace clic fuera de él
@@ -110,6 +122,7 @@ function actualizarCuentaRegresiva(id, fechaExpiracion) {
                         menu.style.display = "none";
                     }
                 });
+                
                               
                 
                 
