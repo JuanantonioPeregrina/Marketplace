@@ -95,21 +95,23 @@
                 <% if (user) { %>
                     <a href="/mi-cuenta">⚙️ Mi Cuenta</a>
                 <% } else { %>
-                    <a href="/iniciosesion">⚙️ Mi Cuenta</a>
+                    <a href="/login">⚙️ Mi Cuenta</a>
                 <% } %>
             </div>
             <div>
                 <% if (user) { %>
                     <a href="/mis-anuncios">📢 Mis Anuncios</a>
                 <% } else { %>
-                    <a href="/iniciosesion">📢 Mis Anuncios</a>
+                    <a href="/login">📢 Mis Anuncios</a>
                 <% } %>
             </div>
             <div>
                 <% if (user) { %>
                     <a href="/chats">💬 Mis Chats</a>
+                    <a href="/soporte">💬 Atención al cliente</a>
+
                 <% } else { %>
-                    <a href="/iniciosesion">💬 Mis Chats</a>
+                    <a href="/login">💬 Mis Chats</a>
                 <% } %>
             </div>
     
@@ -128,7 +130,7 @@
             <% if (user) { %>
                 <a href="/logout">🚪 Cerrar Sesión</a>
             <% } else { %>
-                <a href="/iniciosesion">🔑 Iniciar Sesión</a>
+                <a href="/login">🔑 Iniciar Sesión</a>
             <% } %>
     
             <button onclick="toggleProfileMenu()">❌ Cerrar</button>
