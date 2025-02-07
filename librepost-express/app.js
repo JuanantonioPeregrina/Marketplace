@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
-
+const cookieParser = require("cookie-parser");
 const session = require('express-session'); // Si usas sesiones
 
 //Incluimos socket.io con estas dos dependencias para actualización bidireccional
@@ -21,6 +21,8 @@ const inscribirseRouter = require("./routes/inscribirse");
 const chatRouter = require("./routes/chat");
 
 const Chat = require("./database/models/chat.model");
+const politicaCookiesRouter = require("./routes/politica-cookies");
+
 
 require("./database");
 
@@ -109,6 +111,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/css', express.static(path.join(__dirname, "public/css")));
 // Servir JavaScript desde 'public/js'
 app.use('/js', express.static(path.join(__dirname, "public/js")));
+app.use(cookieParser()); // Habilita el uso de cookies
 
 app.use(express.json()); // Para manejar JSON
 app.use(express.urlencoded({ extended: true })); // Para manejar datos del formulario
@@ -148,6 +151,7 @@ app.use('/anuncios', anunciosRouter);
 app.use("/registro", registerRouter);
 app.use("/inscribirse", inscribirseRouter);
 app.use("/chat", chatRouter);
+app.use("/politica-cookies", politicaCookiesRouter);
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)
 app.use('/logout', (req,res) =>{
