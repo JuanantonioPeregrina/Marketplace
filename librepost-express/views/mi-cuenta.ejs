@@ -1,0 +1,10 @@
+<h2>🔍 Historial de Productos Vistos</h2>
+<ul>
+    <% if (user.historialVisto && user.historialVisto.length > 0) { %>
+        <% user.historialVisto.forEach(function(producto) { %>
+            <li><a href="/anuncio/<%= producto %>">Producto ID: <%= producto %></a></li>
+        <% }) %>
+    <% } else { %>
+        <p>No has visto ningún producto recientemente.</p>
+    <% } %>
+</ul>
