@@ -1,31 +1,55 @@
 <%- include("partials/header") %>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.23.2/antd.min.css">
+<main class="container mx-auto max-w-3xl px-6 py-12 text-gray-900 font-sans">
+    <h1 class="text-5xl font-extrabold text-center text-gray-800 mb-8">
+        🍪 Política de Cookies
+    </h1>
 
-<main class="container mx-auto px-6 py-16 text-gray-900">
-    <h1 class="text-4xl font-bold text-center mb-6">Política de Cookies</h1>
-    <p class="text-lg text-gray-700">
-        En nuestro sitio web usamos cookies para mejorar la experiencia del usuario.
+    <p class="text-lg text-gray-700 text-center leading-relaxed">
+        En <span class="font-semibold text-blue-600">LibrePost</span>, utilizamos cookies para mejorar tu experiencia de navegación. Aquí te explicamos cómo funcionan y cómo puedes gestionarlas.
     </p>
 
-    <h2 class="text-2xl font-semibold mt-6">¿Qué son las cookies?</h2>
-    <p class="text-gray-700">
-        Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo para mejorar la navegación.
-    </p>
+    <!-- 🔹 ¿Qué son las Cookies? -->
+    <div class="bg-white shadow-lg rounded-xl p-6 mt-6 border-l-4 border-blue-500">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+            📌 ¿Qué son las Cookies?
+        </h2>
+        <p class="text-gray-700 mt-2 leading-relaxed">
+            Son pequeños archivos de texto que se almacenan en tu dispositivo para optimizar la navegación, recordar preferencias y personalizar contenido.
+        </p>
+    </div>
 
-    <h2 class="text-2xl font-semibold mt-6">Tipos de cookies que usamos</h2>
-    <ul class="list-disc pl-6 text-gray-700">
-        <li><strong>Cookies necesarias:</strong> Para el funcionamiento básico del sitio.</li>
-        <li><strong>Cookies de rendimiento:</strong> Para mejorar la experiencia de usuario.</li>
-        <li><strong>Cookies de marketing:</strong> Para publicidad personalizada.</li>
-    </ul>
+    <!-- 🔹 Tipos de Cookies -->
+    <div class="bg-white shadow-lg rounded-xl p-6 mt-6 border-l-4 border-green-500">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+            📂 Tipos de Cookies que Usamos
+        </h2>
+        <ul class="mt-3 text-gray-700 space-y-2">
+            <li class="flex items-center">
+                ✅ <span class="ml-2 font-semibold text-gray-800">Cookies necesarias:</span> Esenciales para el funcionamiento del sitio.
+            </li>
+            <li class="flex items-center">
+                ⚡ <span class="ml-2 font-semibold text-gray-800">Cookies de rendimiento:</span> Mejoran la velocidad y experiencia de navegación.
+            </li>
+            <li class="flex items-center">
+                🎯 <span class="ml-2 font-semibold text-gray-800">Cookies de marketing:</span> Personalizan la publicidad según tus intereses.
+            </li>
+        </ul>
+    </div>
 
-    <h2 class="text-2xl font-semibold mt-6">Configurar Cookies</h2>
-    <p class="text-gray-700">
-        Puedes cambiar tus preferencias en cualquier momento desde la configuración de tu navegador o haciendo clic en el botón de abajo.
-    </p>
+    <!-- 🔹 Configuración de Cookies -->
+    <div class="bg-white shadow-lg rounded-xl p-6 mt-6 border-l-4 border-yellow-500 text-center">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center justify-center">
+            ⚙️ Configuración de Cookies
+        </h2>
+        <p class="text-gray-700 mt-2 leading-relaxed">
+            Puedes cambiar tus preferencias en cualquier momento desde la configuración de tu navegador o usando el botón de abajo.
+        </p>
 
-    <button onclick="configurarCookies()" class="mt-4 bg-blue-500 text-white px-6 py-3 rounded-lg">
-        Configurar Cookies
-    </button>
+        <button onclick="configurarCookies()" class="mt-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+            Configurar Cookies
+        </button>
+    </div>
 </main>
 
 <%- include("partials/footer") %>
