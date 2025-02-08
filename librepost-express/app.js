@@ -24,6 +24,9 @@ const soporteRouter = require('./routes/soporte');
 
 const Chat = require("./database/models/chat.model");
 const politicaCookiesRouter = require("./routes/politica-cookies");
+const terminosRouter = require("./routes/terminos");
+
+
 
 
 require("./database");
@@ -156,6 +159,7 @@ app.use("/chat", chatRouter);
 app.use("/politica-cookies", politicaCookiesRouter);
 app.use("/faqs", faqsRouter);
 app.use('/soporte', soporteRouter);
+app.use("/terminos", terminosRouter);
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)
 app.use('/logout', (req,res) =>{
