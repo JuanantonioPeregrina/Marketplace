@@ -154,8 +154,15 @@ router.post("/", upload.single("dni_file"), async (req, res) => {
         console.log("✅ Usuario registrado y verificado:", username);
         res.redirect("/login"); // Redirigir al login tras el registro
     } catch (error) {
-        console.error("❌ Error en el registro:", error);
-        res.status(500).send("Error en el registro");
+       
+        if (error.code === 11000) {
+            res.status(400).send("Este email ya está registrado. Usa otro.");
+        } else {
+            console.error("❌ Error en el registro:", error);
+            res.status(500).send("Error en el registro.");
+        }
+        
+        
     }
 });
 
