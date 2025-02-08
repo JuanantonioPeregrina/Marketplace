@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
     imagen_perfil: { type: String, default: "/images/avatar.webp" }, // Campo para la imagen de perfil
     email: { type: String, unique: true, required: true }, // campo para email
     dni_path: { type: String, required: true }, //  ruta del DNI
-    
+    verificado: { type: Boolean, default: false } // Estado de verificación
 });
 
 // Middleware para hashear la contraseña antes de guardar
