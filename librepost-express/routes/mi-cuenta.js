@@ -3,25 +3,16 @@ const router = express.Router();
 const User = require('../database/models/user.model'); // Ajusta el path si es necesario
 
 // 📌 Ruta para la vista "Mi Cuenta"
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
     if (!req.session.user) {
-        req.session.error = "Debes iniciar sesión para acceder a tu cuenta.";
-        return res.redirect('/iniciosesion');
+        return res.redirect("/login"); // Redirigir si no hay usuario en sesión
     }
 
     try {
-        // Buscar el usuario en la base de datos usando el email
-        const usuario = await User.findOne({ email: req.session.user.email });
-
-        res.render('mi-cuenta', { 
-            title: 'Mi Cuenta', 
-            user: usuario || req.session.user, // Si no está en la BD, usa la sesión
-            imagen_perfil: usuario?.imagen_perfil || "/images/Fotoperfilpordefecto.png"
-        });
-
+        res.render("mi-cuenta", { title: "Mi cuenta", user: req.session.user });
     } catch (error) {
-        console.error("❌ Error al cargar la cuenta:", error);
-        res.status(500).send("Hubo un error al cargar tu cuenta.");
+        console.error("Error cargando la cuenta:", error);
+        res.status(500).send("Error al cargar la cuenta");
     }
 });
 
@@ -39,7 +30,7 @@ router.post('/update-image', async (req, res) => {
   
     try {
         // Obtener el usuario actual de la sesión
-        const usuario = await User.findOne({ email: req.session.user.email });
+        const usuario = await User.findOne({ email: req.session.user });
 
         if (usuario) {
             usuario.imagen_perfil = image;
