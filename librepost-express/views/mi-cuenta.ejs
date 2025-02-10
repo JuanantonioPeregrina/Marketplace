@@ -1,10 +1,31 @@
-<h2>🔍 Historial de Productos Vistos</h2>
-<ul>
-    <% if (user.historialVisto && user.historialVisto.length > 0) { %>
-        <% user.historialVisto.forEach(function(producto) { %>
-            <li><a href="/anuncio/<%= producto %>">Producto ID: <%= producto %></a></li>
-        <% }) %>
-    <% } else { %>
-        <p>No has visto ningún producto recientemente.</p>
-    <% } %>
-</ul>
+<%- include('partials/header') %>
+
+<link rel="stylesheet" href="/css/estiloperfildef.css">
+
+<div class="perfil-section">
+    <!-- Imagen de Perfil -->
+    <div class="image-upload">
+        <a href="/editar-perfil" class="perfil-link">
+            <img id="perfil-image" src="<%= user.imagen_perfil || '/images/Fotoperfilpordefecto.png' %>" 
+                 alt="Foto de perfil" class="perfil-pic">
+        </a>
+    </div>
+    
+    <!-- Nombre del Usuario -->
+    <div class="email">
+        <input type="text" id="nombre" value="<%= user.nombre %>" placeholder="Nombre completo" disabled>
+    </div>
+
+    <!-- Opciones del Usuario -->
+    <div class="options">
+        <button class="option" onclick="window.location.href='/rutinas'">Rutinas</button>
+        <button class="option" onclick="window.location.href='/favoritos'">Favoritos</button>
+        <button class="option" onclick="window.location.href='/publicar'">Añadir Post</button>
+        <button class="option" onclick="window.location.href='/terminos'">Términos y Condiciones</button>
+        <button class="option cerrar-sesion" onclick="window.location.href='/perfil/cerrar-sesion'">Cerrar Sesión</button>
+    </div>
+</div>
+
+<script src="/js/scriptPerfil.js"></script>
+
+<%- include('partials/footer') %>
