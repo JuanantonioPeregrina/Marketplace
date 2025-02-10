@@ -56,7 +56,7 @@ router.get('/cerrar-sesion', (req, res) => {
             console.error("❌ Error al cerrar sesión:", err);
             return res.status(500).send("Hubo un error al cerrar sesión.");
         }
-        res.redirect('/iniciosesion');
+        res.redirect('/login');
     });
 });
 

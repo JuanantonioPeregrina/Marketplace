@@ -22,6 +22,7 @@ const chatRouter = require("./routes/chat");
 const faqsRouter = require("./routes/faqs"); 
 const soporteRouter = require('./routes/soporte');
 const perfilRouter = require('./routes/mi-cuenta');
+const editarPerfilRouter = require('./routes/editar-perfil');
 
 const Chat = require("./database/models/chat.model");
 const politicaCookiesRouter = require("./routes/politica-cookies");
@@ -162,6 +163,7 @@ app.use("/faqs", faqsRouter);
 app.use('/soporte', soporteRouter);
 app.use("/terminos", terminosRouter);
 app.use("/mi-cuenta", perfilRouter);
+app.use("/editar-perfil", editarPerfilRouter);
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)
 app.use('/logout', (req,res) =>{

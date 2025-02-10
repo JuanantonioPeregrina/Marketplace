@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elegir Foto de Perfil</title>
+    <link rel="stylesheet" href="/css/editar-perfil.css">
+</head>
+<body>
+
+    <div class="popup-background">
+        <div class="popup">
+            
+            <!-- Botón de Cerrar (X) -->
+            <button class="close-button" onclick="cerrarPopup()">✖</button>
+
+            <h1>Selecciona tu foto de perfil</h1>
+
+            <div class="image-grid">
+                <img src="/images/opcion1.jpg" alt="Opción 1" class="image-option" onclick="changeImage('/images/opcion1.jpg')">
+                <img src="/images/opcion2.jpg" alt="Opción 2" class="image-option" onclick="changeImage('/images/opcion2.jpg')">
+                <img src="/images/opcion3.jpg" alt="Opción 3" class="image-option" onclick="changeImage('/images/opcion3.jpg')">
+                <img src="/images/opcion4.jpg" alt="Opción 4" class="image-option" onclick="changeImage('/images/opcion4.jpg')">
+            </div>
+
+            <!-- Subir Imagen Personalizada -->
+            <div class="upload-section">
+                <label for="file-input" class="custom-file-upload">📁 Subir Imagen</label>
+                <input type="file" id="file-input" accept="image/*" onchange="previewFile()">
+                <img id="preview-image" class="preview-image" style="display: none;">
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="buttons">
+                <button id="confirm-button" class="confirm-button" onclick="confirmSelection()" disabled>Confirmar cambios</button>
+                <button class="back-button" onclick="window.history.back()">Volver atrás</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let selectedImage = null;
+
+        // Función que maneja la selección de una imagen predefinida
+        function changeImage(imagePath) {
+            selectedImage = imagePath;
+            console.log(`Imagen seleccionada: ${selectedImage}`);
+
+            document.getElementById('confirm-button').disabled = false;
+        }
+
+        // Función para previsualizar una imagen personalizada
+        function previewFile() {
+            const file = document.getElementById('file-input').files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                selectedImage = event.target.result;
+                document.getElementById('preview-image').src = selectedImage;
+                document.getElementById('preview-image').style.display = "block";
+                document.getElementById('confirm-button').disabled = false;
+            };
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Función que maneja la confirmación de la selección
+        function confirmSelection() {
+            if (!selectedImage) {
+                alert("Por favor, selecciona o sube una imagen.");
+                return;
+            }
+
+            fetch('/perfil/update-image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: selectedImage })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/mi-cuenta';
+                } else {
+                    alert('Hubo un error al actualizar la imagen.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar la imagen.');
+            });
+        }
+
+        // Función para cerrar el popup
+        function cerrarPopup() {
+            window.history.back();
+        }
+    </script>
+
+</body>
+</html>
