@@ -120,6 +120,10 @@ app.use('/css', express.static(path.join(__dirname, "public/css")));
 app.use('/js', express.static(path.join(__dirname, "public/js")));
 app.use(cookieParser()); // Habilita el uso de cookies
 
+// 🔹 Aumenta el límite de tamaño de `body-parser` para evitar errores con imágenes grandes
+app.use(bodyParser.json({ limit: "50mb" }));  // 👈 Aumenta a 50MB
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true })); // 👈 También en formularios
+
 app.use(express.json()); // Para manejar JSON
 app.use(express.urlencoded({ extended: true })); // Para manejar datos del formulario
 app.use(session({ // Configuración de la sesión (Guardar datos de usuario en el servidor)
