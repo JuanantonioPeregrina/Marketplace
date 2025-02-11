@@ -27,14 +27,48 @@ router.get("/", (req, res) => {
 
 // 📌 Ruta para ver anuncios en una categoría específica
 router.get("/:categoria", async (req, res) => {
-    const categoria = req.params.categoria;
-    const datos = categoriasData[categoria];
+
+    const categoria = req.params.categoria; // Asegurar que existe
+    if (!categoria) {
+        return res.status(400).send("Categoría no especificada");
+    }
+
+    const normalizarTexto = (str) => str
+    .toLowerCase()
+    .normalize("NFD") // Elimina tildes y caracteres especiales<form action="/categorias/<%= encodeURIComponent(categoriaNombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')) %>" method="GET">
+
+    .replace(/[\u0300-\u036f]/g, "") // Quita acentos
+    .replace(/\s+/g, '-'); // Sustituye espacios por "-"
+
+const categoriaNormalizada = normalizarTexto(categoria);
+const datos = categoriasData[categoriaNormalizada];
+
+if (!datos) {
+    return res.status(404).send("Categoría no encontrada");
+}
 
     if (!datos) {
         return res.status(404).send("Categoría no encontrada");
     }
 
     try {
+
+        const filtros = { categoria: categoriaNormalizada };
+
+
+        if (req.query.presupuesto) {
+            if (req.query.presupuesto === "menos-100") filtros.precio = { $lt: 100 };
+            else if (req.query.presupuesto === "100-500") filtros.precio = { $gte: 100, $lte: 500 };
+            else if (req.query.presupuesto === "mas-500") filtros.precio = { $gt: 500 };
+        }
+
+        if (req.query.ubicacion) {
+            filtros.ubicacion = { $regex: req.query.ubicacion, $options: "i" };
+        }
+
+        if (req.query.reputacion) {
+            filtros.reputacion = parseInt(req.query.reputacion);
+        }
         // Recuperar anuncios de la base de datos
         const anuncios = await Anuncio.find({ categoria });
 

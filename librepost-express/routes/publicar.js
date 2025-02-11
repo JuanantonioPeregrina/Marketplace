@@ -31,9 +31,9 @@ router.post("/", upload.single("imagen"), async (req, res) => {  // ⬅️ Agreg
         return res.redirect("/login");
     }
 
-    const { titulo, descripcion, precio, categoria, fechaExpiracion } = req.body;
+    const { titulo, descripcion, precio, categoria, fechaExpiracion, ubicacion } = req.body;
 
-    if (!fechaExpiracion) {
+    if (!fechaExpiracion || !ubicacion) {
         console.log("❌ Error: `fechaExpiracion` no está en req.body");
         return res.status(400).send("Error: No se recibió la fecha de expiración.");
     }
@@ -52,6 +52,7 @@ router.post("/", upload.single("imagen"), async (req, res) => {  // ⬅️ Agreg
             precio,
             imagen,
             categoria,
+            ubicacion,
             fechaExpiracion: new Date(fechaExpiracion), // Convertir a Date
             autor,
             inscritos: []

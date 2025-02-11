@@ -47,6 +47,7 @@ router.get("/", async (req, res) => {
                 imagen: anuncio.imagen,
                 precio: anuncio.precio,
                 autor: anuncio.autor,
+                ubicacion: anuncio.ubicacion, // 📌 Mostrar la ubicación
                 inscritos: anuncio.inscritos || [],
                 chatIniciado,
             });
