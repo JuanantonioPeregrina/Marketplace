@@ -1,11 +1,37 @@
 
 <%- include("partials/header", {}) -%>
 
-<main class="container mx-auto px-6 py-16">
-    <h1 class="text-5xl font-bold text-center mb-14 text-gray-900 flex items-center justify-center">
+<main class="container mx-auto px-6 py-6">
+    <h1 class="text-5xl font-bold text-center mb-1 text-gray-900 flex items-center justify-center">
         🏷️ Anuncios Publicados
     </h1>
 
+<!-- 🔎 Filtros Mejorados -->
+<!-- 🔎 Filtros Mejorados -->
+<form action="/anuncios" method="GET" class="flex flex-wrap justify-center items-center gap-2 bg-gray-100 p-3 rounded-lg shadow-sm max-w-4xl mx-auto">
+        
+    <select name="presupuesto" class="form-select border px-2 py-1 rounded-md text-gray-700 w-40 text-sm">
+        <option value="">Presupuesto</option>
+        <option value="menos-100">Menos de 100€</option>
+        <option value="100-500">Entre 100€ y 500€</option>
+        <option value="mas-500">Más de 500€</option>
+    </select>
+
+    <input type="text" name="ubicacion" placeholder="Ubicación" 
+        class="border px-2 py-1 rounded-md text-gray-700 w-40 text-sm" />
+
+    <select name="reputacion" class="form-select border px-2 py-1 rounded-md text-gray-700 w-40 text-sm">
+        <option value="">Reputación</option>
+        <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
+        <option value="3-4">⭐⭐⭐ - ⭐⭐⭐⭐ (3 a 4 estrellas)</option>
+        <option value="menos-3">⭐ - ⭐⭐ (Menos de 3 estrellas)</option>
+    </select>
+
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-semibold shadow-md hover:bg-blue-600 transition">
+        🔍 Filtrar
+    </button>
+</form>
+    
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <% anuncios.forEach(anuncio => { %>
             <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full p-6">

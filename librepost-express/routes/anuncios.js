@@ -5,8 +5,25 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
     try {
-        const anunciosDB = await Anuncio.find({});
-        const usuario = req.session.user ? req.session.user.username : null; // Usuario autenticado
+        const usuario = req.session.user ? req.session.user.username : null; 
+        const filtros = {};
+
+        // Recoger filtros desde query params
+        if (req.query.presupuesto) {
+            if (req.query.presupuesto === "menos-100") filtros.precio = { $lt: 100 };
+            else if (req.query.presupuesto === "100-500") filtros.precio = { $gte: 100, $lte: 500 };
+            else if (req.query.presupuesto === "mas-500") filtros.precio = { $gt: 500 };
+        }
+
+        if (req.query.ubicacion) {
+            filtros.ubicacion = { $regex: req.query.ubicacion, $options: "i" };
+        }
+
+        if (req.query.reputacion) {
+            filtros.reputacion = parseInt(req.query.reputacion); // Convierte la reputación en número
+        }
+
+        const anunciosDB = await Anuncio.find(filtros);
 
         let anunciosConDatos = [];
 
@@ -14,7 +31,6 @@ router.get("/", async (req, res) => {
             let chatIniciado = false;
 
             if (usuario && anuncio.inscritos.includes(usuario)) {
-                // Verificamos si existe un chat entre el anunciante y el usuario autenticado
                 chatIniciado = await Chat.exists({
                     anuncioId: anuncio._id,
                     $or: [
@@ -32,7 +48,7 @@ router.get("/", async (req, res) => {
                 precio: anuncio.precio,
                 autor: anuncio.autor,
                 inscritos: anuncio.inscritos || [],
-                chatIniciado, // Variable que indicará si el chat ya existe
+                chatIniciado,
             });
         }
 
