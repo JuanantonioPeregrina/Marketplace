@@ -50,7 +50,15 @@ router.post('/', async (req, res) => {
         console.log("🔍 Contraseña correcta:", match); // DEBUG
 
         if (match) {
-            req.session.user = { username: foundUser.username };
+            // 🔹 Guardamos toda la información relevante en la sesión
+            req.session.user = {
+                _id: foundUser._id,
+                username: foundUser.username,
+                email: foundUser.email, // Asegurar que el email está presente
+                imagen_perfil: foundUser.imagen_perfil, // Almacenar imagen
+                nombre_real: foundUser.nombre_real, // Nombre real para mostrarlo correctamente
+            };
+
             req.session.message = "¡Login correcto!";
             return res.redirect('/restricted');
         } else {
@@ -65,4 +73,5 @@ router.post('/', async (req, res) => {
 });
 
 module.exports = router;
+
 
