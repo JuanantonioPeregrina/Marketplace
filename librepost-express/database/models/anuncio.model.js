@@ -13,5 +13,6 @@ const AnuncioSchema = new mongoose.Schema({
     fechaExpiracion: { type: Date, required: true } // Se calculará al crear el anuncio
 });
 
+
 const Anuncio = mongoose.model("Anuncio", AnuncioSchema);
 module.exports = Anuncio;

@@ -96,11 +96,64 @@
                                 <% } %>
                             </ul>
                         </div>
+
+                        <% if (user && (user.username === anuncio.autor || anuncio.inscritos.includes(user.username))) { %>
+                            <div class="mt-6 bg-gray-100 p-4 rounded-lg">
+                                <h4 class="text-lg font-semibold mb-3">📢 Dejar una Reseña</h4>
+                                
+                                <!-- Reseñar al autor del anuncio -->
+                                <% if (user.username !== anuncio.autor) { %>
+                                    <h5 class="text-md font-semibold">Valorar a <%= anuncio.autor %></h5>
+                                    <form action="/reseñas/<%= anuncio.autor %>/reseñar" method="POST" class="space-y-3">
+                                        <label for="puntuacion" class="block">Puntuación:</label>
+                                        <select name="puntuacion" required class="border p-2 w-full">
+                                            <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
+                                            <option value="4">⭐⭐⭐⭐ (4 estrellas)</option>
+                                            <option value="3">⭐⭐⭐ (3 estrellas)</option>
+                                            <option value="2">⭐⭐ (2 estrellas)</option>
+                                            <option value="1">⭐ (1 estrella)</option>
+                                        </select>
+                        
+                                        <label for="comentario" class="block">Comentario:</label>
+                                        <textarea name="comentario" required class="border p-2 w-full" placeholder="Escribe tu opinión aquí..."></textarea>
+                        
+                                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Enviar Reseña</button>
+                                    </form>
+                                <% } %>
+                        
+                                <!-- Reseñar a los inscritos -->
+                                <% if (user.username === anuncio.autor && anuncio.inscritos.length > 0) { %>
+                                    <h5 class="text-md font-semibold mt-4">Valorar a los inscritos</h5>
+                                    <% anuncio.inscritos.forEach(inscrito => { %>
+                                        <form action="/reseñas/<%= inscrito %>/reseñar" method="POST" class="space-y-3">
+                                            <label for="puntuacion">Valorar a los inscritos <%= inscrito %></label>
+                                            <select name="puntuacion" required class="border p-2 w-full rounded-md shadow-sm">
+                                                <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
+                                                <option value="4">⭐⭐⭐⭐ (4 estrellas)</option>
+                                                <option value="3">⭐⭐⭐ (3 estrellas)</option>
+                                                <option value="2">⭐⭐ (2 estrellas)</option>
+                                                <option value="1">⭐ (1 estrella)</option>
+                                            </select>
+                                        
+                                            <textarea name="comentario" placeholder="Deja un comentario..." required class="border p-2 w-full rounded-md shadow-sm"></textarea>
+                                        
+                                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 transition">
+                                                Enviar Reseña
+                                            </button>
+                                        </form>
+                                        
+                                    <% }) %>
+                                <% } %>
+                        
+                            </div>
+                        <% } %>
+                        
                     <% } %>
                 </div>
             </div>
         <% }); %>
     </div>
+
 </main>
 
 <%- include("partials/footer") %>

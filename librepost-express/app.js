@@ -27,6 +27,10 @@ const editarPerfilRouter = require('./routes/editar-perfil');
 const Chat = require("./database/models/chat.model");
 const politicaCookiesRouter = require("./routes/politica-cookies");
 const terminosRouter = require("./routes/terminos");
+const valoracionRouter = require('./routes/perfil');
+const reseñasRoutes = require('./routes/reseñas');
+
+
 
 
 
@@ -129,7 +133,8 @@ app.use(express.urlencoded({ extended: true })); // Para manejar datos del formu
 app.use(session({ // Configuración de la sesión (Guardar datos de usuario en el servidor)
   secret: "Una frase muy secreta",
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: { secure: false }
 }));
 app.use((req, res, next) => {
   const message = req.session.message; // Obtiene el mensaje de la sesión
@@ -151,6 +156,7 @@ app.use((req, res, next) => {
 
 
 //routes
+
 app.use('/', indexRouter);
 app.use('/login', loginRouter);
 
@@ -168,6 +174,8 @@ app.use('/soporte', soporteRouter);
 app.use("/terminos", terminosRouter);
 app.use("/mi-cuenta", perfilRouter);
 app.use("/editar-perfil", editarPerfilRouter);
+app.use('/perfil', valoracionRouter);
+app.use('/reseñas', reseñasRoutes);
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)
 app.use('/logout', (req,res) =>{
