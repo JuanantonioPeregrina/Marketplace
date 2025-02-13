@@ -37,32 +37,38 @@ router.post('/', async (req, res) => {
     try {
         const foundUser = await User.findOne({ username: user });
 
-        console.log("🔍 Usuario encontrado:", foundUser); // DEBUG
-
         if (!foundUser) {
-            console.log("❌ Usuario no encontrado");
+            console.log("❌ Usuario no encontrado:", user);
             req.session.error = "Usuario no encontrado.";
             return res.redirect('/login');
         }
 
+        console.log("🔍 Usuario encontrado en BD:", foundUser);
+        console.log("🔍 Contraseña ingresada:", pass);
+        console.log("🔍 Hash almacenado en BD:", foundUser.password);
+
+        if (!pass) {
+            console.log("❌ Error: La contraseña ingresada es undefined o vacía.");
+            req.session.error = "Debe ingresar una contraseña.";
+            return res.redirect("/login");
+        }
+
+        // 📌 Comparar la contraseña ingresada con el hash almacenado en BD
         const match = await bcrypt.compare(pass, foundUser.password);
 
-        console.log("🔍 Contraseña correcta:", match); // DEBUG
+        console.log("🔍 ¿Contraseña correcta?:", match);
 
         if (match) {
-            // 🔹 Guardamos toda la información relevante en la sesión
             req.session.user = {
-                _id: foundUser._id,
                 username: foundUser.username,
-                email: foundUser.email, // Asegurar que el email está presente
-                imagen_perfil: foundUser.imagen_perfil, // Almacenar imagen
-                nombre_real: foundUser.nombre_real, // Nombre real para mostrarlo correctamente
+                email: foundUser.email,
+                nombre_real: foundUser.nombre_real
             };
 
             req.session.message = "¡Login correcto!";
             return res.redirect('/restricted');
         } else {
-            console.log("❌ Contraseña incorrecta");
+            console.log("❌ Contraseña incorrecta para usuario:", foundUser.username);
             req.session.error = "Contraseña incorrecta.";
             return res.redirect('/login');
         }
@@ -73,5 +79,4 @@ router.post('/', async (req, res) => {
 });
 
 module.exports = router;
-
 
