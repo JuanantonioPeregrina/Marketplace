@@ -45,11 +45,10 @@ router.post('/cambiar-password', async (req, res) => {
             return res.status(400).json({ error: "Contraseña actual incorrecta" });
         }
 
-        // 🔄 Generar un nuevo hash para la nueva contraseña
-        const hashNuevaPassword = await bcrypt.hash(newPassword, 10);
-        usuario.password = hashNuevaPassword;
+        // 🚀 Guardar directamente la nueva contraseña en texto plano, el modelo la hasheará
+        usuario.password = newPassword; 
 
-        await usuario.save();
+        await usuario.save(); // El modelo se encarga de hashearla antes de guardarla
 
         res.redirect('/mi-cuenta');  // ✅ Redirigir a la cuenta del usuario tras cambiar la contraseña
     } catch (error) {
@@ -57,5 +56,6 @@ router.post('/cambiar-password', async (req, res) => {
         res.status(500).json({ error: "Error al cambiar la contraseña" });
     }
 });
+
 
 module.exports = router;
