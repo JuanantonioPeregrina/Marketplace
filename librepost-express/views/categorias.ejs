@@ -62,10 +62,11 @@
                             <% anuncio.inscritos.forEach(inscrito => { %>
                                 <li class="text-sm text-gray-700 flex justify-between items-center">
                                     <span><%= inscrito %></span>
-                                    <a href="/chat?anuncioId=67a48c7be763d18f4789795c&usuario=juan" 
-   class="bg-blue-500 text-white px-4 py-2 rounded-lg text-xs border border-blue-700 shadow-md hover:bg-blue-700 transition no-underline flex items-center">
-    💬 Comenzar conversación
-</a>
+                                    <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= inscrito %>" 
+                                        class="bg-blue-500 text-white px-4 py-2 rounded-lg text-xs border border-blue-700 shadow-md hover:bg-blue-700 transition no-underline flex items-center">
+                                         💬 Comenzar conversación
+                                     </a>
+                                     
 
                                 </li>
                             <% }); %>
