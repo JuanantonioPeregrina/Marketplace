@@ -44,15 +44,22 @@
                 <p class="text-xs text-gray-600">🔹 Autor del anuncio: <%= anuncio ? anuncio.autor : "No definido" %></p>
         
                 <!-- Botón de inscripción -->
-                <% if (user && user.username !== anuncio.autor) { %>
-                    <div class="text-center">
-                        <button onclick="inscribirse('<%= anuncio._id %>')" class="mt-3 px-4 py-2 bg-green-500 text-white rounded">
-                            Inscribirme
-                        </button>
-                    </div>
-                <% } else { %>
-                    <p class="text-gray-500">Eres el autor de este anuncio.</p>
-                <% } %>
+<% if (user && user.username !== anuncio.autor) { %>
+    <div class="text-center">
+        <% if (anuncio.inscritos.includes(user.username)) { %>
+            <button class="mt-3 px-4 py-2 bg-gray-500 text-white rounded cursor-not-allowed" disabled>
+                Inscrito
+            </button>
+        <% } else { %>
+            <button onclick="inscribirse('<%= anuncio._id %>')" class="mt-3 px-4 py-2 bg-green-500 text-white rounded">
+                Inscribirme
+            </button>
+        <% } %>
+    </div>
+<% } else { %>
+    <p class="text-gray-500">Eres el autor de este anuncio.</p>
+<% } %>
+
         
                 <!-- Lista de inscritos -->
                 <% if (user && user.username === anuncio.autor) { %>
