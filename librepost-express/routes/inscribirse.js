@@ -12,6 +12,7 @@ router.post("/:id", async (req, res) => {
 
     try {
         const anuncio = await Anuncio.findById(anuncioId);
+
         if (!anuncio) {
             return res.status(404).json({ message: "Anuncio no encontrado." });
         }
@@ -20,8 +21,13 @@ router.post("/:id", async (req, res) => {
             return res.status(400).json({ message: "Ya estás inscrito en este anuncio." });
         }
 
+        // ✅ SOLUCIÓN: Si la ubicación es undefined, asignamos un valor por defecto
+        if (!anuncio.ubicacion) {
+            anuncio.ubicacion = "No especificada";
+        }
+
         anuncio.inscritos.push(usuario);
-        await anuncio.save();
+        await anuncio.save(); // 💾 Ahora guardará sin error
 
         res.json({ message: "Inscripción exitosa", inscritos: anuncio.inscritos });
     } catch (error) {

@@ -42,6 +42,7 @@ function actualizarCuentaRegresiva(id, fechaExpiracion) {
                         if (data.message) {
                             alert(data.message);
                             actualizarListaInscritos(anuncioId, data.inscritos);
+                            location.reload(); // ✅ Recarga la página para actualizar el botón después de la inscripción
                         } else {
                             alert("Error al inscribirse. Intenta nuevamente.");
                         }

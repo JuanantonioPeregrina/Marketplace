@@ -149,6 +149,24 @@
                         <% } %>
                         
                     <% } %>
+                    <!-- Botón de inscripción -->
+<% if (user && user.username !== anuncio.autor) { %>
+    <div class="text-center mt-4">
+        <% if (anuncio.inscritos.includes(user.username)) { %>
+            <button class="px-4 py-2 bg-gray-500 text-white rounded cursor-not-allowed" disabled>
+                Inscrito
+            </button>
+        <% } else { %>
+            <button onclick="inscribirse('<%= anuncio._id %>')" class="px-4 py-2 bg-green-500 text-white rounded">
+                Inscribirme
+            </button>
+        <% } %>
+    </div>
+    <% } else if (user && user.username === anuncio.autor) { %>
+        <p class="text-gray-500 mt-2">Eres el autor de este anuncio.</p>
+    <% } %>
+    
+
                 </div>
             </div>
         <% }); %>

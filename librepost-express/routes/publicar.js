@@ -52,7 +52,7 @@ router.post("/", upload.single("imagen"), async (req, res) => {  // ⬅️ Agreg
             precio,
             imagen,
             categoria,
-            ubicacion,
+            ubicacion: ubicacion || "Sin especificar",
             fechaExpiracion: new Date(fechaExpiracion), // Convertir a Date
             autor,
             inscritos: []
