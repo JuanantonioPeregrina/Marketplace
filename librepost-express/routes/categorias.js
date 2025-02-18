@@ -1,5 +1,6 @@
 const express = require("express");
 const Anuncio = require("../database/models/anuncio.model"); // Importamos modelo
+const Chat = require("../database/models/chat.model"); // Importamos modelo de Chat
 
 const router = express.Router();
 
@@ -30,7 +31,7 @@ const normalizarTexto = (str) => str
     .toLowerCase()
     .normalize("NFD") // Elimina tildes y caracteres especiales
     .replace(/[\u0300-\u036f]/g, "") // Quita acentos
-    .replace(/\s+/g, "-"); // Sustituye espacios por "-"
+    .replace(/\s+/g, "-"); // Sustituye espacios por "-";
 
 // 📌 Ruta para ver anuncios en una categoría específica
 router.get("/:categoria", async (req, res) => {
@@ -38,7 +39,7 @@ router.get("/:categoria", async (req, res) => {
         // Decodificar y normalizar la categoría de la URL
         const categoriaRaw = decodeURIComponent(req.params.categoria);
         const categoriaNormalizada = normalizarTexto(categoriaRaw);
-        
+
         console.log("🔍 Buscando categoría:", categoriaNormalizada);
 
         // Buscar los datos de la categoría en el objeto categoriasData
@@ -49,9 +50,37 @@ router.get("/:categoria", async (req, res) => {
         }
 
         // 📌 Buscar anuncios en la base de datos con ambas versiones de la categoría
-        const anuncios = await Anuncio.find({ 
+        const anunciosDB = await Anuncio.find({ 
             categoria: { $in: [categoriaRaw, categoriaNormalizada] } 
         });
+
+        let anunciosConDatos = [];
+
+        for (let anuncio of anunciosDB) {
+            let chatIniciado = false;
+
+            if (req.session.user && anuncio.inscritos.includes(req.session.user.username)) {
+                chatIniciado = await Chat.exists({
+                    anuncioId: anuncio._id,
+                    $or: [
+                        { remitente: anuncio.autor, destinatario: req.session.user.username },
+                        { remitente: req.session.user.username, destinatario: anuncio.autor }
+                    ]
+                });
+            }
+
+            anunciosConDatos.push({
+                _id: anuncio._id.toString(),
+                titulo: anuncio.titulo,
+                descripcion: anuncio.descripcion,
+                imagen: anuncio.imagen,
+                precio: anuncio.precio,
+                autor: anuncio.autor,
+                ubicacion: anuncio.ubicacion,
+                inscritos: anuncio.inscritos || [],
+                chatIniciado, // Agregar chatIniciado para el botón de chat
+            });
+        }
 
         res.render("categorias", {
             title: `LibrePost - ${datos.nombre}`,
@@ -59,7 +88,7 @@ router.get("/:categoria", async (req, res) => {
             categoriaNombre: datos.nombre,
             descripcion: datos.descripcion,
             imagen: datos.imagen,
-            anuncios,
+            anuncios: anunciosConDatos, // Enviamos los anuncios con `chatIniciado`
             user: req.session.user || { username: "Invitado" }
         });
     } catch (error) {

@@ -60,6 +60,22 @@
     <p class="text-gray-500">Eres el autor de este anuncio.</p>
 <% } %>
 
+<!-- Botón de chat para inscritos -->
+<% if (user && user.username !== anuncio.autor && anuncio.inscritos.includes(user.username)) { %>
+    <div class="mt-4 flex justify-center">
+        <% if (anuncio.chatIniciado) { %>
+            <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= anuncio.autor %>" 
+                class="block text-center bg-blue-600 text-white no-underline px-5 py-3 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition w-full">
+                💬 Ir al chat
+            </a>
+        <% } else { %>
+            <button class="block text-center bg-gray-400 text-white px-5 py-3 rounded-lg opacity-70 cursor-not-allowed w-full">
+                ⏳ Esperando conversación
+            </button>
+        <% } %>
+    </div>
+<% } %>
+
         
                 <!-- Lista de inscritos -->
                 <% if (user && user.username === anuncio.autor) { %>
