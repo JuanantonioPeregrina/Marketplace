@@ -3,7 +3,7 @@ const Usuario = require('../database/models/user.model'); // Modelo de usuario
 const router = express.Router();
 
 // Ruta para enviar una reseña a un usuario
-router.post('/:usuario/reseñar', async (req, res) => {
+router.post('/:usuario', async (req, res) => { // 👈 Cambié la URL de ":usuario/resenas" a ":usuario"
     if (!req.session.user) {
         return res.status(401).send("Debes iniciar sesión para dejar una reseña.");
     }
@@ -20,7 +20,7 @@ router.post('/:usuario/reseñar', async (req, res) => {
         }
 
         // Crear la reseña
-        const nuevaReseña = {
+        const nuevaResena = { // 👈 Cambié a "resena" sin tilde
             autor,
             puntuacion: parseInt(puntuacion),
             comentario,
@@ -28,10 +28,10 @@ router.post('/:usuario/reseñar', async (req, res) => {
         };
 
         // Guardar en la BBDD dentro del usuario reseñado
-        usuarioReseñado.reseñas.push(nuevaReseña);
+        usuarioReseñado.reseñas.push(nuevaResena);
         await usuarioReseñado.save();
 
-        res.redirect(`/perfil?mensaje=Reseña enviada con éxito`);
+        res.redirect(`/anuncios?mensaje=Reseña enviada con éxito`);
     } catch (error) {
         console.error("Error al guardar la reseña:", error);
         res.status(500).send("Error al procesar la reseña.");

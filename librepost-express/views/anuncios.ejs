@@ -6,7 +6,7 @@
         🏷️ Anuncios Publicados
     </h1>
 
-<!-- 🔎 Filtros Mejorados -->
+
 <!-- 🔎 Filtros Mejorados -->
 <form action="/anuncios" method="GET" class="flex flex-wrap justify-center items-center gap-2 bg-gray-100 p-3 rounded-lg shadow-sm max-w-4xl mx-auto">
         
@@ -104,7 +104,7 @@
                                 <!-- Reseñar al autor del anuncio -->
                                 <% if (user.username !== anuncio.autor) { %>
                                     <h5 class="text-md font-semibold">Valorar a <%= anuncio.autor %></h5>
-                                    <form action="/reseñas/<%= anuncio.autor %>/reseñar" method="POST" class="space-y-3">
+                                    <form action="/resenas/<%= anuncio.autor %>/resenas" method="POST" class="space-y-3">
                                         <label for="puntuacion" class="block">Puntuación:</label>
                                         <select name="puntuacion" required class="border p-2 w-full">
                                             <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
@@ -125,7 +125,7 @@
                                 <% if (user.username === anuncio.autor && anuncio.inscritos.length > 0) { %>
                                     <h5 class="text-md font-semibold mt-4">Valorar a los inscritos</h5>
                                     <% anuncio.inscritos.forEach(inscrito => { %>
-                                        <form action="/reseñas/<%= inscrito %>/reseñar" method="POST" class="space-y-3">
+                                        <form action="/resenas/<%= inscrito %>" method="POST" class="space-y-3">
                                             <label for="puntuacion">Valorar a los inscritos <%= inscrito %></label>
                                             <select name="puntuacion" required class="border p-2 w-full rounded-md shadow-sm">
                                                 <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
