@@ -125,25 +125,31 @@
                                 <% if (user.username === anuncio.autor && anuncio.inscritos.length > 0) { %>
                                     <h5 class="text-md font-semibold mt-4">Valorar a los inscritos</h5>
                                     <% anuncio.inscritos.forEach(inscrito => { %>
-                                        <form action="/resenas/<%= inscrito %>" method="POST" class="space-y-3">
-                                            <label for="puntuacion">Valorar a los inscritos <%= inscrito %></label>
-                                            <select name="puntuacion" required class="border p-2 w-full rounded-md shadow-sm">
-                                                <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
-                                                <option value="4">⭐⭐⭐⭐ (4 estrellas)</option>
-                                                <option value="3">⭐⭐⭐ (3 estrellas)</option>
-                                                <option value="2">⭐⭐ (2 estrellas)</option>
-                                                <option value="1">⭐ (1 estrella)</option>
-                                            </select>
-                                        
-                                            <textarea name="comentario" placeholder="Deja un comentario..." required class="border p-2 w-full rounded-md shadow-sm"></textarea>
-                                        
-                                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 transition">
-                                                Enviar Reseña
-                                            </button>
-                                        </form>
-                                        
+                                        <% if (anuncio.inscritosConResenaPorAnuncio && anuncio.inscritosConResenaPorAnuncio[inscrito]) { %>
+                                            <p class="text-gray-500 text-sm">Ya has enviado una reseña a <%= inscrito %> en este anuncio.</p>
+                                        <% } else { %>
+                                            <form action="/resenas/<%= inscrito %>/<%= anuncio._id %>" method="POST" class="space-y-3">
+                                                <label for="puntuacion">Valorar a los inscritos <%= inscrito %></label>
+                                                <select name="puntuacion" required class="border p-2 w-full rounded-md shadow-sm">
+                                                    <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
+                                                    <option value="4">⭐⭐⭐⭐ (4 estrellas)</option>
+                                                    <option value="3">⭐⭐⭐ (3 estrellas)</option>
+                                                    <option value="2">⭐⭐ (2 estrellas)</option>
+                                                    <option value="1">⭐ (1 estrella)</option>
+                                                </select>
+                                                <textarea name="comentario" placeholder="Deja un comentario..." required class="border p-2 w-full rounded-md shadow-sm"></textarea>
+                                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 transition">
+                                                    Enviar Reseña
+                                                </button>
+                                            </form>
+                                        <% } %>
                                     <% }) %>
+                                    
                                 <% } %>
+                                
+                                
+                                
+                                
                         
                             </div>
                         <% } %>
@@ -173,5 +179,27 @@
     </div>
 
 </main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const mensaje = urlParams.get('mensaje');
+        const error = urlParams.get('error');
+
+        if (mensaje) {
+            alert(mensaje);
+        } else if (error) {
+            alert(error);
+        }
+
+        // 🔹 Elimina los parámetros de la URL sin recargar la página
+        if (mensaje || error) {
+            const newUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    });
+</script>
+
+
 
 <%- include("partials/footer") %>

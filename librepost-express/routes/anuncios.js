@@ -1,34 +1,19 @@
 const express = require('express');
 const Anuncio = require('../database/models/anuncio.model');
-const Chat = require('../database/models/chat.model'); // Importamos el modelo de Chat
+const Usuario = require('../database/models/user.model'); 
+const Chat = require('../database/models/chat.model'); 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
     try {
         const usuario = req.session.user ? req.session.user.username : null; 
-        const filtros = {};
-
-        // Recoger filtros desde query params
-        if (req.query.presupuesto) {
-            if (req.query.presupuesto === "menos-100") filtros.precio = { $lt: 100 };
-            else if (req.query.presupuesto === "100-500") filtros.precio = { $gte: 100, $lte: 500 };
-            else if (req.query.presupuesto === "mas-500") filtros.precio = { $gt: 500 };
-        }
-
-        if (req.query.ubicacion) {
-            filtros.ubicacion = { $regex: req.query.ubicacion, $options: "i" };
-        }
-
-        if (req.query.reputacion) {
-            filtros.reputacion = parseInt(req.query.reputacion); // Convierte la reputación en número
-        }
-
-        const anunciosDB = await Anuncio.find(filtros);
+        const anunciosDB = await Anuncio.find({});
 
         let anunciosConDatos = [];
 
         for (let anuncio of anunciosDB) {
             let chatIniciado = false;
+            let inscritosConResenaPorAnuncio = {}; 
 
             if (usuario && anuncio.inscritos.includes(usuario)) {
                 chatIniciado = await Chat.exists({
@@ -40,6 +25,15 @@ router.get("/", async (req, res) => {
                 });
             }
 
+            for (let inscrito of anuncio.inscritos) {
+                const usuarioResenado = await Usuario.findOne({ username: inscrito });
+
+                inscritosConResenaPorAnuncio[inscrito] = usuarioResenado 
+    ? usuarioResenado.reseñas.some(r => r.autor === usuario && r.anuncioId && r.anuncioId.toString() === anuncio._id.toString()) 
+    : false;
+
+            }
+
             anunciosConDatos.push({
                 _id: anuncio._id.toString(),
                 titulo: anuncio.titulo,
@@ -47,8 +41,9 @@ router.get("/", async (req, res) => {
                 imagen: anuncio.imagen,
                 precio: anuncio.precio,
                 autor: anuncio.autor,
-                ubicacion: anuncio.ubicacion, // 📌 Mostrar la ubicación
+                ubicacion: anuncio.ubicacion,
                 inscritos: anuncio.inscritos || [],
+                inscritosConResenaPorAnuncio, 
                 chatIniciado,
             });
         }
