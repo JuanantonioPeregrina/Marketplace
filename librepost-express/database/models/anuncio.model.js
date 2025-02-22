@@ -28,7 +28,8 @@ const AnuncioSchema = new mongoose.Schema({
         {
             usuario: String,
             cantidad: Number,
-            fecha: { type: Date, default: Date.now }
+            fecha: { type: Date, default: Date.now },
+            automatica: { type: Boolean, default: false }
         }
     ]
     });

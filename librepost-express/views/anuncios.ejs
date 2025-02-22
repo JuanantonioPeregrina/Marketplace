@@ -168,18 +168,24 @@
                     <p class="precio-actual">Precio actual: €<span id="precio-<%= anuncio._id %>"><%= anuncio.precioActual %></span></p>
                     <p class="temporizador">⏳ Tiempo restante: <span id="timer-<%= anuncio._id %>">5:00</span></p>
                     
-                    <!-- 🔹 Sección para mostrar las pujas en tiempo real -->
-<!-- 🔹 Sección para mostrar las pujas en tiempo real -->
+<!-- 🔹 Sección para mostrar TODAS las pujas en tiempo real -->
 <div id="pujas-<%= anuncio._id %>" class="mt-4 p-2 border border-gray-300 rounded-lg bg-gray-50">
     <h4 class="text-md font-semibold text-gray-700">📢 Pujas realizadas:</h4>
     <% if (anuncio.pujas && anuncio.pujas.length > 0) { %>
         <% anuncio.pujas.forEach(puja => { %>
-            <p class="text-gray-800"><strong><%= puja.usuario %></strong> ha pujado €<%= puja.cantidad %></p>
+            <p class="text-gray-800">
+                <strong><%= puja.usuario %></strong> ha pujado €<%= puja.cantidad %>
+                <% if (puja.automatica) { %>
+                    <span class="text-green-500">🤖 (Automática)</span>
+                <% } %>
+            </p>
         <% }); %>
     <% } else { %>
         <p class="text-gray-500">Aún no hay pujas.</p>
     <% } %>
 </div>
+
+
 
                     <% if (user) { %>
                         <button class="pujar-btn mt-4" data-anuncio-id="<%= anuncio._id %>">🔥 Pujar</button>
@@ -194,12 +200,18 @@
                     </form> -->
                     
                     <!-- Oferta automática -->
-                    <form action="/anuncios/oferta-automatica/<%= anuncio._id %>" method="POST">
+                    <form id="oferta-automatica-form-<%= anuncio._id %>">
                         <input type="number" name="precioMaximo" min="<%= anuncio.precioActual + 100 %>" required>
                         <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold">
                             🤖 Registrar Oferta Automática
                         </button>
                     </form>
+                    
+                    <!-- 🔥 Mensaje de éxito (inicialmente oculto) -->
+                    <div id="mensaje-oferta-automatica-<%= anuncio._id %>" class="hidden bg-blue-500 text-white p-2 rounded mt-2">
+                        ✅ Oferta automática registrada con éxito
+                    </div>
+                    
                     
                     
                     <!-- Botón de inscripción -->
@@ -231,33 +243,60 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const socket = io();
-
+    
+        // 📢 Interceptar formularios de oferta automática para evitar redirección
+        document.querySelectorAll('[id^="oferta-automatica-form-"]').forEach(form => {
+            form.addEventListener("submit", function (event) {
+                event.preventDefault(); // 🔥 Evita la redirección predeterminada
+                
+                const formData = new FormData(form);
+                const anuncioId = form.id.replace("oferta-automatica-form-", "");
+                const mensajeDiv = document.getElementById(`mensaje-oferta-automatica-${anuncioId}`);
+    
+                fetch(`/anuncios/oferta-automatica/${anuncioId}`, {
+                    method: "POST",
+                    body: new URLSearchParams(formData),
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.mensaje) {
+                        mensajeDiv.innerText = "✅ " + data.mensaje;
+                        mensajeDiv.classList.remove("hidden"); // 🔥 Muestra el mensaje
+                        setTimeout(() => mensajeDiv.classList.add("hidden"), 3000); // Oculta en 3s
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            });
+        });
+    
         // 📢 Evento cuando la subasta se actualiza
         socket.on("actualizar_subasta", (data) => {
-    console.log("📢 Actualización recibida:", data); // Debugging
-
-    const { anuncioId, precioActual, tiempoRestante } = data;
-    const precioElement = document.getElementById(`precio-${anuncioId}`);
-    const timerElement = document.getElementById(`timer-${anuncioId}`);
-
-    if (precioElement) precioElement.innerText = `€${precioActual}`;
-
-    if (timerElement) {
-        if (!isNaN(tiempoRestante) && tiempoRestante >= 0) { // Evita NaN
-            const minutos = Math.floor(tiempoRestante / 60);
-            const segundos = tiempoRestante % 60;
-            timerElement.innerText = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
-        } else {
-            timerElement.innerText = "00:00"; // Fallback en caso de error
-        }
-    }
-});
-
+            console.log("📢 Actualización recibida:", data);
+    
+            const { anuncioId, precioActual, tiempoRestante } = data;
+            const precioElement = document.getElementById(`precio-${anuncioId}`);
+            const timerElement = document.getElementById(`timer-${anuncioId}`);
+    
+            if (precioElement) precioElement.innerText = `€${precioActual}`;
+    
+            if (timerElement) {
+                if (!isNaN(tiempoRestante) && tiempoRestante >= 0) { 
+                    const minutos = Math.floor(tiempoRestante / 60);
+                    const segundos = tiempoRestante % 60;
+                    timerElement.innerText = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+                } else {
+                    timerElement.innerText = "00:00"; 
+                }
+            }
+        });
+    
         // 📢 Evento cuando la subasta finaliza
         socket.on("subasta_finalizada", (data) => {
             alert(`La subasta del anuncio ${data.anuncioId} ha finalizado con un precio de €${data.precioFinal}`);
         });
     });
-</script>
+    </script>
+    
 
 <%- include("partials/footer") %>
