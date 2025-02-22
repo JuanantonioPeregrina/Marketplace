@@ -33,61 +33,66 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
     const socket = io();
 
-    // 📢 Evento cuando la subasta se actualiza
-    socket.on("actualizar_subasta", (data) => {
-        console.log("📢 Actualización recibida:", data);
+    console.log("🔄 Cliente conectado a Socket.io");
+    console.log("🔍 Usuario detectado:", user);
 
-        const { anuncioId, precioActual, tiempoRestante } = data;
-        const precioElement = document.getElementById(`precio-${anuncioId}`);
-        const timerElement = document.getElementById(`timer-${anuncioId}`);
+    document.body.addEventListener("click", function (event) {
+        if (event.target.classList.contains("pujar-btn")) {
+            console.log("🔥 Click detectado en el botón de puja");
 
-        if (precioElement) precioElement.innerText = `€${precioActual}`;
-
-        if (timerElement) {
-            if (!Number.isFinite(tiempoRestante) || tiempoRestante < 0) {
-                console.error(`⚠️ tiempoRestante inválido para ${anuncioId}:`, tiempoRestante);
-                timerElement.innerText = "0:00"; // Si hay error, lo ponemos en 0
-            } else {
-                const minutos = Math.floor(tiempoRestante / 60);
-                const segundos = tiempoRestante % 60;
-                timerElement.innerText = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+            if (!user || user.username === "Invitado") {
+                alert("⚠️ Debes iniciar sesión para pujar.");
+                return;
             }
+
+            const anuncioId = event.target.getAttribute("data-anuncio-id");
+            const precioElement = document.getElementById(`precio-${anuncioId}`);
+            const precioActual = parseInt(precioElement.innerText.replace("€", "").trim());
+
+            const cantidadPuja = prompt("Introduce tu puja (€):", precioActual + 50);
+            if (!cantidadPuja || isNaN(cantidadPuja) || cantidadPuja <= precioActual) {
+                alert("⚠️ La puja debe ser mayor que el precio actual.");
+                return;
+            }
+
+            console.log(`⏳ Enviando puja: Usuario: ${user.username}, Cantidad: ${cantidadPuja}`);
+
+            socket.emit("puja_realizada", {
+                anuncioId: anuncioId,
+                usuario: user.username, 
+                cantidad: parseInt(cantidadPuja)
+            });
+
+            alert(`✅ Puja enviada con €${cantidadPuja}`);
+        }
+    });
+
+
+
+
+
+    // 📢 Evento cuando la subasta se actualiza
+    socket.on("actualizar_pujas", (data) => {
+        console.log("📢 Nueva puja registrada:", data);
+
+        const { anuncioId, usuario, cantidad, precioActual, pujas } = data;
+        const pujasContainer = document.getElementById(`pujas-${anuncioId}`);
+        const precioElement = document.getElementById(`precio-${anuncioId}`);
+
+        if (pujasContainer) {
+            pujasContainer.innerHTML = "<h4 class='text-md font-semibold text-gray-700'>📢 Pujas realizadas:</h4>";
+            pujas.forEach(puja => {
+                pujasContainer.innerHTML += `<p class="text-gray-800"><strong>${puja.usuario}</strong> ha pujado €${puja.cantidad}</p>`;
+            });
+        }
+
+        if (precioElement) {
+            precioElement.innerText = `€${precioActual}`;
         }
     });
 
     // 📢 Evento cuando la subasta finaliza
     socket.on("subasta_finalizada", (data) => {
         alert(`La subasta del anuncio ${data.anuncioId} ha finalizado con un precio de €${data.precioFinal}`);
-    });
-
-    // 📢 Evento cuando alguien puja
-    socket.on("actualizar_pujas", (data) => {
-        const pujasContainer = document.getElementById(`pujas-${data.anuncioId}`);
-        if (pujasContainer) {
-            pujasContainer.innerHTML += `<p>${data.usuario} ha pujado €${data.cantidad}</p>`;
-        }
-    });
-
-    // 🔹 Botón para hacer una puja
-    document.querySelectorAll(".pujar-btn").forEach((button) => {
-        button.addEventListener("click", (event) => {
-            const anuncioId = event.target.getAttribute("data-anuncio-id");
-            const precioActual = document.getElementById(`precio-${anuncioId}`).innerText.replace("€", "").trim();
-
-            if (!user || !user.username) {
-                alert("Debes iniciar sesión para pujar.");
-                return;
-            }
-
-            console.log(`⏳ Enviando puja: Usuario: ${user.username}, Cantidad: ${precioActual}`);
-
-            socket.emit("puja_realizada", {
-                anuncioId: anuncioId,
-                usuario: user.username, 
-                cantidad: parseInt(precioActual)
-            });
-
-            alert(`Puja enviada con €${precioActual}`);
-        });
     });
 });

@@ -29,7 +29,8 @@ const politicaCookiesRouter = require("./routes/politica-cookies");
 const terminosRouter = require("./routes/terminos");
 const valoracionRouter = require('./routes/perfil');
 const resenasRoutes = require('./routes/resenas');
-const { iniciarVerificacionSubastas } = require('./routes/subasta'); // ✅ Nombre correcto
+const { iniciarVerificacionSubastas } = require('./routes/subasta'); 
+const { registrarPuja } = require("./routes/subasta");
 
 
 
@@ -52,6 +53,18 @@ iniciarVerificacionSubastas(io);  // ✅ Ahora sí existe
 // Escuchar eventos de conexión de los clientes
 io.on("connection", (socket) => {
   console.log("Nuevo cliente conectado.");
+
+  socket.on("puja_realizada", async (data) => {
+    console.log("📥 Puja recibida en el servidor:", data);
+
+    const { anuncioId, usuario, cantidad } = data;
+    if (!anuncioId || !usuario || !cantidad) {
+        console.error("❌ Datos de puja incompletos.");
+        return;
+    }
+
+    await registrarPuja(io, anuncioId, usuario, cantidad);
+});
 
   socket.on("unirse-chat", (anuncioId) => {
       socket.join(anuncioId);
@@ -107,11 +120,6 @@ io.on("connection", (socket) => {
       console.log("Cliente desconectado.");
   });
 });
-
-
-
-
-
 
 // Definir el puerto ya no hace falta porque se encarga /bin/www
 //const PORT = 3000;

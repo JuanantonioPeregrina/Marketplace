@@ -75,12 +75,16 @@ function iniciarVerificacionSubastas(io) {
     }, 60000);
 }
 
-// ✅ Registrar pujas y mostrar al usuario en la lista de pujas
-async function registrarPuja(io, anuncioId, usuario, cantidad) {
-    const anuncio = await Anuncio.findById(anuncioId);
-    if (!anuncio || anuncio.estadoSubasta !== "activa") return;
+//  Registrar pujas y mostrar al usuario en la lista de pujas
 
-    console.log(`💰 ${usuario} ha pujado €${cantidad}`);
+async function registrarPuja(io, anuncioId, usuario, cantidad) {
+    console.log(`💰 Registrando puja en BD: ${usuario} ha pujado €${cantidad} en el anuncio ${anuncioId}`);
+
+    const anuncio = await Anuncio.findById(anuncioId);
+    if (!anuncio || anuncio.estadoSubasta !== "activa") {
+        console.error("❌ No se encontró el anuncio o la subasta no está activa.");
+        return;
+    }
 
     if (!anuncio.pujas) anuncio.pujas = [];
     anuncio.pujas.push({ usuario, cantidad });
@@ -90,8 +94,17 @@ async function registrarPuja(io, anuncioId, usuario, cantidad) {
     }
 
     await anuncio.save();
+    console.log("✅ Puja guardada correctamente en BD.");
 
-    io.emit("actualizar_pujas", { anuncioId, usuario, cantidad, precioActual: anuncio.precioActual });
+    io.emit("actualizar_pujas", { 
+        anuncioId, 
+        usuario, 
+        cantidad, 
+        precioActual: anuncio.precioActual,
+        pujas: anuncio.pujas 
+    });
 }
+
+
 
 module.exports = { iniciarProcesoSubasta, iniciarVerificacionSubastas, registrarPuja };

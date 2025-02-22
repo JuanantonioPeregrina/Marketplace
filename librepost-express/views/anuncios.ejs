@@ -1,5 +1,12 @@
 
 <%- include("partials/header", {}) -%>
+<script>
+    var user = JSON.parse('<%- JSON.stringify(user || {}) %>');
+    console.log("Usuario cargado en cliente:", user);
+</script>
+
+
+
 <script src="/js/subasta.js"></script>
 <link rel="stylesheet" href="/css/styleA.css">
 
