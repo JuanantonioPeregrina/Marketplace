@@ -194,10 +194,13 @@
                     </form> -->
                     
                     <!-- Oferta automática -->
-                    <form action="/oferta-automatica/<%= anuncio._id %>" method="POST">
-                        <input type="number" name="precioMaximo" required>
-                        <button class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold">🤖 Registrar Oferta Automática</button>
+                    <form action="/anuncios/oferta-automatica/<%= anuncio._id %>" method="POST">
+                        <input type="number" name="precioMaximo" min="<%= anuncio.precioActual + 100 %>" required>
+                        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold">
+                            🤖 Registrar Oferta Automática
+                        </button>
                     </form>
+                    
                     
                     <!-- Botón de inscripción -->
 <% if (user && user.username !== anuncio.autor) { %>

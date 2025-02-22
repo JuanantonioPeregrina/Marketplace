@@ -7,7 +7,7 @@ const mongoose = require("mongoose");
 module.exports = (io) => {
     const router = express.Router();
 
-    // ✅ Cargar los anuncios incluyendo las pujas
+    // ✅ Cargar los anuncios incluyendo las pujas y ofertas automáticas
     router.get("/", async (req, res) => {
         try {
             const usuario = req.session.user ? req.session.user.username : null;
@@ -26,7 +26,8 @@ module.exports = (io) => {
                 estadoSubasta: anuncio.estadoSubasta,
                 fechaInicioSubasta: anuncio.fechaInicioSubasta,
                 fechaExpiracion: anuncio.fechaExpiracion,
-                pujas: anuncio.pujas || [] // 🔹 Asegurar que enviamos las pujas al frontend
+                pujas: anuncio.pujas || [],
+                ofertasAutomaticas: anuncio.ofertasAutomaticas || [] // 🔹 Incluir las ofertas automáticas
             }));
 
             res.render("anuncios", {
@@ -41,46 +42,42 @@ module.exports = (io) => {
         }
     });
 
-    // ✅ Iniciar subasta
-    router.post("/iniciar-subasta/:id", async (req, res) => {
+    // ✅ Ruta para registrar oferta automática
+    router.post("/oferta-automatica/:id", async (req, res) => {
         try {
-            const anuncio = await Anuncio.findById(req.params.id);
-
-            if (!anuncio || anuncio.estadoSubasta !== "pendiente") {
-                return res.status(400).json({ error: "La subasta no está en estado pendiente" });
+            const { user } = req.session;
+            if (!user) {
+                return res.status(403).json({ error: "Debe estar autenticado para registrar una oferta automática." });
             }
 
-            anuncio.estadoSubasta = "activa";
-            anuncio.fechaInicioSubasta = new Date();
+            const { precioMaximo } = req.body;
+            if (!precioMaximo || isNaN(precioMaximo) || precioMaximo <= 0) {
+                return res.status(400).json({ error: "Debe ingresar un precio máximo válido." });
+            }
+
+            const anuncio = await Anuncio.findById(req.params.id);
+            if (!anuncio || anuncio.estadoSubasta !== "activa") {
+                return res.status(400).json({ error: "La subasta no está activa." });
+            }
+
+            // 🔹 Registrar la oferta automática en el array
+            anuncio.ofertasAutomaticas.push({
+                usuario: user.username,
+                precioMaximo: parseInt(precioMaximo),
+                fecha: new Date()
+            });
+
             await anuncio.save();
 
-            let precioActual = anuncio.precioInicial;
-            let tiempoRestante = 60;
-
-            const interval = setInterval(async () => {
-                if (precioActual <= 100 || tiempoRestante <= 0) {
-                    clearInterval(interval);
-                    io.emit("subasta_finalizada", { anuncioId: req.params.id, precioFinal: precioActual });
-                    return;
-                }
-
-                precioActual -= 50;
-                tiempoRestante -= 10;
-
-                await Anuncio.updateOne({ _id: req.params.id }, { precioActual });
-
-                io.emit("actualizar_subasta", { anuncioId: req.params.id, precioActual, tiempoRestante });
-            }, 10000);
-
-            res.json({ mensaje: "Subasta iniciada con éxito", anuncio });
+            res.json({ mensaje: "Oferta automática registrada con éxito", anuncio });
 
         } catch (error) {
-            console.error("Error iniciando la subasta:", error);
-            res.status(500).json({ error: "Error iniciando la subasta" });
+            console.error("Error en la oferta automática:", error);
+            res.status(500).json({ error: "Error al registrar la oferta automática." });
         }
     });
 
-    // ✅ Realizar puja y guardar en la base de datos
+    // ✅ Modificar la lógica de pujas para aplicar oferta automática
     router.post("/pujar/:id", async (req, res) => {
         try {
             const { user } = req.session;
@@ -89,28 +86,44 @@ module.exports = (io) => {
             }
 
             const anuncio = await Anuncio.findById(req.params.id);
-
             if (!anuncio || anuncio.estadoSubasta !== "activa") {
                 return res.status(400).json({ error: "La subasta no está activa." });
             }
 
-            // 🔹 Registrar la puja en el array de pujas
+            let precioActual = anuncio.precioActual;
+            let mejorOferta = null;
+
+            // 🔹 Buscar la mejor oferta automática disponible
+            if (anuncio.ofertasAutomaticas.length > 0) {
+                mejorOferta = anuncio.ofertasAutomaticas
+                    .filter(oferta => oferta.precioMaximo > precioActual) // Solo las que superan el precio actual
+                    .sort((a, b) => b.precioMaximo - a.precioMaximo)[0]; // La mejor oferta automática
+            }
+
+            if (mejorOferta) {
+                precioActual = Math.min(mejorOferta.precioMaximo, precioActual + 100); // Incremento de 100 hasta el límite
+                anuncio.ultimoPujador = mejorOferta.usuario;
+            } else {
+                anuncio.ultimoPujador = user.username;
+            }
+
+            // 🔹 Guardar la puja en la base de datos
             const nuevaPuja = {
-                usuario: user.username,
-                cantidad: anuncio.precioActual, // Usa el precio actual al hacer la puja
+                usuario: anuncio.ultimoPujador,
+                cantidad: precioActual,
                 fecha: new Date()
             };
 
             anuncio.pujas.push(nuevaPuja);
-            anuncio.ultimoPujador = user.username;
+            anuncio.precioActual = precioActual;
             await anuncio.save();
 
             // 🔹 Emitir evento para actualizar el frontend
-            io.emit("actualizar_pujas", { 
-                anuncioId: req.params.id, 
-                usuario: user.username, 
-                cantidad: anuncio.precioActual, 
-                pujas: anuncio.pujas 
+            io.emit("actualizar_pujas", {
+                anuncioId: req.params.id,
+                usuario: anuncio.ultimoPujador,
+                cantidad: anuncio.precioActual,
+                pujas: anuncio.pujas
             });
 
             res.json({ mensaje: "Puja realizada con éxito", anuncio });

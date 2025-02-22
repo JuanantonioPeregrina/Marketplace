@@ -16,10 +16,14 @@ const AnuncioSchema = new mongoose.Schema({
     estadoSubasta: { type: String, enum: ["pendiente", "activa", "finalizada"], default: "pendiente" },
     
     // 🔹 Nueva propiedad para ofertas automáticas
-    ofertasAutomaticas: {
-        type: [{ usuario: String, precioMaximo: Number }],
-        default: []
-    },
+    ofertasAutomaticas: [
+        {
+            usuario: String,
+            precioMaximo: Number,
+            fecha: Date
+        }
+    ],
+    
     pujas: [
         {
             usuario: String,
