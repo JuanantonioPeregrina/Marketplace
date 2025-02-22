@@ -72,23 +72,24 @@ document.addEventListener("DOMContentLoaded", function () {
     // 📢 Evento cuando la subasta se actualiza
     socket.on("actualizar_pujas", (data) => {
         console.log("📢 Nueva puja registrada:", data);
-
+    
         const { anuncioId, usuario, cantidad, precioActual, pujas } = data;
         const pujasContainer = document.getElementById(`pujas-${anuncioId}`);
         const precioElement = document.getElementById(`precio-${anuncioId}`);
-
+    
         if (pujasContainer) {
+            // Limpiar la lista de pujas y volver a renderizar todas las pujas
             pujasContainer.innerHTML = "<h4 class='text-md font-semibold text-gray-700'>📢 Pujas realizadas:</h4>";
             pujas.forEach(puja => {
                 pujasContainer.innerHTML += `<p class="text-gray-800"><strong>${puja.usuario}</strong> ha pujado €${puja.cantidad}</p>`;
             });
         }
-
+    
         if (precioElement) {
             precioElement.innerText = `€${precioActual}`;
         }
     });
-
+    
     // 📢 Evento cuando la subasta finaliza
     socket.on("subasta_finalizada", (data) => {
         alert(`La subasta del anuncio ${data.anuncioId} ha finalizado con un precio de €${data.precioFinal}`);

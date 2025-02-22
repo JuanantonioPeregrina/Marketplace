@@ -19,8 +19,16 @@ const AnuncioSchema = new mongoose.Schema({
     ofertasAutomaticas: {
         type: [{ usuario: String, precioMaximo: Number }],
         default: []
-    }
-});
+    },
+    pujas: [
+        {
+            usuario: String,
+            cantidad: Number,
+            fecha: { type: Date, default: Date.now }
+        }
+    ]
+    });
+
 
 const Anuncio = mongoose.model("Anuncio", AnuncioSchema);
 module.exports = Anuncio;

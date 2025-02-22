@@ -4,10 +4,10 @@ const Usuario = require('../database/models/user.model');
 const Chat = require('../database/models/chat.model');
 const mongoose = require("mongoose");
 
-
 module.exports = (io) => {
     const router = express.Router();
 
+    // ✅ Cargar los anuncios incluyendo las pujas
     router.get("/", async (req, res) => {
         try {
             const usuario = req.session.user ? req.session.user.username : null;
@@ -25,7 +25,8 @@ module.exports = (io) => {
                 inscritos: anuncio.inscritos || [],
                 estadoSubasta: anuncio.estadoSubasta,
                 fechaInicioSubasta: anuncio.fechaInicioSubasta,
-                fechaExpiracion: anuncio.fechaExpiracion
+                fechaExpiracion: anuncio.fechaExpiracion,
+                pujas: anuncio.pujas || [] // 🔹 Asegurar que enviamos las pujas al frontend
             }));
 
             res.render("anuncios", {
@@ -40,6 +41,7 @@ module.exports = (io) => {
         }
     });
 
+    // ✅ Iniciar subasta
     router.post("/iniciar-subasta/:id", async (req, res) => {
         try {
             const anuncio = await Anuncio.findById(req.params.id);
@@ -78,6 +80,7 @@ module.exports = (io) => {
         }
     });
 
+    // ✅ Realizar puja y guardar en la base de datos
     router.post("/pujar/:id", async (req, res) => {
         try {
             const { user } = req.session;
@@ -91,11 +94,24 @@ module.exports = (io) => {
                 return res.status(400).json({ error: "La subasta no está activa." });
             }
 
-            anuncio.estadoSubasta = "finalizada";
+            // 🔹 Registrar la puja en el array de pujas
+            const nuevaPuja = {
+                usuario: user.username,
+                cantidad: anuncio.precioActual, // Usa el precio actual al hacer la puja
+                fecha: new Date()
+            };
+
+            anuncio.pujas.push(nuevaPuja);
             anuncio.ultimoPujador = user.username;
             await anuncio.save();
 
-            io.emit("subasta_finalizada", { anuncioId: req.params.id, ganador: user.username, precioFinal: anuncio.precioActual });
+            // 🔹 Emitir evento para actualizar el frontend
+            io.emit("actualizar_pujas", { 
+                anuncioId: req.params.id, 
+                usuario: user.username, 
+                cantidad: anuncio.precioActual, 
+                pujas: anuncio.pujas 
+            });
 
             res.json({ mensaje: "Puja realizada con éxito", anuncio });
 

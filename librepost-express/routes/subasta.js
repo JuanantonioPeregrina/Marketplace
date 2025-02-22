@@ -86,22 +86,31 @@ async function registrarPuja(io, anuncioId, usuario, cantidad) {
         return;
     }
 
+    // ✅ Asegurar que el array de pujas existe
     if (!anuncio.pujas) anuncio.pujas = [];
+
+    // 📌 Agregar la puja al array
     anuncio.pujas.push({ usuario, cantidad });
 
+    // 📌 Si la puja es mayor que el precio actual, actualizarlo
     if (cantidad > anuncio.precioActual) {
         anuncio.precioActual = cantidad;
     }
 
-    await anuncio.save();
-    console.log("✅ Puja guardada correctamente en BD.");
+    try {
+        await anuncio.save(); // 💾 Guardar en la base de datos
+        console.log("✅ Puja guardada correctamente en BD:", anuncio.pujas);
+    } catch (error) {
+        console.error("❌ Error al guardar la puja en MongoDB:", error);
+    }
 
+    // 📢 Notificar a todos los clientes que la puja ha sido actualizada
     io.emit("actualizar_pujas", { 
         anuncioId, 
         usuario, 
         cantidad, 
         precioActual: anuncio.precioActual,
-        pujas: anuncio.pujas 
+        pujas: anuncio.pujas // Enviar todas las pujas actualizadas
     });
 }
 
