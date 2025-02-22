@@ -39,37 +39,35 @@ document.addEventListener("DOMContentLoaded", function () {
     document.body.addEventListener("click", function (event) {
         if (event.target.classList.contains("pujar-btn")) {
             console.log("🔥 Click detectado en el botón de puja");
-
-            if (!user || user.username === "Invitado") {
+    
+            const anuncioId = event.target.getAttribute("data-anuncio-id");
+            const precioElement = document.getElementById(`precio-${anuncioId}`);
+            
+            if (!precioElement) {
+                console.error("❌ No se encontró el elemento del precio.");
+                return;
+            }
+    
+            const precioActual = parseInt(precioElement.innerText.replace("€", "").trim());
+    
+            if (!user || !user.username) {
                 alert("⚠️ Debes iniciar sesión para pujar.");
                 return;
             }
-
-            const anuncioId = event.target.getAttribute("data-anuncio-id");
-            const precioElement = document.getElementById(`precio-${anuncioId}`);
-            const precioActual = parseInt(precioElement.innerText.replace("€", "").trim());
-
-            const cantidadPuja = prompt("Introduce tu puja (€):", precioActual + 50);
-            if (!cantidadPuja || isNaN(cantidadPuja) || cantidadPuja <= precioActual) {
-                alert("⚠️ La puja debe ser mayor que el precio actual.");
-                return;
-            }
-
-            console.log(`⏳ Enviando puja: Usuario: ${user.username}, Cantidad: ${cantidadPuja}`);
-
+    
+            console.log(`⏳ Enviando puja: Usuario: ${user.username}, Cantidad: ${precioActual}`);
+    
+            // Emitir evento al servidor con el precio actual como cantidad
             socket.emit("puja_realizada", {
                 anuncioId: anuncioId,
-                usuario: user.username, 
-                cantidad: parseInt(cantidadPuja)
+                usuario: user.username,
+                cantidad: precioActual
             });
-
-            alert(`✅ Puja enviada con €${cantidadPuja}`);
+    
+            alert(`✅ Puja enviada con €${precioActual}`);
         }
     });
-
-
-
-
+    
 
     // 📢 Evento cuando la subasta se actualiza
     socket.on("actualizar_pujas", (data) => {
