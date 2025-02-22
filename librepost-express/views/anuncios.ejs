@@ -1,5 +1,7 @@
 
 <%- include("partials/header", {}) -%>
+<script src="/js/subasta.js"></script>
+<link rel="stylesheet" href="/css/styleA.css">
 
 <main class="container mx-auto px-6 py-6">
     <h1 class="text-5xl font-bold text-center mb-1 text-gray-900 flex items-center justify-center">
@@ -155,6 +157,39 @@
                         <% } %>
                         
                     <% } %>
+
+                    <p class="precio-actual">Precio actual: €<span id="precio-<%= anuncio._id %>"><%= anuncio.precioActual %></span></p>
+                    <p class="temporizador">⏳ Tiempo restante: <span id="timer-<%= anuncio._id %>">5:00</span></p>
+                    
+                    <!-- 🔹 Sección para mostrar las pujas en tiempo real -->
+<div id="pujas-<%= anuncio._id %>" class="mt-4 p-2 border border-gray-300 rounded-lg bg-gray-50">
+    <h4 class="text-md font-semibold text-gray-700">📢 Pujas realizadas:</h4>
+    <% if (anuncio.pujas && anuncio.pujas.length > 0) { %>
+        <% anuncio.pujas.forEach(puja => { %>
+            <p class="text-gray-800"><strong><%= puja.usuario %></strong> ha pujado €<%= puja.cantidad %></p>
+        <% }); %>
+    <% } else { %>
+        <p class="text-gray-500">Aún no hay pujas.</p>
+    <% } %>
+</div>
+                    <% if (user) { %>
+                        <button class="pujar-btn mt-4" data-anuncio-id="<%= anuncio._id %>">🔥 Pujar</button>
+                    <% } else { %>
+                        <p class="text-red-500 text-sm font-bold mt-2">Debe iniciar sesión para pujar.</p>
+                    <% } %>
+                    <!-- Pujar manualmente 
+                    <form action="/anuncios/pujar/<%= anuncio._id %>" method="POST">
+
+                        <input type="number" name="precio" required>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded-lg font-bold">🔥 Pujar</button>
+                    </form> -->
+                    
+                    <!-- Oferta automática -->
+                    <form action="/oferta-automatica/<%= anuncio._id %>" method="POST">
+                        <input type="number" name="precioMaximo" required>
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold">🤖 Registrar Oferta Automática</button>
+                    </form>
+                    
                     <!-- Botón de inscripción -->
 <% if (user && user.username !== anuncio.autor) { %>
     <div class="text-center mt-4">
@@ -180,26 +215,37 @@
 
 </main>
 
+<script src="/socket.io/socket.io.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const mensaje = urlParams.get('mensaje');
-        const error = urlParams.get('error');
+    document.addEventListener("DOMContentLoaded", function () {
+        const socket = io();
 
-        if (mensaje) {
-            alert(mensaje);
-        } else if (error) {
-            alert(error);
-        }
+        // 📢 Evento cuando la subasta se actualiza
+        socket.on("actualizar_subasta", (data) => {
+    console.log("📢 Actualización recibida:", data); // Debugging
 
-        // 🔹 Elimina los parámetros de la URL sin recargar la página
-        if (mensaje || error) {
-            const newUrl = window.location.origin + window.location.pathname;
-            window.history.replaceState({}, document.title, newUrl);
+    const { anuncioId, precioActual, tiempoRestante } = data;
+    const precioElement = document.getElementById(`precio-${anuncioId}`);
+    const timerElement = document.getElementById(`timer-${anuncioId}`);
+
+    if (precioElement) precioElement.innerText = `€${precioActual}`;
+
+    if (timerElement) {
+        if (!isNaN(tiempoRestante) && tiempoRestante >= 0) { // Evita NaN
+            const minutos = Math.floor(tiempoRestante / 60);
+            const segundos = tiempoRestante % 60;
+            timerElement.innerText = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+        } else {
+            timerElement.innerText = "00:00"; // Fallback en caso de error
         }
+    }
+});
+
+        // 📢 Evento cuando la subasta finaliza
+        socket.on("subasta_finalizada", (data) => {
+            alert(`La subasta del anuncio ${data.anuncioId} ha finalizado con un precio de €${data.precioFinal}`);
+        });
     });
 </script>
-
-
 
 <%- include("partials/footer") %>

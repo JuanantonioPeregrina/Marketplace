@@ -29,6 +29,7 @@ const politicaCookiesRouter = require("./routes/politica-cookies");
 const terminosRouter = require("./routes/terminos");
 const valoracionRouter = require('./routes/perfil');
 const resenasRoutes = require('./routes/resenas');
+const { iniciarVerificacionSubastas } = require('./routes/subasta'); // ✅ Nombre correcto
 
 
 
@@ -43,6 +44,10 @@ const app = express();
 // Crear el servidor HTTP
 const server = http.createServer(app); // Usa tu app Express
 const io = socketIo(server); // Configurar Socket.IO con el servidor
+
+// ✅ Iniciar la verificación de subastas pendientes en el servidor
+iniciarVerificacionSubastas(io);  // ✅ Ahora sí existe
+
 
 // Escuchar eventos de conexión de los clientes
 io.on("connection", (socket) => {
@@ -164,7 +169,7 @@ app.use('/login', loginRouter);
 app.use('/categorias', categoriasRouter);
 app.use('/about', aboutRouter);
 app.use('/publicar', publicarRouter);
-app.use('/anuncios', anunciosRouter);
+app.use('/anuncios', anunciosRouter(io));
 app.use("/registro", registerRouter);
 app.use("/inscribirse", inscribirseRouter);
 app.use("/chat", chatRouter);

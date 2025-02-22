@@ -1,0 +1,140 @@
+/* 🟡 Estilo neón para el precio */
+
+
+@keyframes parpadeo {
+    from {
+        text-shadow: 0 0 10px #ffdd57, 0 0 20px #ff0000;
+    }
+    to {
+        text-shadow: 0 0 20px #ffdd57, 0 0 40px #ff0000;
+    }
+}
+
+/* 🔥 Efecto de borde brillante para anuncios en subasta */
+.subasta-activa {
+    border: 3px solid #ffdd57;
+    box-shadow: 0 0 10px #ffdd57, 0 0 20px #ff0000;
+    transition: all 0.3s ease-in-out;
+}
+
+/* 🎰 Temporizador digital estilo casino */
+.temporizador {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #00ffcc;
+    background: black;
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-shadow: 0 0 10px #00ffcc, 0 0 20px #0088ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid #00ffcc;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+    animation: glow 1.5s infinite alternate;
+}
+/* ✨ Efecto hover en los botones */
+button {
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px #00ffcc;
+}
+
+/* 🎲 Animación en la bajada del precio */
+@keyframes bajadaPrecio {
+    from {
+        transform: scale(1.2);
+        color: red;
+    }
+    to {
+        transform: scale(1);
+        color: #ffdd57;
+    }
+}
+
+.precio-actual.bajando {
+    animation: bajadaPrecio 0.5s ease-in-out;
+}
+
+@keyframes blink {
+    0% { color: red; }
+    50% { color: yellow; }
+    100% { color: red; }
+}
+
+.precio-actual {
+    font-size: 2rem;
+    font-weight: bold;
+    background: linear-gradient(45deg, #ff0000, #ffdd57);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: neonGlow 1.5s infinite alternate;
+}
+
+button.pujar {
+    background: linear-gradient(45deg, red, orange);
+    color: white;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+    transition: transform 0.2s ease-in-out;
+}
+
+button.pujar:hover {
+    transform: scale(1.1);
+}
+
+/* 🎰 Tarjeta de subasta con efectos brillantes */
+.subasta-card {
+    background: #222;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    padding: 20px;
+    text-align: center;
+    color: white;
+    transition: transform 0.3s ease-in-out;
+}
+
+.subasta-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+}
+
+/* 🔥 Botón de pujar con destello */
+.pujar-btn {
+    background: linear-gradient(45deg, red, orange);
+    color: white;
+    font-weight: bold;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+    font-size: 1.5rem;
+    transition: transform 0.2s ease-in-out;
+}
+
+
+.pujar-btn:hover {
+    background: linear-gradient(45deg, darkred, orangered);
+    transform: scale(1.1);
+}
+
+/* 🤖 Botón de oferta automática */
+.oferta-automatica-btn {
+    background: linear-gradient(45deg, green, lightgreen);
+    color: black;
+    font-weight: bold;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+    font-size: 1.2rem;
+    transition: transform 0.2s ease-in-out;
+}
+
+.oferta-automatica-btn:hover {
+    background: linear-gradient(45deg, darkgreen, yellowgreen);
+    transform: scale(1.1);
+}

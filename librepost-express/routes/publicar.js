@@ -15,7 +15,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Verificar autenticación
 router.get("/", (req, res) => {
     if (!req.session.user) {
         return res.redirect("/login");
@@ -24,24 +23,14 @@ router.get("/", (req, res) => {
 });
 
 // Publicar un anuncio en MongoDB
-router.post("/", upload.single("imagen"), async (req, res) => {  // ⬅️ Agregar `async`
-    console.log("🔍 Datos recibidos en req.body:", req.body); // Depuración
+router.post("/", upload.single("imagen"), async (req, res) => {
+    if (!req.session.user) return res.redirect("/login");
 
-    if (!req.session.user) {
-        return res.redirect("/login");
-    }
-
-    const { titulo, descripcion, precio, categoria, fechaExpiracion, ubicacion } = req.body;
-
-    if (!fechaExpiracion || !ubicacion) {
-        console.log("❌ Error: `fechaExpiracion` no está en req.body");
-        return res.status(400).send("Error: No se recibió la fecha de expiración.");
-    }
-
+    const { titulo, descripcion, precio, categoria, fechaExpiracion, ubicacion, fechaInicioSubasta } = req.body;
     const imagen = req.file ? `/uploads/${req.file.filename}` : null;
     const autor = req.session.user.username;
 
-    if (!titulo || !descripcion || !precio || !categoria || !imagen || !fechaExpiracion) {
+    if (!titulo || !descripcion || !precio || !categoria || !imagen || !fechaExpiracion || !fechaInicioSubasta) {
         return res.status(400).send("Todos los campos son obligatorios.");
     }
 
@@ -49,23 +38,24 @@ router.post("/", upload.single("imagen"), async (req, res) => {  // ⬅️ Agreg
         const nuevoAnuncio = new Anuncio({
             titulo,
             descripcion,
-            precio,
+            precioInicial: Number(precio),
+            precioActual: Number(precio), // Inicialmente igual al precio inicial
             imagen,
             categoria,
-            ubicacion: ubicacion || "Sin especificar",
-            fechaExpiracion: new Date(fechaExpiracion), // Convertir a Date
+            ubicacion,
+            fechaExpiracion: new Date(fechaExpiracion),
+            fechaInicioSubasta: new Date(fechaInicioSubasta), 
             autor,
-            inscritos: []
+            inscritos: [],
+            estadoSubasta: "pendiente"
         });
 
-        await nuevoAnuncio.save();  // ✅ Ahora `await` funcionará porque la función es `async`
-        console.log("✅ Anuncio guardado correctamente.");
-        res.redirect(`/categorias/${categoria}`);
+        await nuevoAnuncio.save();
+        res.redirect("/anuncios");
     } catch (error) {
         console.error("❌ Error al guardar el anuncio:", error);
         res.status(500).send("Error interno del servidor.");
     }
 });
 
-
-module.exports = router; // 🔥 CORRECCIÓN: Se exporta solo router
+module.exports = router;
