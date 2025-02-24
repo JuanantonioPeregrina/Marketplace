@@ -48,60 +48,64 @@ module.exports = (io) => {
         }
     });
     
+    // ✅ Ruta para registrar oferta automática antes del inicio de la subasta
+router.post("/oferta-automatica/:id", async (req, res) => {
+    try {
+        console.log("📥 Datos recibidos en oferta automática:", req.body); // 🔥 Depuración
 
-    // ✅ Ruta para registrar oferta automática
-    router.post("/oferta-automatica/:id", async (req, res) => {
-        try {
-            const { user } = req.session;
-            if (!user) {
-                return res.status(403).json({ error: "Debe estar autenticado para registrar una oferta automática." });
-            }
-    
-            const { precioMaximo } = req.body;
-            if (!precioMaximo || isNaN(precioMaximo) || precioMaximo <= 0) {
-                return res.status(400).json({ error: "Debe ingresar un precio máximo válido." });
-            }
-    
-            const anuncio = await Anuncio.findById(req.params.id);
-            if (!anuncio || anuncio.estadoSubasta !== "activa") {
-                return res.status(400).json({ error: "La subasta no está activa." });
-            }
-    
-            // 🔹 Registrar la oferta automática en `ofertasAutomaticas`
-            const nuevaOfertaAutomatica = {
+        const { user } = req.session;
+        if (!user) {
+            return res.status(403).json({ error: "Debe estar autenticado para registrar una oferta automática." });
+        }
+
+        const precioMaximo = parseInt(req.body.precioMaximo); // 📌 Asegurar que llega correctamente
+
+        if (isNaN(precioMaximo) || precioMaximo < 0) {
+            return res.status(400).json({ error: "Debe ingresar un precio máximo válido entre 0 y el precio actual." });
+        }
+
+        const anuncio = await Anuncio.findById(req.params.id);
+        if (!anuncio) {
+            return res.status(400).json({ error: "El anuncio no existe." });
+        }
+
+        // ✅ Verificar si la subasta aún no ha comenzado o está en curso
+        if (anuncio.estadoSubasta !== "activa") {
+            console.log("🔹 Guardando oferta automática para la futura subasta.");
+            anuncio.ofertasAutomaticas.push({
                 usuario: user.username,
-                precioMaximo: parseInt(precioMaximo),
+                precioMaximo,
                 fecha: new Date()
-            };
-            anuncio.ofertasAutomaticas.push(nuevaOfertaAutomatica);
-    
-            // 🔹 Registrar también en `pujas`
+            });
+        } else {
+            console.log("🔥 Ejecutando puja automática inmediata.");
             anuncio.pujas.push({
                 usuario: user.username,
-                cantidad: precioMaximo,  // Se guarda como una puja real
+                cantidad: precioMaximo,
                 fecha: new Date(),
                 automatica: true
             });
-    
-            await anuncio.save();
-    
-            console.log("📢 Oferta automática guardada en pujas:", JSON.stringify(anuncio.pujas, null, 2)); // 🔥 DEBUG
-    
-            // 🔹 Emitir evento para actualizar la interfaz
+        }
+
+        await anuncio.save();
+
+        // Emitir evento de actualización solo si la subasta ya está activa
+        if (anuncio.estadoSubasta === "activa") {
             io.emit("actualizar_pujas", {
                 anuncioId: req.params.id,
-                usuario: user.username,
-                cantidad: precioMaximo,
                 pujas: anuncio.pujas
             });
-    
-            res.json({ mensaje: "Oferta automática registrada con éxito", anuncio });
-    
-        } catch (error) {
-            console.error("Error en la oferta automática:", error);
-            res.status(500).json({ error: "Error al registrar la oferta automática." });
         }
-    });
+
+        res.json({ mensaje: "Oferta automática registrada correctamente", anuncio });
+
+    } catch (error) {
+        console.error("❌ Error al programar oferta automática:", error);
+        res.status(500).json({ error: "Error al registrar la oferta automática." });
+    }
+});
+
+    
     
     // ✅ Modificar la lógica de pujas para aplicar oferta automática
     

@@ -1,5 +1,41 @@
 const Anuncio = require("../database/models/anuncio.model");
 
+// ✅ Función para procesar ofertas automáticas en cada iteración del decremento del precio
+async function procesarOfertasAutomaticas(anuncio, io) {
+    if (!anuncio.ofertasAutomaticas || anuncio.ofertasAutomaticas.length === 0) return;
+
+    const ofertasAplicables = anuncio.ofertasAutomaticas.filter(oferta => oferta.precioMaximo >= anuncio.precioActual);
+
+    for (const oferta of ofertasAplicables) {
+        console.log(`🤖 Ejecutando oferta automática de ${oferta.usuario} por €${oferta.precioMaximo}`);
+
+        // Crear la puja automática
+        const nuevaPujaAutomatica = {
+            usuario: oferta.usuario,
+            cantidad: oferta.precioMaximo,
+            fecha: new Date(),
+            automatica: true
+        };
+
+        anuncio.pujas.push(nuevaPujaAutomatica);
+
+        // Eliminar la oferta automática ya que se ha ejecutado
+        anuncio.ofertasAutomaticas = anuncio.ofertasAutomaticas.filter(o => o._id.toString() !== oferta._id.toString());
+
+        // Guardar cambios
+        await anuncio.save();
+
+        // Emitir evento a los clientes para actualizar la interfaz
+        io.emit("actualizar_pujas", {
+            anuncioId: anuncio._id.toString(),
+            pujas: anuncio.pujas
+        });
+
+        console.log(`✅ Oferta automática de ${oferta.usuario} registrada y eliminada de la lista de ofertas automáticas.`);
+    }
+}
+
+// ✅ Modificar el temporizador de la subasta para verificar ofertas automáticas en cada iteración
 async function iniciarProcesoSubasta(anuncioId, io) {
     const anuncio = await Anuncio.findById(anuncioId);
     if (!anuncio || anuncio.estadoSubasta !== "activa") return;
@@ -33,6 +69,9 @@ async function iniciarProcesoSubasta(anuncioId, io) {
                 anuncioActualizado.precioActual = Math.max(0, anuncioActualizado.precioActual - decremento);
             }
 
+            // 🔹 Verificar ofertas automáticas en cada iteración
+            await procesarOfertasAutomaticas(anuncioActualizado, io);
+
             // Evitar valores NaN en el tiempo restante
             tiempoRestante = Math.max(0, tiempoRestante - 10);
             if (anuncioActualizado.precioActual <= 0) {
@@ -55,6 +94,46 @@ async function iniciarProcesoSubasta(anuncioId, io) {
     }, 10000);
 }
 
+
+// ✅ Revisar si hay ofertas automáticas que deben activarse
+async function verificarOfertasAutomaticas(anuncioId, io) {
+    const anuncio = await Anuncio.findById(anuncioId);
+    if (!anuncio || anuncio.estadoSubasta !== "activa") return;
+
+    let ofertasEjecutadas = [];
+
+    anuncio.ofertasAutomaticas.forEach(oferta => {
+        if (anuncio.precioActual >= oferta.precioMaximo) {
+            console.log(`🚀 Activando oferta automática de ${oferta.usuario} por €${oferta.precioMaximo}`);
+
+            // 🔹 Registrar la puja automática en `pujas`
+            anuncio.pujas.push({
+                usuario: oferta.usuario,
+                cantidad: oferta.precioMaximo,
+                fecha: new Date(),
+                automatica: true
+            });
+
+            // 🔹 Actualizar el precio actual
+            anuncio.precioActual = oferta.precioMaximo;
+            ofertasEjecutadas.push(oferta._id);
+        }
+    });
+
+    // 🗑️ Eliminar las ofertas ejecutadas
+    anuncio.ofertasAutomaticas = anuncio.ofertasAutomaticas.filter(oferta => !ofertasEjecutadas.includes(oferta._id));
+
+    await anuncio.save();
+
+    // 📢 Emitir evento para actualizar la interfaz
+    io.emit("actualizar_pujas", {
+        anuncioId,
+        usuario: anuncio.pujas[anuncio.pujas.length - 1]?.usuario || "N/A",
+        cantidad: anuncio.precioActual,
+        pujas: anuncio.pujas
+    });
+}
+
 // ✅ Revisar cada minuto si hay subastas programadas que deben activarse
 function iniciarVerificacionSubastas(io) {
     setInterval(async () => {
@@ -72,11 +151,11 @@ function iniciarVerificacionSubastas(io) {
             await anuncio.save();
             iniciarProcesoSubasta(anuncio._id, io);
         }
-    }, 60000);
+    }, 60000); // Se ejecuta cada minuto
 }
 
-//  Registrar pujas y mostrar al usuario en la lista de pujas
 
+// ✅ Registrar pujas y mostrar al usuario en la lista de pujas
 async function registrarPuja(io, anuncioId, usuario, cantidad) {
     console.log(`💰 Registrando puja en BD: ${usuario} ha pujado €${cantidad} en el anuncio ${anuncioId}`);
 
@@ -90,7 +169,7 @@ async function registrarPuja(io, anuncioId, usuario, cantidad) {
     if (!anuncio.pujas) anuncio.pujas = [];
 
     // 📌 Agregar la puja al array
-    anuncio.pujas.push({ usuario, cantidad });
+    anuncio.pujas.push({ usuario, cantidad, fecha: new Date(), automatica: false });
 
     // 📌 Si la puja es mayor que el precio actual, actualizarlo
     if (cantidad > anuncio.precioActual) {
@@ -113,7 +192,5 @@ async function registrarPuja(io, anuncioId, usuario, cantidad) {
         pujas: anuncio.pujas // Enviar todas las pujas actualizadas
     });
 }
-
-
 
 module.exports = { iniciarProcesoSubasta, iniciarVerificacionSubastas, registrarPuja };

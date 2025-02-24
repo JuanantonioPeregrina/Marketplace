@@ -200,12 +200,14 @@
                     </form> -->
                     
                     <!-- Oferta automática -->
-                    <form id="oferta-automatica-form-<%= anuncio._id %>">
-                        <input type="number" name="precioMaximo" min="<%= anuncio.precioActual + 100 %>" required>
+                    <form id="oferta-automatica-form-<%= anuncio._id %>" method="POST" action="/anuncios/oferta-automatica/<%= anuncio._id %>">
+                        <label for="precioMaximo">Introduce tu oferta programada:</label>
+                        <input type="number" name="precioMaximo" id="precioMaximo-<%= anuncio._id %>" min="0" max="<%= anuncio.precioActual %>" required class="border p-2 w-full">
                         <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold">
-                            🤖 Registrar Oferta Automática
+                            🤖 Programar Oferta Automática
                         </button>
                     </form>
+                    
                     
                     <!-- 🔥 Mensaje de éxito (inicialmente oculto) -->
                     <div id="mensaje-oferta-automatica-<%= anuncio._id %>" class="hidden bg-blue-500 text-white p-2 rounded mt-2">

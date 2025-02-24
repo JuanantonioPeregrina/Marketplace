@@ -69,37 +69,39 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // 📢 Evento cuando se recibe una nueva puja (manual o automática)
-    socket.on("actualizar_pujas", (data) => {
-        console.log("📥 Datos de pujas recibidos en cliente:", JSON.stringify(data, null, 2)); // 🔥 DEBUG
-    
-        const { anuncioId, pujas } = data;
-        const pujasContainer = document.getElementById(`pujas-${anuncioId}`);
-        const precioElement = document.getElementById(`precio-${anuncioId}`);
-    
-        if (!pujasContainer || !precioElement) {
-            console.error("❌ No se encontró el contenedor de pujas o precio.");
-            return;
-        }
-    
-        // 🔹 Mostrar todas las pujas
-        pujasContainer.innerHTML = `<h4 class="text-md font-semibold text-gray-700">📢 Pujas realizadas:</h4>`;
-    
-        pujas.forEach(puja => {
-            pujasContainer.innerHTML += `
-                <p class="text-gray-800">
-                    <strong>${puja.usuario}</strong> ha pujado €${puja.cantidad} 
-                    ${puja.automatica ? '<span class="text-green-500">🤖 (Automática)</span>' : ''}
-                </p>`;
-        });
-    
-        if (pujas.length === 0) {
-            pujasContainer.innerHTML += `<p class="text-gray-500">Aún no hay pujas.</p>`;
-        }
-    
-        // 🔹 Actualizar el precio actual con la puja más alta
-        const maxPuja = Math.max(...pujas.map(p => p.cantidad), 0);
-        precioElement.innerText = `€${maxPuja}`;
+    // 📢 Evento cuando se recibe una nueva puja (manual o automática)
+socket.on("actualizar_pujas", (data) => {
+    console.log("📥 Datos de pujas recibidos en cliente:", JSON.stringify(data, null, 2)); // 🔥 DEBUG
+
+    const { anuncioId, pujas } = data;
+    const pujasContainer = document.getElementById(`pujas-${anuncioId}`);
+    const precioElement = document.getElementById(`precio-${anuncioId}`);
+
+    if (!pujasContainer || !precioElement) {
+        console.error("❌ No se encontró el contenedor de pujas o precio.");
+        return;
+    }
+
+    // 🔹 Mostrar todas las pujas
+    pujasContainer.innerHTML = `<h4 class="text-md font-semibold text-gray-700">📢 Pujas realizadas:</h4>`;
+
+    pujas.forEach(puja => {
+        pujasContainer.innerHTML += `
+            <p class="text-gray-800">
+                <strong>${puja.usuario}</strong> ha pujado €${puja.cantidad} 
+                ${puja.automatica ? '<span class="text-green-500">🤖 (Automática)</span>' : ''}
+            </p>`;
     });
+
+    if (pujas.length === 0) {
+        pujasContainer.innerHTML += `<p class="text-gray-500">Aún no hay pujas.</p>`;
+    }
+
+    // 🔹 Actualizar el precio actual con la puja más alta
+    const maxPuja = Math.max(...pujas.map(p => p.cantidad), 0);
+    precioElement.innerText = `€${maxPuja}`;
+});
+
     
     // 📢 Evento cuando se recibe una confirmación de oferta automática
     socket.on("confirmar_oferta_automatica", (data) => {
@@ -125,5 +127,33 @@ document.addEventListener("DOMContentLoaded", function () {
             const maxPuja = Math.max(...pujas.map(p => p.cantidad), 0);
             precioElement.innerText = `€${maxPuja}`;
         }
+    });
+
+    // ✅ Evento que actualiza el precio automáticamente cuando disminuye
+    socket.on("actualizar_subasta", (data) => {
+        console.log("📢 Subasta actualizada:", data);
+
+        const { anuncioId, precioActual, tiempoRestante } = data;
+        const precioElement = document.getElementById(`precio-${anuncioId}`);
+        const timerElement = document.getElementById(`timer-${anuncioId}`);
+
+        if (precioElement) {
+            precioElement.innerText = `€${precioActual}`;
+        }
+
+        if (timerElement) {
+            if (!isNaN(tiempoRestante) && tiempoRestante >= 0) { 
+                const minutos = Math.floor(tiempoRestante / 60);
+                const segundos = tiempoRestante % 60;
+                timerElement.innerText = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+            } else {
+                timerElement.innerText = "00:00"; 
+            }
+        }
+    });
+
+    // 📢 Evento cuando la subasta finaliza
+    socket.on("subasta_finalizada", (data) => {
+        alert(`⏳ La subasta ha finalizado con un precio final de €${data.precioFinal}`);
     });
 });
