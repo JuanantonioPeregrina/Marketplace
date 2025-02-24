@@ -12,30 +12,46 @@ module.exports = (io) => {
         try {
             const usuario = req.session.user ? req.session.user.username : null;
             const anunciosDB = await Anuncio.find({});
+        
+            let anunciosConDatos = await Promise.all(anunciosDB.map(async (anuncio) => {
+                let chatIniciado = false;
+                
+                // Verificar si el usuario está inscrito y si el chat ya existe
+                if (usuario && anuncio.inscritos.includes(usuario)) {
+                    chatIniciado = await Chat.exists({
+                        anuncioId: anuncio._id,
+                        $or: [
+                            { remitente: anuncio.autor, destinatario: usuario },
+                            { remitente: usuario, destinatario: anuncio.autor }
+                        ]
+                    });
+                }
     
-            let anunciosConDatos = anunciosDB.map(anuncio => ({
-                _id: anuncio._id.toString(),
-                titulo: anuncio.titulo,
-                descripcion: anuncio.descripcion,
-                imagen: anuncio.imagen,
-                precioInicial: anuncio.precioInicial,
-                precioActual: anuncio.precioActual,
-                autor: anuncio.autor,
-                ubicacion: anuncio.ubicacion,
-                inscritos: anuncio.inscritos || [],
-                estadoSubasta: anuncio.estadoSubasta,
-                fechaInicioSubasta: anuncio.fechaInicioSubasta,
-                fechaExpiracion: anuncio.fechaExpiracion,
-                pujas: anuncio.pujas.map(puja => ({
-                    usuario: puja.usuario,
-                    cantidad: puja.cantidad,
-                    fecha: puja.fecha,
-                    automatica: puja.automatica || false  // 🔹 Ahora `automatica` siempre está presente
-                })),
-                ofertasAutomaticas: anuncio.ofertasAutomaticas || []
+                return {
+                    _id: anuncio._id.toString(),
+                    titulo: anuncio.titulo,
+                    descripcion: anuncio.descripcion,
+                    imagen: anuncio.imagen,
+                    precioInicial: anuncio.precioInicial,
+                    precioActual: anuncio.precioActual,
+                    autor: anuncio.autor,
+                    ubicacion: anuncio.ubicacion,
+                    inscritos: anuncio.inscritos || [],
+                    estadoSubasta: anuncio.estadoSubasta,
+                    fechaInicioSubasta: anuncio.fechaInicioSubasta,
+                    fechaExpiracion: anuncio.fechaExpiracion,
+                    chatIniciado,  // 👈 Agregar este campo para reflejar si el chat está activo
+                    pujas: anuncio.pujas.map(puja => ({
+                        usuario: puja.usuario,
+                        cantidad: puja.cantidad,
+                        fecha: puja.fecha,
+                        automatica: puja.automatica || false  
+                    })),
+                    ofertasAutomaticas: anuncio.ofertasAutomaticas || []
+                };
             }));
-            
-            console.log("📢 Datos enviados al frontend:", JSON.stringify(anunciosConDatos, null, 2)); // Debugging
+    
+            console.log("📢 Datos enviados al frontend:", JSON.stringify(anunciosConDatos, null, 2));
             res.render("anuncios", {
                 title: "Anuncios - LibrePost",
                 user: req.session.user,
@@ -48,6 +64,7 @@ module.exports = (io) => {
         }
     });
     
+
     // ✅ Ruta para registrar oferta automática antes del inicio de la subasta
 router.post("/oferta-automatica/:id", async (req, res) => {
     try {
