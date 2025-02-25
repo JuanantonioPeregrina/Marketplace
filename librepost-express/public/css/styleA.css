@@ -186,3 +186,62 @@ input::placeholder, textarea::placeholder {
   display: none; /* Oculto por defecto */
 }
 
+
+
+/* Contenedor principal del countdown */
+.countdown-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Espacio entre cajas y separadores */
+    margin: 10px 0;
+  }
+  
+  /* Caja individual (Días, Horas, Minutos, Segundos) */
+  .countdown-box {
+    background: #000;      /* Fondo negro */
+    color: #fff;           /* Texto blanco */
+    border-radius: 4px;
+    width: 60px;           /* Ancho fijo */
+    text-align: center;
+    padding: 8px;
+    position: relative;    /* Para posicionar la etiqueta */
+  }
+  
+  /* Etiqueta superior (DÍAS, HORAS...) */
+  .countdown-box-label {
+    background: #fff;      /* Fondo blanco */
+    color: #000;           /* Texto negro */
+    padding: 2px 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    border-radius: 2px;
+    position: absolute;
+    top: -12px;            /* Sube la etiqueta encima */
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  /* Valor (00) dentro de la caja */
+  .countdown-box-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-top: 10px;      /* Espacio debajo de la etiqueta */
+  }
+  
+  /* Separador (dos puntos) */
+  .countdown-separator {
+    font-size: 1.6rem;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  /* Texto de "Subasta finalizada" */
+  .text-red-600 {
+    color: #d32f2f;
+  }
+  .font-bold {
+    font-weight: 700;
+  }
+  
