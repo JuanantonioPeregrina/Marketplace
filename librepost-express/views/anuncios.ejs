@@ -55,34 +55,36 @@
                     <div>
                         <h2 class="text-2xl font-semibold text-gray-900 mb-3 line-clamp-2"><%= anuncio.titulo %></h2>
                         <p class="text-gray-600 text-sm flex-grow line-clamp-3 h-16 overflow-hidden"><%= anuncio.descripcion %></p>
-                        <!-- Contador regresivo hasta la fecha de inicio de la subasta -->
-<!-- Dentro de cada tarjeta, justo debajo de la descripción, añade: -->
-<div class="mt-4">
-    <div class="countdown-container" id="countdown-<%= anuncio._id %>">
-      <div class="countdown-box">
-        <div class="countdown-box-label">DÍAS</div>
-        <div class="countdown-box-value" id="days-<%= anuncio._id %>">00</div>
-      </div>
-      <span class="countdown-separator">:</span>
-  
-      <div class="countdown-box">
-        <div class="countdown-box-label">HORAS</div>
-        <div class="countdown-box-value" id="hours-<%= anuncio._id %>">00</div>
-      </div>
-      <span class="countdown-separator">:</span>
-  
-      <div class="countdown-box">
-        <div class="countdown-box-label">MINUTOS</div>
-        <div class="countdown-box-value" id="minutes-<%= anuncio._id %>">00</div>
-      </div>
-      <span class="countdown-separator">:</span>
-  
-      <div class="countdown-box">
-        <div class="countdown-box-label">SEGUNDOS</div>
-        <div class="countdown-box-value" id="seconds-<%= anuncio._id %>">00</div>
-      </div>
-    </div>
-  </div>
+                   <!-- Contenedor del contador con data-inicio y data-fin -->
+<div 
+class="countdown-container mt-4" 
+id="countdown-<%= anuncio._id %>"
+data-inicio="<%= anuncio.fechaInicioSubasta ? new Date(anuncio.fechaInicioSubasta).toISOString() : '' %>"
+data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOString() : '' %>"
+>
+<div class="countdown-box">
+    <div class="countdown-box-label">DÍAS</div>
+    <div class="countdown-box-value" id="days-<%= anuncio._id %>">00</div>
+</div>
+<span class="countdown-separator">:</span>
+<div class="countdown-box">
+    <div class="countdown-box-label">HORAS</div>
+    <div class="countdown-box-value" id="hours-<%= anuncio._id %>">00</div>
+</div>
+<span class="countdown-separator">:</span>
+<div class="countdown-box">
+    <div class="countdown-box-label">MINUTOS</div>
+    <div class="countdown-box-value" id="minutes-<%= anuncio._id %>">00</div>
+</div>
+<span class="countdown-separator">:</span>
+<div class="countdown-box">
+    <div class="countdown-box-label">SEGUNDOS</div>
+    <div class="countdown-box-value" id="seconds-<%= anuncio._id %>">00</div>
+</div>
+</div>
+
+                 
+
   
                         <p class="text-green-600 text-xl font-bold mt-4 flex items-center">
                             💰 €<%= anuncio.precio %>
@@ -270,7 +272,7 @@
 </main>
 
 <script src="/socket.io/socket.io.js"></script>
-<script src="countdown.js"></script>
+<script src="/js/countdown.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const socket = io();
@@ -338,11 +340,18 @@
     // 1) el mismo "id" que usamos en el HTML (12345),
     // 2) la fecha/hora de inicio (en formato ISO o "YYYY-MM-DDTHH:mm:ssZ"),
     // 3) la fecha/hora de fin.
-    iniciarCuentaRegresiva(
-      "12345", 
-      "2026-01-01T00:00:00Z",   // Ejemplo: inicia 1 de enero de 2026
-      "2026-01-01T02:00:00Z"    // Ejemplo: finaliza 2 horas después
-    );
+    document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('.countdown-container').forEach(container => {
+        const id = container.id.replace('countdown-', '');
+        const fechaInicio = container.getAttribute('data-inicio');
+        const fechaFin = container.getAttribute('data-fin');
+
+        if (fechaInicio && fechaFin) {
+            iniciarCuentaRegresiva(id, fechaInicio, fechaFin);
+        }
+    });
+});
+
   </script>
 
 <%- include("partials/footer") %>
