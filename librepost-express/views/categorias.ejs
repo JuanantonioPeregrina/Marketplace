@@ -1,134 +1,171 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= title %></title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 
 <body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
-    <!-- Header -->
-    <%- include("partials/header") %>
+  <!-- Header -->
+  <%- include("partials/header") %>
 
-    <!-- Contenido principal -->
-    <main class="max-w-7xl mx-auto pt-24 px-6">
+  <!-- Contenido principal -->
+  <main class="max-w-7xl mx-auto pt-24 px-6">
+  
+    <% if (categoriaNombre) { %>
+      <!-- ===========================
+           VISTA DE CATEGORÍA ESPECÍFICA
+           (Diseño en tarjetas “simple”)
+      ============================ -->
 
-        <% if (categoriaNombre) { %>
-            <!--  Modo Vista de Categoría Específica -->
-            <h1 class="text-4xl font-bold text-center mb-6"><%= categoriaNombre %></h1>
-            <p class="text-center text-gray-700 mb-6"><%= descripcion %></p>
+      <h1 class="text-4xl font-bold text-center mb-6"><%= categoriaNombre %></h1>
+      <p class="text-center text-gray-700 mb-6"><%= descripcion %></p>
 
-            <div class="relative w-full h-[300px] overflow-hidden rounded-lg shadow-lg">
-                <img src="<%= imagen %>" alt="<%= categoriaNombre %>" class="w-full h-full object-cover">
-            </div>
+      <div class="relative w-full h-[300px] overflow-hidden rounded-lg shadow-lg">
+        <img src="<%= imagen %>" alt="<%= categoriaNombre %>" class="w-full h-full object-cover">
+      </div>
 
-            <!-- 📢 Anuncios en la Categoría -->
-            <h2 class="text-2xl font-bold mt-10">Anuncios Publicados</h2>
-<div class="mt-6 space-y-4">
-    <% if (anuncios.length > 0) { %>
-        <% anuncios.forEach(anuncio => { %>
+      <!-- Anuncios en la Categoría -->
+      <h2 class="text-2xl font-bold mt-10">Anuncios Publicados</h2>
+      <div class="mt-6 space-y-4">
+        <% if (anuncios.length > 0) { %>
+          <% anuncios.forEach(anuncio => { %>
             <div class="bg-white p-4 rounded-lg shadow-md">
-                <img src="<%= anuncio.imagen %>" alt="<%= anuncio.titulo %>" class="w-full h-[250px] object-cover rounded-md mb-4">
-                <h3 class="text-lg font-bold"><%= anuncio.titulo %></h3>
-                <p class="text-gray-700"><%= anuncio.descripcion %></p>
-                <p class="text-lg font-semibold text-blue-600 mt-2">€<%= anuncio.precio %></p>
-                <p class="text-sm text-gray-500 mt-2">Publicado por: <strong><%= anuncio.autor %></strong> el <%= new Date(anuncio.fechaPublicacion).toLocaleDateString() %></p>
-                <p class="text-sm text-red-500 mt-2" id="expira-<%= anuncio._id %>"></p>
-        
-                <!-- NUEVOS PÁRRAFOS PARA DEPURACIÓN -->
-                <p class="text-xs text-gray-600"> Usuario autenticado: <%= user ? user.username : "No definido" %></p>
-                <p class="text-xs text-gray-600"> Autor del anuncio: <%= anuncio ? anuncio.autor : "No definido" %></p>
-        
-                <!-- Botón de inscripción -->
-<% if (user && user.username !== anuncio.autor) { %>
-    <div class="text-center">
-        <% if (anuncio.inscritos.includes(user.username)) { %>
-            <button class="mt-3 px-4 py-2 bg-gray-500 text-white rounded cursor-not-allowed" disabled>
-                Inscrito
-            </button>
-        <% } else { %>
-            <button onclick="inscribirse('<%= anuncio._id %>')" class="mt-3 px-4 py-2 bg-green-500 text-white rounded">
-                Inscribirme
-            </button>
-        <% } %>
-    </div>
-<% } else { %>
-    <p class="text-gray-500">Eres el autor de este anuncio.</p>
-<% } %>
+              <img 
+                src="<%= anuncio.imagen %>" 
+                alt="<%= anuncio.titulo %>" 
+                class="w-full h-[250px] object-cover rounded-md mb-4"
+              >
+              <h3 class="text-lg font-bold"><%= anuncio.titulo %></h3>
+              <p class="text-gray-700"><%= anuncio.descripcion %></p>
+              <p class="text-lg font-semibold text-blue-600 mt-2">€<%= anuncio.precio %></p>
+              <p class="text-sm text-gray-500 mt-2">
+                Publicado por: <strong><%= anuncio.autor %></strong> 
+                el <%= new Date(anuncio.fechaPublicacion).toLocaleDateString() %>
+              </p>
+              <p class="text-sm text-red-500 mt-2" id="expira-<%= anuncio._id %>"></p>
+              
+              <!-- NUEVOS PÁRRAFOS PARA DEPURACIÓN (Opcional) -->
+              <p class="text-xs text-gray-600">
+                Usuario autenticado: <%= user ? user.username : "No definido" %>
+              </p>
+              <p class="text-xs text-gray-600">
+                Autor del anuncio: <%= anuncio ? anuncio.autor : "No definido" %>
+              </p>
 
-<!-- Botón de chat para inscritos -->
-<% if (user && user.username !== anuncio.autor && anuncio.inscritos.includes(user.username)) { %>
-    <div class="mt-4 flex justify-center">
-        <% if (anuncio.chatIniciado) { %>
-            <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= anuncio.autor %>" 
-                class="block text-center bg-blue-600 text-white no-underline px-5 py-3 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition w-full">
-                💬 Ir al chat
-            </a>
-        <% } else { %>
-            <button class="block text-center bg-gray-400 text-white px-5 py-3 rounded-lg opacity-70 cursor-not-allowed w-full">
-                ⏳ Esperando conversación
-            </button>
-        <% } %>
-    </div>
-<% } %>
+              <!-- Botón de inscripción -->
+              <% if (user && user.username !== anuncio.autor) { %>
+                <div class="text-center">
+                  <% if (anuncio.inscritos.includes(user.username)) { %>
+                    <button class="mt-3 px-4 py-2 bg-gray-500 text-white rounded cursor-not-allowed" disabled>
+                      Inscrito
+                    </button>
+                  <% } else { %>
+                    <button 
+                      onclick="inscribirse('<%= anuncio._id %>')" 
+                      class="mt-3 px-4 py-2 bg-green-500 text-white rounded"
+                    >
+                      Inscribirme
+                    </button>
+                  <% } %>
+                </div>
+              <% } else { %>
+                <p class="text-gray-500">Eres el autor de este anuncio.</p>
+              <% } %>
 
-        
-                <!-- Lista de inscritos -->
-                <% if (user && user.username === anuncio.autor) { %>
-                    <h4 class="text-md font-semibold mt-4">Usuarios inscritos:</h4>
-                    <ul id="inscritos-<%= anuncio._id %>" class="mt-2 space-y-2">
-                        <% if (anuncio.inscritos.length > 0) { %>
-                            <% anuncio.inscritos.forEach(inscrito => { %>
-                                <li class="text-sm text-gray-700 flex justify-between items-center">
-                                    <span><%= inscrito %></span>
-                                    <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= inscrito %>" 
-                                        class="bg-blue-500 text-white px-4 py-2 rounded-lg text-xs border border-blue-700 shadow-md hover:bg-blue-700 transition no-underline flex items-center">
-                                         💬 Comenzar conversación
-                                     </a>
-                                     
-
-                                </li>
-                            <% }); %>
-                        <% } else { %>
-                            <p class="text-gray-500">No hay usuarios inscritos todavía.</p>
-                        <% } %>
-                    </ul>
-                    
-                <% } %>
-            </div>
-        <% }) %>
-        
-    <% } else { %>
-        <p class="text-center text-gray-500">No hay anuncios en esta categoría todavía.</p>
-    <% } %>
-</div>
-
-
-
-        <% } else { %>
-            <!-- 🔵 Modo Vista de TODAS las Categorías -->
-            <h1 class="text-4xl font-bold text-center mb-6">Explora Nuestras Categorías</h1>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <% for (let key in categorias) { %>
-                    <a href="/categorias/<%= key %>" class="block">
-                        <div class="relative w-full h-[250px] overflow-hidden rounded-lg shadow-lg hover:scale-105 transition-transform">
-                            <img src="<%= categorias[key].imagen %>" alt="<%= categorias[key].nombre %>" class="w-full h-full object-cover">
-                            <div class="absolute bottom-3 left-3 bg-black/80 text-white px-3 py-1 rounded-md text-sm">
-                                <%= categorias[key].nombre %>
-                            </div>
-                        </div>
+              <!-- Botón de chat para inscritos -->
+              <% if (user && user.username !== anuncio.autor && anuncio.inscritos.includes(user.username)) { %>
+                <div class="mt-4 flex justify-center">
+                  <% if (anuncio.chatIniciado) { %>
+                    <a 
+                      href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= anuncio.autor %>" 
+                      class="block text-center bg-blue-600 text-white no-underline px-5 py-3 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition w-full"
+                    >
+                      💬 Ir al chat
                     </a>
-                <% } %>
+                  <% } else { %>
+                    <button 
+                      class="block text-center bg-gray-400 text-white px-5 py-3 rounded-lg opacity-70 cursor-not-allowed w-full"
+                    >
+                      ⏳ Esperando conversación
+                    </button>
+                  <% } %>
+                </div>
+              <% } %>
+
+              <!-- Lista de inscritos -->
+              <% if (user && user.username === anuncio.autor) { %>
+                <h4 class="text-md font-semibold mt-4">Usuarios inscritos:</h4>
+                <ul id="inscritos-<%= anuncio._id %>" class="mt-2 space-y-2">
+                  <% if (anuncio.inscritos.length > 0) { %>
+                    <% anuncio.inscritos.forEach(inscrito => { %>
+                      <li class="text-sm text-gray-700 flex justify-between items-center">
+                        <span><%= inscrito %></span>
+                        <a 
+                          href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= inscrito %>" 
+                          class="bg-blue-500 text-white px-4 py-2 rounded-lg text-xs border border-blue-700 shadow-md hover:bg-blue-700 transition no-underline flex items-center"
+                        >
+                          💬 Comenzar conversación
+                        </a>
+                      </li>
+                    <% }); %>
+                  <% } else { %>
+                    <p class="text-gray-500">No hay usuarios inscritos todavía.</p>
+                  <% } %>
+                </ul>
+              <% } %>
             </div>
+          <% }); %>
+        <% } else { %>
+          <p class="text-center text-gray-500">
+            No hay anuncios en esta categoría todavía.
+          </p>
         <% } %>
-       
-    </main>
-    
-    <!-- Footer -->
-    <%- include("partials/footer") %>
+      </div>
+
+    <% } else { %>
+      <!-- ============================
+           VISTA DE TODAS LAS CATEGORÍAS
+           (Diseño moderno con hover)
+      ============================ -->
+      <section class="mb-12">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-center text-gray-800 mb-8">
+          Explora Nuestras Categorías
+        </h1>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <% for (let key in categorias) { %>
+            <a 
+              href="/categorias/<%= key %>" 
+              class="group block relative overflow-hidden rounded-lg shadow-lg 
+                     transition-transform duration-300 hover:scale-105"
+            >
+              <img 
+                src="<%= categorias[key].imagen %>" 
+                alt="<%= categorias[key].nombre %>"
+                class="w-full h-full object-cover" 
+              />
+              <div 
+                class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent 
+                       opacity-60 group-hover:opacity-90 transition-opacity duration-300"
+              ></div>
+              <div class="absolute bottom-4 left-4 z-10">
+                <h2 class="text-white text-xl font-bold uppercase tracking-wide drop-shadow-md">
+                  <%= categorias[key].nombre %>
+                </h2>
+              </div>
+            </a>
+          <% } %>
+        </div>
+      </section>
+    <% } %>
+  </main>
+  
+  <!-- Footer -->
+  <%- include("partials/footer") %>
 </body>
 </html>
