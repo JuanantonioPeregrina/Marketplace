@@ -8,7 +8,8 @@ const path = require('path'); //
 module.exports = (io) => {
     const router = express.Router();
 
-    // Cargar los anuncios incluyendo las pujas y ofertas automáticas
+   
+    // ✅ Cargar los anuncios incluyendo las pujas y ofertas automáticas
     router.get("/", async (req, res) => {
         try {
             const usuario = req.session.user ? req.session.user.username : null;

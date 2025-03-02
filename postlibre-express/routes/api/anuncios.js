@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Anuncio = require("../../database/models/anuncio.model");
 const { authenticateToken } = require("../../middlewares/apiAuth");
+const multer = require("multer");
+const path = require("path");
 
-// 📌 Middleware global: Todas las rutas requieren autenticación
-router.use(authenticateToken);
 
 /**
  * @swagger
@@ -74,17 +74,61 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-// 📌 Crear un nuevo anuncio
-router.post("/", async (req, res) => {
+
+//  Middleware global: Todas las rutas requieren autenticación
+router.use(authenticateToken);
+
+// Configuración de Multer para subir imágenes
+const storage = multer.diskStorage({
+    destination: "./public/uploads",
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage });
+// 📌 Ruta GET para mostrar información sobre cómo usar /api/anuncios/nuevo
+router.get("/nuevo", (req, res) => {
+  res.status(200).json({
+      mensaje: "Para crear un anuncio, usa una solicitud POST a esta misma URL con los datos del anuncio."
+  });
+});
+
+
+/**
+ * Crear un nuevo anuncio - (ANTES: POST /publicar, AHORA: POST /api/anuncios/nuevo)
+ */
+router.post("/nuevo", upload.single("imagen"), async (req, res) => {
     try {
+        const { titulo, descripcion, precio, categoria, fechaExpiracion, ubicacion, fechaInicioSubasta } = req.body;
+        const imagen = req.file ? `/uploads/${req.file.filename}` : null;
+
+ //Permitir que `imagen` sea opcional
+if (!titulo || !descripcion || !precio || !categoria || !fechaExpiracion || !fechaInicioSubasta) {
+  return res.status(400).json({ error: "Todos los campos son obligatorios, excepto la imagen." });
+}
+
         const nuevoAnuncio = new Anuncio({
-            ...req.body,
-            autor: req.user.username
+            titulo,
+            descripcion,
+            precioInicial: Number(precio),
+            precioActual: Number(precio),
+            imagen,
+            categoria,
+            ubicacion,
+            fechaExpiracion: new Date(fechaExpiracion),
+            fechaInicioSubasta: new Date(fechaInicioSubasta),
+            autor: req.user.username, // Obtener usuario autenticado
+            inscritos: [],
+            estadoSubasta: "pendiente"
         });
+
         await nuevoAnuncio.save();
-        res.status(201).json(nuevoAnuncio);
+        res.status(201).json({ mensaje: "Anuncio creado con éxito", anuncio: nuevoAnuncio });
+
     } catch (error) {
-        res.status(400).json({ error: "Error al crear el anuncio." });
+        console.error("❌ Error al guardar el anuncio:", error);
+        res.status(500).json({ error: "Error interno del servidor." });
     }
 });
 
