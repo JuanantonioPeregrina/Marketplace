@@ -8,34 +8,42 @@
 <body>
     <h1>Explorador de APIs</h1>
     
+    <label for="apiKey">Introduce tu API Key:</label>
+    <input type="text" id="apiKey" placeholder="Escribe tu API Key aquí">
+    
     <button id="fetchData">Obtener Anuncios</button>
     <pre id="output"></pre>
     <button id="download">Descargar JSON</button>
 
     <script>
         document.getElementById('fetchData').addEventListener('click', async () => {
-            const apiKey = "4355fb06-ab4f-4f06-9fb6-32825c3d525f"; // 🔹 Usa la API Key generada
-    
+            const apiKey = document.getElementById('apiKey').value.trim();  // 🚀 Obtiene API Key del input
+
+            if (!apiKey) {
+                document.getElementById('output').textContent = "⚠️ Por favor, ingresa una API Key.";
+                return;
+            }
+
             try {
                 const response = await fetch('/api/anuncios', {
                     method: 'GET',
                     headers: {
                         "Content-Type": "application/json",
-                        "x-api-key": apiKey // 🔹 Cambia "Authorization" por "x-api-key"
+                        "x-api-key": apiKey // ✅ Cada usuario usa su propia API Key
                     }
                 });
-    
+
                 if (!response.ok) {
                     throw new Error(`Error HTTP: ${response.status}`);
                 }
-    
+
                 const data = await response.json();
                 document.getElementById('output').textContent = JSON.stringify(data, null, 2);
             } catch (error) {
                 document.getElementById('output').textContent = `Error: ${error.message}`;
             }
         });
-    
+
         document.getElementById('download').addEventListener('click', () => {
             const data = document.getElementById('output').textContent;
             const blob = new Blob([data], { type: 'application/json' });
@@ -48,6 +56,5 @@
             document.body.removeChild(a);
         });
     </script>
-    
 </body>
 </html>

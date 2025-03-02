@@ -37,6 +37,28 @@
                 </button>
             </form>
         </div>
+
+        <!--Sección para ver la API Key -->
+    <div class="api-key bg-gray-50 shadow-lg rounded-lg p-6 mt-6">
+        <h3 class="text-lg font-semibold mb-4">🔑 Tu API Key</h3>
+
+        <% if (usuario.apiKeys.length > 0) { %>
+            <p class="bg-gray-200 p-2 rounded text-gray-700">
+                <code id="apiKey"><%= usuario.apiKeys[0].key %></code>
+            </p>
+            <button onclick="copyApiKey()" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700 transition">
+                📋 Copiar API Key
+            </button>
+        <% } else { %>
+            <p class="text-gray-500">⚠️ Aún no tienes una API Key.</p>
+            <form action="/perfil/generar-api-key" method="POST">
+                <button type="submit" class="mt-2 bg-green-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-green-600 transition">
+                    🔑 Generar API Key
+                </button>
+            </form>
+        <% } %>
+    </div>
+
         <!-- 📝 Reseñas recibidas -->
         <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow">
             <h2 class="text-lg font-semibold mb-3">⭐ Reseñas Recibidas</h2>
@@ -55,6 +77,18 @@
             <% } %>
         </div>
     </main>
+
+    <!-- Script para copiar API Key -->
+    <script>
+        function copyApiKey() {
+            const apiKeyElement = document.getElementById("apiKey");
+            navigator.clipboard.writeText(apiKeyElement.innerText).then(() => {
+                alert("API Key copiada al portapapeles.");
+            }).catch(err => {
+                console.error("Error al copiar API Key:", err);
+            });
+        }
+    </script>
 
     <!-- Footer -->
     <%- include("partials/footer") %>
