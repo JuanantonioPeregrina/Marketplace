@@ -134,21 +134,38 @@ if (!titulo || !descripcion || !precio || !categoria || !fechaExpiracion || !fec
 
 // 📌 Editar un anuncio
 router.put("/:id", async (req, res) => {
-    try {
-        const anuncio = await Anuncio.findById(req.params.id);
-        if (!anuncio) return res.status(404).json({ error: "Anuncio no encontrado" });
+  try {
+      const anuncioId = req.params.id.trim();  // 🧹 Eliminar espacios en blanco
+      console.log("🟢 Intentando actualizar anuncio con ID:", anuncioId);
 
-        if (anuncio.autor !== req.user.username) {
-            return res.status(403).json({ error: "No tienes permiso para editar este anuncio." });
-        }
+      const anuncio = await Anuncio.findById(anuncioId);
+      if (!anuncio) {
+          return res.status(404).json({ error: "Anuncio no encontrado" });
+      }
 
-        Object.assign(anuncio, req.body);
-        await anuncio.save();
-        res.json({ success: true, anuncio });
-    } catch (error) {
-        res.status(500).json({ error: "Error al actualizar el anuncio." });
-    }
+      console.log("🔍 Autor del anuncio:", anuncio.autor);
+      console.log("🔑 Usuario autenticado:", req.user ? req.user.username : "No autenticado");
+
+      if (!req.user || anuncio.autor !== req.user.username) {
+          return res.status(403).json({ error: "No tienes permiso para editar este anuncio." });
+      }
+
+      // ✅ Aplicar actualización usando `findByIdAndUpdate`
+      const anuncioActualizado = await Anuncio.findByIdAndUpdate(
+          anuncioId,
+          { $set: req.body },  // 👈 Solo los campos que llegan en `req.body`
+          { new: true }  // 👈 Devuelve el documento actualizado
+      );
+
+      console.log("✅ Anuncio actualizado correctamente:", anuncioActualizado);
+      res.json({ success: true, anuncio: anuncioActualizado });
+
+  } catch (error) {
+      console.error("❌ Error al actualizar el anuncio:", error);
+      res.status(500).json({ error: "Error al actualizar el anuncio.", detalle: error.message });
+  }
 });
+
 
 // 📌 Eliminar un anuncio
 router.delete("/:id", async (req, res) => {
