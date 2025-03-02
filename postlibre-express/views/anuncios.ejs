@@ -271,6 +271,26 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
     </div>
     <% } else if (user && user.username === anuncio.autor) { %>
         <p class="text-gray-500 mt-2">Eres el autor de este anuncio.</p>
+        <div class="mt-4 flex gap-2">
+            <!-- Botón de editar -->
+            <button 
+                class="bg-yellow-500 text-white px-4 py-2 rounded-md text-sm font-semibold shadow-md hover:bg-yellow-600 transition edit-btn"
+                data-id="<%= anuncio._id %>"
+                data-titulo="<%= anuncio.titulo %>"
+                data-descripcion="<%= anuncio.descripcion %>"
+                data-precio="<%= anuncio.precioActual %>"
+            >
+                ✏️ Editar
+            </button>
+    
+            <!-- Botón de eliminar -->
+            <button 
+                class="bg-red-500 text-white px-4 py-2 rounded-md text-sm font-semibold shadow-md hover:bg-red-600 transition delete-btn"
+                data-id="<%= anuncio._id %>"
+            >
+                🗑️ Eliminar
+            </button>
+        </div>
     <% } %>
     
 
