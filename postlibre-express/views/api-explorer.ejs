@@ -14,11 +14,28 @@
 
     <script>
         document.getElementById('fetchData').addEventListener('click', async () => {
-            const response = await fetch('/api/anuncios');
-            const data = await response.json();
-            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            const apiKey = "4355fb06-ab4f-4f06-9fb6-32825c3d525f"; // 🔹 Usa la API Key generada
+    
+            try {
+                const response = await fetch('/api/anuncios', {
+                    method: 'GET',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-api-key": apiKey // 🔹 Cambia "Authorization" por "x-api-key"
+                    }
+                });
+    
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+    
+                const data = await response.json();
+                document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('output').textContent = `Error: ${error.message}`;
+            }
         });
-
+    
         document.getElementById('download').addEventListener('click', () => {
             const data = document.getElementById('output').textContent;
             const blob = new Blob([data], { type: 'application/json' });
@@ -31,5 +48,6 @@
             document.body.removeChild(a);
         });
     </script>
+    
 </body>
 </html>

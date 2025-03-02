@@ -1,8 +1,10 @@
-// routes/api/anuncios.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Anuncio = require('../../database/models/anuncio.model');
-const { authenticateToken } = require('../../middlewares/auth');
+const Anuncio = require("../../database/models/anuncio.model");
+const { authenticateToken } = require("../../middlewares/apiAuth");
+
+//Asegurar que todas las rutas requieren autenticación con API Key o Token JWT
+router.use(authenticateToken);
 
 /**
  * @swagger
@@ -13,7 +15,7 @@ const { authenticateToken } = require('../../middlewares/auth');
  *       200:
  *         description: Lista de anuncios obtenida con éxito.
  */
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
     try {
         const anunciosDB = await Anuncio.find({});
         const anunciosConDatos = anunciosDB.map(anuncio => ({
@@ -44,24 +46,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /api/anuncios/{id}:
- *   get:
- *     summary: Obtiene un anuncio por ID
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Anuncio encontrado
- *       404:
- *         description: Anuncio no encontrado
- */
-router.get('/:id', async (req, res) => {
+// Obtener anuncio por ID
+router.get("/:id", async (req, res) => {
     try {
         const anuncio = await Anuncio.findById(req.params.id);
         if (!anuncio) {
@@ -73,33 +59,12 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /api/anuncios:
- *   post:
- *     summary: Crea un nuevo anuncio
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               titulo:
- *                 type: string
- *               descripcion:
- *                 type: string
- *     responses:
- *       201:
- *         description: Anuncio creado exitosamente
- */
-router.post('/', authenticateToken, async (req, res) => {
+// Crear un nuevo anuncio (autenticación requerida)
+router.post("/", async (req, res) => {
     try {
         const nuevoAnuncio = new Anuncio({
             ...req.body,
-            autor: req.user.username
+            autor: req.user.username // Usuario autenticado
         });
         await nuevoAnuncio.save();
         res.status(201).json(nuevoAnuncio);
@@ -108,26 +73,8 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /api/anuncios/{id}:
- *   delete:
- *     summary: Elimina un anuncio
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Anuncio eliminado exitosamente
- *       404:
- *         description: Anuncio no encontrado
- */
-router.delete('/:id', authenticateToken, async (req, res) => {
+// Eliminar un anuncio (autenticación requerida)
+router.delete("/:id", async (req, res) => {
     try {
         const anuncio = await Anuncio.findByIdAndDelete(req.params.id);
         if (!anuncio) {

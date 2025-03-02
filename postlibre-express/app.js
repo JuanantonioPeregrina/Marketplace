@@ -26,7 +26,7 @@ const editarPerfilRouter = require('./routes/editar-perfil');
 
 const anunciosApi = require('./routes/api/anuncios'); // Rutas REST
 const apiExplorerRoutes = require('./routes/api-explorer');
-
+const generateApiKeyRoutes = require("./routes/api/generateApiKey");
 
 const Chat = require("./database/models/chat.model");
 const politicaCookiesRouter = require("./routes/politica-cookies");
@@ -203,6 +203,7 @@ app.use('/logout', (req,res) =>{
 
 app.use('/api/anuncios', anunciosApi);
 app.use('/api-explorer', apiExplorerRoutes);
+app.use("/api", generateApiKeyRoutes);
 
 //Actualizar el nombre de usuario en la vista con el que ha iniciado sesión en vez de hardcodeado Invitado o el mismo nombre para todas las vistas.
 /*app.use((req, res, next) => {
