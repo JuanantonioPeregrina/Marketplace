@@ -25,6 +25,8 @@ const perfilRouter = require('./routes/mi-cuenta');
 const editarPerfilRouter = require('./routes/editar-perfil');
 
 const anunciosApi = require('./routes/api/anuncios'); // Rutas REST
+const apiExplorerRoutes = require('./routes/api-explorer');
+
 
 const Chat = require("./database/models/chat.model");
 const politicaCookiesRouter = require("./routes/politica-cookies");
@@ -191,6 +193,7 @@ app.use("/mi-cuenta", perfilRouter);
 app.use("/editar-perfil", editarPerfilRouter);
 app.use('/perfil', valoracionRouter);
 app.use('/resenas', resenasRoutes);
+
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)
 app.use('/logout', (req,res) =>{
@@ -199,6 +202,8 @@ app.use('/logout', (req,res) =>{
 });
 
 app.use('/api/anuncios', anunciosApi);
+app.use('/api-explorer', apiExplorerRoutes);
+
 //Actualizar el nombre de usuario en la vista con el que ha iniciado sesión en vez de hardcodeado Invitado o el mismo nombre para todas las vistas.
 /*app.use((req, res, next) => {
   res.locals.user = req.session.user || { username: "Invitado" }; // Si no hay usuario, muestra "Invitado"

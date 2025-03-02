@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador de APIs</title>
+</head>
+<body>
+    <h1>Explorador de APIs</h1>
+    
+    <button id="fetchData">Obtener Anuncios</button>
+    <pre id="output"></pre>
+    <button id="download">Descargar JSON</button>
+
+    <script>
+        document.getElementById('fetchData').addEventListener('click', async () => {
+            const response = await fetch('/api/anuncios');
+            const data = await response.json();
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        });
+
+        document.getElementById('download').addEventListener('click', () => {
+            const data = document.getElementById('output').textContent;
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'anuncios.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+    </script>
+</body>
+</html>
