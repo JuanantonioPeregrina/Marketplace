@@ -45,17 +45,27 @@
         <% anuncios.forEach(anuncio => { %>
             <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full p-6">
                 
-                <!-- Imagen optimizada -->
-                <div class="h-56 w-full bg-gray-200 overflow-hidden rounded-md">
-                    <img src="<%= anuncio.imagen %>" alt="Imagen de <%= anuncio.titulo %>" 
-                        class="w-full h-full object-cover">
-                </div>
+               
+                   
+ <!-- Enlace al anuncio específico -->
+ <a href="/anuncios/<%= anuncio._id %>" class="block">
+    <!-- Imagen optimizada -->
+    <div class="h-56 w-full bg-gray-200 overflow-hidden rounded-md">
+        <img src="<%= anuncio.imagen %>" alt="Imagen de <%= anuncio.titulo %>" 
+            class="w-full h-full object-cover">
+    </div>
+</a>
 
-                <div class="p-5 flex flex-col flex-grow justify-between">
-                    <div>
-                        <h2 class="text-2xl font-semibold text-gray-900 mb-3 line-clamp-2"><%= anuncio.titulo %></h2>
-                        <p class="text-gray-600 text-sm flex-grow line-clamp-3 h-16 overflow-hidden"><%= anuncio.descripcion %></p>
-                   <!-- Contenedor del contador con data-inicio y data-fin -->
+<div class="p-5 flex flex-col flex-grow justify-between">
+    <div>
+        <h2 class="text-2xl font-semibold text-gray-900 mb-3 line-clamp-2">
+            <%= anuncio.titulo %>
+        </h2>
+        <p class="text-gray-600 text-sm flex-grow line-clamp-3 h-16 overflow-hidden">
+            <%= anuncio.descripcion %>
+        </p>
+
+                        <!-- Contenedor del contador con data-inicio y data-fin -->
 <div 
 class="countdown-container mt-4" 
 id="countdown-<%= anuncio._id %>"
