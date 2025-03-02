@@ -2,37 +2,81 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= anuncio.titulo %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1><%= anuncio.titulo %></h1>
-    <img src="<%= anuncio.imagen %>" alt="Imagen del anuncio" style="max-width: 300px;">
-    <p><%= anuncio.descripcion %></p>
-    <p>📍 Ubicación: <%= anuncio.ubicacion %></p>
-    <p>💰 Precio Actual: <strong><%= anuncio.precioActual %>€</strong></p>
-    <p>🕒 Publicado por: <%= anuncio.autor %></p>
+<body class="bg-gray-100">
 
-    <h3>Pujas realizadas:</h3>
-    <ul>
-        <% if (anuncio.pujas.length > 0) { %>
-            <% anuncio.pujas.forEach(puja => { %>
-                <li><strong><%= puja.usuario %>:</strong> <%= puja.cantidad %>€</li>
-            <% }) %>
-        <% } else { %>
-            <p>Aún no hay pujas.</p>
-        <% } %>
-    </ul>
+    <div class="max-w-3xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-6">
+        
+        <!-- Imagen del anuncio -->
+        <div class="w-full flex justify-center">
+            <img src="<%= anuncio.imagen %>" alt="Imagen del anuncio" class="rounded-lg w-full max-h-80 object-cover">
+        </div>
 
-    <h3>Hacer una puja</h3>
-    <% if (user) { %>
-        <form action="/api/anuncios/<%= anuncio._id %>/pujar" method="POST">
-            <input type="number" name="cantidad" required>
-            <button type="submit">Pujar</button>
-        </form>
-    <% } else { %>
-        <p>Debes iniciar sesión para pujar.</p>
-    <% } %>
+        <!-- Título del anuncio -->
+        <h1 class="text-3xl font-bold text-gray-800 mt-4 text-center">
+            <%= anuncio.titulo %>
+        </h1>
 
-    <a href="/anuncios">🔙 Volver a la lista de anuncios</a>
+        <!-- Descripción -->
+        <p class="text-gray-600 text-lg text-center mt-2">
+            <%= anuncio.descripcion %>
+        </p>
+
+        <!-- Información del anuncio -->
+        <div class="mt-4 text-gray-700">
+            <p class="flex items-center">
+                📍 <span class="ml-2">Ubicación: <strong><%= anuncio.ubicacion %></strong></span>
+            </p>
+            <p class="flex items-center mt-2">
+                💰 <span class="ml-2 text-lg font-semibold">Precio Actual: <%= anuncio.precioActual %>€</span>
+            </p>
+            <p class="flex items-center mt-2">
+                🕒 <span class="ml-2">Publicado por: <strong><%= anuncio.autor %></strong></span>
+            </p>
+        </div>
+
+        <!-- Pujas realizadas -->
+        <div class="mt-6">
+            <h3 class="text-xl font-semibold text-gray-800">📢 Pujas realizadas</h3>
+            <ul class="bg-gray-50 p-4 rounded-lg shadow-sm mt-3">
+                <% if (anuncio.pujas.length > 0) { %>
+                    <% anuncio.pujas.forEach(puja => { %>
+                        <li class="flex justify-between border-b py-2">
+                            <span class="text-gray-800 font-medium"><%= puja.usuario %>:</span>
+                            <span class="text-green-600 font-semibold">€<%= puja.cantidad %></span>
+                        </li>
+                    <% }) %>
+                <% } else { %>
+                    <p class="text-gray-500">Aún no hay pujas.</p>
+                <% } %>
+            </ul>
+        </div>
+
+        <!-- Formulario para hacer una puja -->
+        <div class="mt-6">
+            <h3 class="text-xl font-semibold text-gray-800">⚡ Hacer una puja</h3>
+            <% if (user) { %>
+                <form action="/api/anuncios/<%= anuncio._id %>/pujar" method="POST" class="mt-3 flex items-center">
+                    <input type="number" name="cantidad" placeholder="Introduce tu puja" required class="border p-2 rounded-md w-full mr-2">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition">
+                        💰 Pujar
+                    </button>
+                </form>
+            <% } else { %>
+                <p class="text-red-500 font-medium mt-3">Debes iniciar sesión para pujar.</p>
+            <% } %>
+        </div>
+
+        <!-- Botón para regresar -->
+        <div class="mt-6 text-center">
+            <a href="/anuncios" class="text-blue-500 hover:underline font-medium">
+                🔙 Volver a la lista de anuncios
+            </a>
+        </div>
+    </div>
+
 </body>
 </html>
