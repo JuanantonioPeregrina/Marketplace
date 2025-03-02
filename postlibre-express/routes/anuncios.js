@@ -8,11 +8,7 @@ const path = require('path'); //
 module.exports = (io) => {
     const router = express.Router();
 
-    router.get('/', (req, res) => {
-        res.sendFile(path.join(__dirname, '../public/html/anuncios.html'));
-    });
-    
-    // ✅ Cargar los anuncios incluyendo las pujas y ofertas automáticas
+    // Cargar los anuncios incluyendo las pujas y ofertas automáticas
     router.get("/", async (req, res) => {
         try {
             const usuario = req.session.user ? req.session.user.username : null;
