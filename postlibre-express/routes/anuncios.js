@@ -9,16 +9,25 @@ module.exports = (io) => {
     const router = express.Router();
 
    
-    // ✅ Cargar los anuncios incluyendo las pujas y ofertas automáticas
     router.get("/", async (req, res) => {
         try {
             const usuario = req.session.user ? req.session.user.username : null;
+            let apiKey = "";
+    
+            if (usuario) {
+                const userData = await Usuario.findOne({ username: usuario });
+                if (userData && userData.apiKeys.length > 0) {
+                    apiKey = userData.apiKeys[0].key;  // ✅ Tomamos la primera API Key disponible
+                }
+            }
+    
+            console.log("📢 API Key enviada al frontend:", apiKey || "No disponible");
+    
             const anunciosDB = await Anuncio.find({});
-        
+    
             let anunciosConDatos = await Promise.all(anunciosDB.map(async (anuncio) => {
                 let chatIniciado = false;
-                
-                // Verificar si el usuario está inscrito y si el chat ya existe
+    
                 if (usuario && anuncio.inscritos.includes(usuario)) {
                     chatIniciado = await Chat.exists({
                         anuncioId: anuncio._id,
@@ -42,7 +51,7 @@ module.exports = (io) => {
                     estadoSubasta: anuncio.estadoSubasta,
                     fechaInicioSubasta: anuncio.fechaInicioSubasta,
                     fechaExpiracion: anuncio.fechaExpiracion,
-                    chatIniciado,  // 👈 Agregar este campo para reflejar si el chat está activo
+                    chatIniciado,
                     pujas: anuncio.pujas.map(puja => ({
                         usuario: puja.usuario,
                         cantidad: puja.cantidad,
@@ -53,20 +62,21 @@ module.exports = (io) => {
                 };
             }));
     
-            console.log("📢 Datos enviados al frontend:", JSON.stringify(anunciosConDatos, null, 2));
             res.render("anuncios", {
                 title: "Anuncios - LibrePost",
                 user: req.session.user,
+                apiKey,  // ✅ Pasar la API Key al frontend
                 anuncios: anunciosConDatos
             });
     
         } catch (error) {
-            console.error("Error cargando anuncios:", error);
+            console.error("❌ Error cargando anuncios:", error);
             res.status(500).send("Error al cargar los anuncios.");
         }
     });
     
-
+    
+    
     // ✅ Ruta para registrar oferta automática antes del inicio de la subasta
 router.post("/oferta-automatica/:id", async (req, res) => {
     try {

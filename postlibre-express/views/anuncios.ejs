@@ -291,6 +291,30 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
                 🗑️ Eliminar
             </button>
         </div>
+        <!-- Modal de Edición -->
+<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 class="text-lg font-bold mb-4">Editar Anuncio</h2>
+        <form id="editForm">
+            <input type="hidden" id="editAnuncioId">
+            
+            <label class="block mb-2">Título:</label>
+            <input type="text" id="editTitulo" class="w-full border p-2 rounded mb-3" required>
+
+            <label class="block mb-2">Descripción:</label>
+            <textarea id="editDescripcion" class="w-full border p-2 rounded mb-3" required></textarea>
+
+            <label class="block mb-2">Precio:</label>
+            <input type="number" id="editPrecio" class="w-full border p-2 rounded mb-3" required>
+
+            <div class="flex justify-end gap-2">
+                <button type="button" id="cancelEdit" class="bg-gray-400 px-4 py-2 rounded text-white">Cancelar</button>
+                <button type="submit" class="bg-blue-500 px-4 py-2 rounded text-white">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
     <% } %>
     
 
@@ -304,6 +328,18 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/countdown.js"></script>
 <script>
+
+    var user = JSON.parse('<%- JSON.stringify(user || {}) %>');
+    var apiKey = "<%= apiKey ? apiKey : '' %>";
+
+    if (apiKey && apiKey !== "null" && apiKey !== "undefined") {
+        localStorage.setItem("apiKey", apiKey); // ✅ Guardar API Key en localStorage
+        console.log("✅ API Key guardada en localStorage:", apiKey);
+    } else {
+        console.warn("⚠️ API Key no disponible en la sesión.");
+    }
+
+
     document.addEventListener("DOMContentLoaded", function () {
         const socket = io();
     
@@ -381,6 +417,100 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
         }
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const editModal = document.getElementById("editModal");
+    const editForm = document.getElementById("editForm");
+    const editAnuncioId = document.getElementById("editAnuncioId");
+    const editTitulo = document.getElementById("editTitulo");
+    const editDescripcion = document.getElementById("editDescripcion");
+    const editPrecio = document.getElementById("editPrecio");
+    const cancelEdit = document.getElementById("cancelEdit");
+
+    let userApiKey = localStorage.getItem("apiKey") || ""; // ✅ Recuperar API Key
+
+    console.log("🔑 API Key cargada desde localStorage:", userApiKey);
+
+    // 🖊️ Evento para abrir el modal de edición
+    document.querySelectorAll(".edit-btn").forEach(button => {
+        button.addEventListener("click", function() {
+            editAnuncioId.value = this.dataset.id;
+            editTitulo.value = this.dataset.titulo;
+            editDescripcion.value = this.dataset.descripcion;
+            editPrecio.value = this.dataset.precio;
+            editModal.classList.remove("hidden");
+        });
+    });
+
+    // ❌ Cerrar el modal de edición
+    cancelEdit.addEventListener("click", function() {
+        editModal.classList.add("hidden");
+    });
+
+    // ✅ Enviar la actualización del anuncio con API Key
+    editForm.addEventListener("submit", async function(event) {
+        event.preventDefault();
+        const id = editAnuncioId.value;
+        const updatedData = {
+            titulo: editTitulo.value,
+            descripcion: editDescripcion.value,
+            precioActual: Number(editPrecio.value)
+        };
+
+        try {
+            const response = await fetch(`/api/anuncios/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": userApiKey  // ✅ Enviar API Key en la cabecera
+                },
+                body: JSON.stringify(updatedData)
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert("Anuncio actualizado correctamente");
+                location.reload();
+            } else {
+                alert("Error al actualizar el anuncio: " + result.error);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Error al actualizar el anuncio.");
+        }
+    });
+
+    // ✅ Manejar eliminación de anuncio con API Key
+    document.querySelectorAll(".delete-btn").forEach(button => {
+        button.addEventListener("click", async function() {
+            const id = this.dataset.id;
+            if (confirm("¿Estás seguro de que quieres eliminar este anuncio?")) {
+                try {
+                    const response = await fetch(`/api/anuncios/${id}`, {
+                        method: "DELETE",
+                        headers: {
+                            "x-api-key": userApiKey // ✅ Enviar API Key en la cabecera
+                        }
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert("Anuncio eliminado correctamente");
+                        location.reload();
+                    } else {
+                        alert("Error al eliminar el anuncio: " + result.error);
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Error al eliminar el anuncio.");
+                }
+            }
+        });
+    });
+});
+
+
+
 
   </script>
 
