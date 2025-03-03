@@ -480,35 +480,57 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // ✅ Manejar eliminación de anuncio con API Key
-    document.querySelectorAll(".delete-btn").forEach(button => {
-        button.addEventListener("click", async function() {
-            const id = this.dataset.id;
-            if (confirm("¿Estás seguro de que quieres eliminar este anuncio?")) {
-                try {
-                    const response = await fetch(`/api/anuncios/${id}`, {
-                        method: "DELETE",
-                        headers: {
-                            "x-api-key": userApiKey // ✅ Enviar API Key en la cabecera
-                        }
-                    });
+    document.addEventListener("DOMContentLoaded", function () {
+    let userApiKey = localStorage.getItem("apiKey") || ""; // ✅ Recuperar API Key
+    console.log("🔑 API Key cargada desde localStorage para eliminación:", userApiKey);
 
-                    const result = await response.json();
-                    if (result.success) {
-                        alert("Anuncio eliminado correctamente");
-                        location.reload();
-                    } else {
-                        alert("Error al eliminar el anuncio: " + result.error);
-                    }
-                } catch (error) {
-                    console.error("Error:", error);
-                    alert("Error al eliminar el anuncio.");
-                }
-            }
+    function attachDeleteEventListeners() {
+        console.log("📢 Registrando eventos de eliminación...");
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.removeEventListener("click", handleDelete); // Evita duplicar eventos
+            button.addEventListener("click", handleDelete);
         });
-    });
-});
+    }
 
+    async function handleDelete(event) {
+        event.preventDefault(); // Evita cualquier comportamiento inesperado
+        const id = event.target.dataset.id;
+        console.log(`🗑️ Intentando eliminar anuncio con ID: ${id}`);
+
+        if (!id) {
+            console.error("⚠️ No se encontró un ID de anuncio.");
+            return;
+        }
+
+        if (confirm("¿Estás seguro de que quieres eliminar este anuncio?")) {
+            try {
+                const response = await fetch(`/api/anuncios/${id}`, {
+                    method: "DELETE",
+                    headers: {
+                        "x-api-key": userApiKey // ✅ Enviar API Key en la cabecera
+                    }
+                });
+
+                const result = await response.json();
+                console.log("🔍 Respuesta del servidor:", result);
+
+                if (result.success) {
+                    alert("Anuncio eliminado correctamente");
+                    location.reload();
+                } else {
+                    alert("Error al eliminar el anuncio: " + result.error);
+                }
+            } catch (error) {
+                console.error("❌ Error en la eliminación:", error);
+                alert("Error al eliminar el anuncio.");
+            }
+        }
+    }
+
+    // ✅ Asegurar que los eventos se asignan después de que el contenido esté listo
+    setTimeout(attachDeleteEventListeners, 1000); // 🔥 Se espera un poco para evitar que los elementos aún no existan en el DOM
+});
+});
 
 
 
