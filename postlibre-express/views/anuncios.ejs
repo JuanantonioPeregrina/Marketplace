@@ -481,51 +481,62 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // ✅ Evento para manejar la eliminación de anuncios
+    
     function attachDeleteEventListeners() {
         console.log("📢 Registrando eventos de eliminación...");
         document.querySelectorAll(".delete-btn").forEach(button => {
-    button.addEventListener("click", async function (event) {
-        event.preventDefault();
-        const id = this.dataset.id;
-        console.log(`🗑️ Intentando eliminar anuncio con ID: ${id}`);
+            button.addEventListener("click", async function (event) {
+                event.preventDefault();
+                const id = this.dataset.id;
+                console.log(`🗑️ Intentando eliminar anuncio con ID: ${id}`);
 
-        if (!id) {
-            console.error("⚠️ No se encontró un ID de anuncio.");
-            return;
-        }
-
-        if (confirm("❗¿Estás seguro de que quieres eliminar este anuncio?")) {
-            try {
-                const response = await fetch(`/api/anuncios/${id}`, {
-                    method: "DELETE",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "x-api-key": localStorage.getItem("apiKey") || ""
-                    }
-                });
-
-                const result = await response.json();
-                console.log("🔍 Respuesta del servidor:", result);
-
-                if (response.ok && result.success) {
-                    alert("✅ Anuncio eliminado correctamente");
-                    document.querySelector(`button[data-id='${id}']`).closest(".anuncio-container").remove();
-                } else {
-                    throw new Error(result.error || "Error desconocido");
+                if (!id) {
+                    console.error("⚠️ No se encontró un ID de anuncio.");
+                    return;
                 }
-            } catch (error) {
-                console.error("❌ Error en la eliminación:", error);
-                alert(`❌ Error al eliminar el anuncio: ${error.message}`);
-            }
-        }
-    });
-});
-    }
 
-    // ✅ Esperar 1 segundo y asignar eventos de eliminación
+                if (confirm("❗¿Estás seguro de que quieres eliminar este anuncio?")) {
+                    try {
+                        const response = await fetch(`/api/anuncios/${id}`, {
+                            method: "DELETE",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "x-api-key": localStorage.getItem("apiKey") || ""
+                            }
+                        });
+
+                        const result = await response.json();
+                        console.log("🔍 Respuesta del servidor:", result);
+
+                        if (response.ok && result.success) {
+                            alert("✅ Anuncio eliminado correctamente");
+
+                            // Seleccionamos el contenedor del anuncio y lo eliminamos si existe
+                            const anuncioElemento = document.querySelector(`button[data-id='${id}']`)?.closest(".anuncio-container");
+                            
+                            if (anuncioElemento) {
+                                anuncioElemento.remove();
+                            } else {
+                                console.warn("⚠️ No se encontró el contenedor del anuncio en el DOM.");
+                            }
+                        } else {
+                            throw new Error(result.error || "Error desconocido");
+                        }
+                    } catch (error) {
+                        console.error("❌ Error en la eliminación:", error);
+                        alert(`❌ Error al eliminar el anuncio: ${error.message}`);
+                    }
+                }
+            });
+        });
+    }
+   
+    // Esperar 1 segundo para asegurar que los elementos están cargados antes de asignar eventos
     setTimeout(attachDeleteEventListeners, 1000);
 });
+
+ 
+
 
 
   </script>

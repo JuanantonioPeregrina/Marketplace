@@ -169,19 +169,23 @@ router.put("/:id", async (req, res) => {
 
 // 📌 Eliminar un anuncio
 router.delete("/:id", async (req, res) => {
-    try {
-        const anuncio = await Anuncio.findById(req.params.id);
-        if (!anuncio) return res.status(404).json({ error: "Anuncio no encontrado" });
+  try {
+      const anuncioId = req.params.id;
+      console.log(`🗑️ Eliminando anuncio con ID: ${anuncioId}`);
 
-        if (anuncio.autor !== req.user.username) {
-            return res.status(403).json({ error: "No tienes permiso para eliminar este anuncio." });
-        }
+      const anuncio = await Anuncio.findById(anuncioId);
+      if (!anuncio) {
+          return res.status(404).json({ success: false, error: "Anuncio no encontrado" });
+      }
 
-        await Anuncio.findByIdAndDelete(req.params.id);
-        res.json({ mensaje: "Anuncio eliminado exitosamente" });
-    } catch (error) {
-        res.status(500).json({ error: "Error al eliminar el anuncio." });
-    }
+      await Anuncio.findByIdAndDelete(anuncioId);
+      console.log("✅ Anuncio eliminado correctamente");
+
+      res.json({ success: true, message: "Anuncio eliminado exitosamente" });
+  } catch (error) {
+      console.error("❌ Error en la eliminación del anuncio:", error);
+      res.status(500).json({ success: false, error: "Error interno del servidor" });
+  }
 });
 
 // 📌 Inscribirse en un anuncio
