@@ -428,12 +428,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const cancelEdit = document.getElementById("cancelEdit");
 
     let userApiKey = localStorage.getItem("apiKey") || ""; // ✅ Recuperar API Key
-
     console.log("🔑 API Key cargada desde localStorage:", userApiKey);
 
     // 🖊️ Evento para abrir el modal de edición
     document.querySelectorAll(".edit-btn").forEach(button => {
-        button.addEventListener("click", function() {
+        button.addEventListener("click", function () {
             editAnuncioId.value = this.dataset.id;
             editTitulo.value = this.dataset.titulo;
             editDescripcion.value = this.dataset.descripcion;
@@ -443,12 +442,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // ❌ Cerrar el modal de edición
-    cancelEdit.addEventListener("click", function() {
+    cancelEdit.addEventListener("click", function () {
         editModal.classList.add("hidden");
     });
 
     // ✅ Enviar la actualización del anuncio con API Key
-    editForm.addEventListener("submit", async function(event) {
+    editForm.addEventListener("submit", async function (event) {
         event.preventDefault();
         const id = editAnuncioId.value;
         const updatedData = {
@@ -462,39 +461,33 @@ document.addEventListener("DOMContentLoaded", function () {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-api-key": userApiKey  // ✅ Enviar API Key en la cabecera
+                    "x-api-key": userApiKey
                 },
                 body: JSON.stringify(updatedData)
             });
 
             const result = await response.json();
+            console.log("🔍 Respuesta de actualización:", result);
+
             if (result.success) {
-                alert("Anuncio actualizado correctamente");
+                alert("✅ Anuncio actualizado correctamente");
                 location.reload();
             } else {
-                alert("Error al actualizar el anuncio: " + result.error);
+                alert("❌ Error al actualizar el anuncio: " + result.error);
             }
         } catch (error) {
-            console.error("Error:", error);
-            alert("Error al actualizar el anuncio.");
+            console.error("❌ Error en la actualización:", error);
+            alert("❌ Error al actualizar el anuncio.");
         }
     });
 
-    document.addEventListener("DOMContentLoaded", function () {
-    let userApiKey = localStorage.getItem("apiKey") || ""; // ✅ Recuperar API Key
-    console.log("🔑 API Key cargada desde localStorage para eliminación:", userApiKey);
-
+    // ✅ Evento para manejar la eliminación de anuncios
     function attachDeleteEventListeners() {
         console.log("📢 Registrando eventos de eliminación...");
         document.querySelectorAll(".delete-btn").forEach(button => {
-            button.removeEventListener("click", handleDelete); // Evita duplicar eventos
-            button.addEventListener("click", handleDelete);
-        });
-    }
-
-    async function handleDelete(event) {
-        event.preventDefault(); // Evita cualquier comportamiento inesperado
-        const id = event.target.dataset.id;
+    button.addEventListener("click", async function (event) {
+        event.preventDefault();
+        const id = this.dataset.id;
         console.log(`🗑️ Intentando eliminar anuncio con ID: ${id}`);
 
         if (!id) {
@@ -502,36 +495,37 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        if (confirm("¿Estás seguro de que quieres eliminar este anuncio?")) {
+        if (confirm("❗¿Estás seguro de que quieres eliminar este anuncio?")) {
             try {
                 const response = await fetch(`/api/anuncios/${id}`, {
                     method: "DELETE",
                     headers: {
-                        "x-api-key": userApiKey // ✅ Enviar API Key en la cabecera
+                        "Content-Type": "application/json",
+                        "x-api-key": localStorage.getItem("apiKey") || ""
                     }
                 });
 
                 const result = await response.json();
                 console.log("🔍 Respuesta del servidor:", result);
 
-                if (result.success) {
-                    alert("Anuncio eliminado correctamente");
-                    location.reload();
+                if (response.ok && result.success) {
+                    alert("✅ Anuncio eliminado correctamente");
+                    document.querySelector(`button[data-id='${id}']`).closest(".anuncio-container").remove();
                 } else {
-                    alert("Error al eliminar el anuncio: " + result.error);
+                    throw new Error(result.error || "Error desconocido");
                 }
             } catch (error) {
                 console.error("❌ Error en la eliminación:", error);
-                alert("Error al eliminar el anuncio.");
+                alert(`❌ Error al eliminar el anuncio: ${error.message}`);
             }
         }
+    });
+});
     }
 
-    // ✅ Asegurar que los eventos se asignan después de que el contenido esté listo
-    setTimeout(attachDeleteEventListeners, 1000); // 🔥 Se espera un poco para evitar que los elementos aún no existan en el DOM
+    // ✅ Esperar 1 segundo y asignar eventos de eliminación
+    setTimeout(attachDeleteEventListeners, 1000);
 });
-});
-
 
 
   </script>
