@@ -229,6 +229,17 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
 
                     <% if (user) { %>
                         <button class="pujar-btn mt-4" data-anuncio-id="<%= anuncio._id %>">🔥 Pujar</button>
+                         
+                        <!-- Oferta automática -->
+                    <form id="oferta-automatica-form-<%= anuncio._id %>" method="POST" action="/anuncios/oferta-automatica/<%= anuncio._id %>">
+                        <label for="precioMaximo">Introduce tu oferta programada:</label>
+                        <input type="number" name="precioMaximo" id="precioMaximo-<%= anuncio._id %>" min="0" max="<%= anuncio.precioActual %>" required class="border p-2 w-full">
+                        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold">
+                            🤖 Programar Oferta Automática
+                        </button>
+                    </form>
+                    
+                
                     <% } else { %>
                         <p class="text-red-500 text-sm font-bold mt-2">Debe iniciar sesión para pujar.</p>
                     <% } %>
@@ -239,15 +250,7 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
                         <button class="bg-red-500 text-white px-4 py-2 rounded-lg font-bold">🔥 Pujar</button>
                     </form> -->
                     
-                    <!-- Oferta automática -->
-                    <form id="oferta-automatica-form-<%= anuncio._id %>" method="POST" action="/anuncios/oferta-automatica/<%= anuncio._id %>">
-                        <label for="precioMaximo">Introduce tu oferta programada:</label>
-                        <input type="number" name="precioMaximo" id="precioMaximo-<%= anuncio._id %>" min="0" max="<%= anuncio.precioActual %>" required class="border p-2 w-full">
-                        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold">
-                            🤖 Programar Oferta Automática
-                        </button>
-                    </form>
-                    
+                   
                     
                     <!-- 🔥 Mensaje de éxito (inicialmente oculto) -->
                     <div id="mensaje-oferta-automatica-<%= anuncio._id %>" class="hidden bg-blue-500 text-white p-2 rounded mt-2">
