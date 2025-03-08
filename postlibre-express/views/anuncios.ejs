@@ -110,7 +110,8 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
                     </div>
 
                     <!-- Botón de chat para inscritos -->
-                    <% if (user && user.username !== anuncio.autor && anuncio.inscritos.includes(user.username)) { %>
+                    <% if (user && user.username !== anuncio.autor && Array.isArray(anuncio.inscritos) && anuncio.inscritos.includes(user.username)) { %>
+
                         <div class="mt-6 flex justify-center">
                             <% if (anuncio.chatIniciado) { %>
                                 <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= anuncio.autor %>" 
@@ -262,7 +263,8 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
                     <!-- Botón de inscripción -->
 <% if (user && user.username !== anuncio.autor) { %>
     <div class="text-center mt-4">
-        <% if (anuncio.inscritos.includes(user.username)) { %>
+        <% if (user && user.username !== anuncio.autor && anuncio.inscritos && Array.isArray(anuncio.inscritos) && anuncio.inscritos.includes(user.username)) { %>
+
             <button class="px-4 py-2 bg-gray-500 text-white rounded cursor-not-allowed" disabled>
                 Inscrito
             </button>
