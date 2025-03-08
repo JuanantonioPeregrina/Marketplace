@@ -1,0 +1,247 @@
+/* 1. Importar una tipografía limpia y moderna (Montserrat como ejemplo) */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+/* 2. Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 3. Estilos base del body */
+body {
+  background: #f9f9f9;             /* Fondo gris muy claro */
+  font-family: 'Montserrat', sans-serif;
+  color: #333333;
+  line-height: 1.5;
+}
+
+/* Contenedor principal */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* -------------------------- */
+/* Encabezados y textos       */
+/* -------------------------- */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #222222;
+}
+
+/* Ajuste básico para párrafos */
+p {
+  margin-bottom: 8px;
+  color: #555;
+}
+
+/* -------------------------- */
+/* Tarjetas de subasta        */
+/* -------------------------- */
+
+/* Tarjeta con estilo moderno y sutil sombra */
+.subasta-card {
+  background: #ffffff;   
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  margin-bottom: 20px; /* Espacio entre tarjetas */
+}
+
+.subasta-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Precio actual con color destacado */
+.precio-actual {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #d32f2f; /* Rojo oscuro */
+  margin: 10px 0;
+}
+
+/* Temporizador moderno (pill style) */
+.temporizador {
+  display: inline-block;
+  background: #333;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* -------------------------- */
+/* Botones y estilos de hover */
+/* -------------------------- */
+
+button, .pujar-btn, .oferta-automatica-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+/* Botón principal (pujar) */
+.pujar-btn {
+  background: #f44336; /* Rojo */
+  color: #fff;
+  margin-top: 10px;
+}
+
+.pujar-btn:hover {
+  background: #d32f2f; /* Más oscuro al hover */
+  transform: scale(1.05);
+}
+
+/* Botón secundario (oferta automática) */
+.oferta-automatica-btn {
+  background: #4caf50; /* Verde */
+  color: #fff;
+  margin-top: 10px;
+}
+
+.oferta-automatica-btn:hover {
+  background: #388e3c;
+  transform: scale(1.05);
+}
+
+/* -------------------------- */
+/* Formularios e inputs       */
+/* -------------------------- */
+
+form {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+input, select, textarea {
+  font-family: 'Montserrat', sans-serif;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #aaa;
+}
+
+/* Select con ancho fijo si se desea */
+.form-select {
+  width: 180px;
+}
+
+/* -------------------------- */
+/* Listas y elementos dentro  */
+/* -------------------------- */
+
+.subasta-card ul {
+  list-style: none; /* Sin viñetas por defecto */
+  padding-left: 0;
+  margin-top: 10px;
+}
+
+.subasta-card li {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* -------------------------- */
+/* Mensajes, alertas, etc.    */
+/* -------------------------- */
+
+.mensaje-oferta-automatica {
+  background: #e3fcef; /* Verde muy claro */
+  color: #2e7d32;      /* Texto verde oscuro */
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  display: none; /* Oculto por defecto */
+}
+
+
+
+/* Contenedor principal del countdown */
+.countdown-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Espacio entre cajas y separadores */
+    margin: 10px 0;
+  }
+  
+  /* Caja individual (Días, Horas, Minutos, Segundos) */
+  .countdown-box {
+    background: #000;      /* Fondo negro */
+    color: #fff;           /* Texto blanco */
+    border-radius: 4px;
+    width: 60px;           /* Ancho fijo */
+    text-align: center;
+    padding: 8px;
+    position: relative;    /* Para posicionar la etiqueta */
+  }
+  
+  /* Etiqueta superior (DÍAS, HORAS...) */
+  .countdown-box-label {
+    background: #fff;      /* Fondo blanco */
+    color: #000;           /* Texto negro */
+    padding: 2px 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    border-radius: 2px;
+    position: absolute;
+    top: -12px;            /* Sube la etiqueta encima */
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  /* Valor (00) dentro de la caja */
+  .countdown-box-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-top: 10px;      /* Espacio debajo de la etiqueta */
+  }
+  
+  /* Separador (dos puntos) */
+  .countdown-separator {
+    font-size: 1.6rem;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  /* Texto de "Subasta finalizada" */
+  .text-red-600 {
+    color: #d32f2f;
+  }
+  .font-bold {
+    font-weight: 700;
+  }
+  

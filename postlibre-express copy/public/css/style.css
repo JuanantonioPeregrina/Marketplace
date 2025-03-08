@@ -1,0 +1,341 @@
+/* Configuración general */
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', Arial, sans-serif;
+    background-color: #f8f9fa; /* Fondo gris claro para un look moderno */
+}
+
+
+/* Contenedor principal */
+main {
+    margin-top: 80px; /* Ajuste del margen debajo del header */
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 2rem;
+}
+
+/* Header */
+/* Ajuste del Header */
+header {
+    padding: 20px 0;
+}
+
+/* Ajuste de separación del título principal */
+h1 {
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+}
+
+.h1 {
+ color: black;
+    
+}
+/* Contenedor principal */
+
+
+/* Estilos para el footer */
+footer {
+    background: #111827; /* Color oscuro */
+    color: white;
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: auto; /* Hace que el footer se pegue al final sin montarse */
+    width: 100%;
+}
+
+/* Estilos de la cuadrícula de categorías */
+.category-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Hace que las categorías sean responsivas */
+    gap: 20px;
+    justify-content: center;
+}
+
+.category-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    transition: transform 0.3s ease-in-out;
+    width: 100%; /* Para que no se encojan los elementos */
+}
+
+.category-item:hover {
+    transform: scale(1.05);
+}
+
+.category-item img {
+    width: 100%;
+    height: 200px; /* Tamaño uniforme */
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.category-item p {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+
+.anuncio-imagen {
+    width: 100%; /* La imagen ocupará todo el ancho del contenedor */
+    max-width: 400px; /* Establece un ancho máximo para que no se agrande demasiado */
+    height: auto; /* Mantiene la proporción de la imagen */
+    display: block; /* Evita espacios extra */
+    margin: 0 auto; /* Centra la imagen */
+    border-radius: 10px; /* Bordes redondeados opcionales */
+    object-fit: cover; /* Ajusta la imagen sin distorsionar */
+}
+
+.anuncio-contenido {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Asegura que el texto no se disperse */
+    height: 100%;
+}
+
+.anuncio-contenido a, .anuncio-contenido button {
+    margin-top: 20px !important;
+}
+
+
+.text-center {
+    text-align: center;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 40px;
+    min-width: 250px;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    justify-content: center;
+}
+
+/* Tarjetas de anuncios */
+.bg-white {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Espaciado uniforme */
+    height: 100%;
+    padding: 20px;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Hace que el botón siempre esté al fondo */
+.bg-white .chat-button {
+    margin-top: auto;
+}
+
+.bg-white:hover {
+    transform: translateY(-5px);
+}
+
+/* Imágenes dentro de los anuncios */
+.bg-gray-200 {
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.bg-gray-200 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Botón principal */
+.bg-blue-600, .bg-gray-400 {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+}
+
+a.bg-blue-600 {
+    text-decoration: none !important; /* Elimina el subrayado */
+    margin-top: 50px !important; ; /* Ajusta el espacio hacia abajo */
+}
+
+.bg-blue-600:hover {
+    background-color: #0056b3;
+}
+
+/* Botón para lista de inscritos */
+.bg-blue-500 {
+    background-color: #3498db;
+}
+
+.bg-blue-500:hover {
+    background-color: #2980b9;
+}
+
+/* Botón de espera */
+.bg-gray-400 {
+    background-color: #bbb;
+}
+
+/* Separación entre elementos */
+.mt-3 {
+    margin-top: 12px;
+}
+
+.mt-4 {
+    margin-top: 16px;
+}
+
+.mt-6 {
+    margin-top: 44px;
+}
+
+/* Precio */
+.text-green-600 {
+    color: #2ecc71;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Publicado por */
+.text-gray-500 {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+/* Lista de inscritos */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+/* Anuncios */
+h2 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 5px;
+    color: #333;
+}
+
+/* Precios */
+.text-green-600 {
+    color: #28a745;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Información de usuario */
+.text-gray-500 {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* Chat icono */
+.text-blue-500 {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.text-blue-500:hover {
+    text-decoration: underline;
+}
+
+/* Estilos del icono de perfil */
+
+
+.user-profile {
+    
+    margin-left:20px;
+    margin-right: 20px !important;
+    display: flex;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    width: 45px;
+    height: 45px;
+}
+
+
+.user-profile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+/* Estilos del menú desplegable */
+.profile-menu {
+    display: none;
+    position: absolute;
+    right: 0; /* Asegura que esté alineado con el icono */
+    top: 50px; /* Ajusta la distancia desde el icono */
+    background: white;
+    width: 220px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 1000;
+    margin-left: 0; /* Elimina el desplazamiento */
+}
+
+
+.profile-menu a, .profile-menu p {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: black;
+    font-weight: 500;
+    transition: background 0.3s ease-in-out;
+}
+
+.profile-menu a:hover {
+    background: #f0f0f0;
+}
+
+/* Botón de cierre */
+.profile-menu button {
+    width: 100%;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.profile-menu button:hover {
+    background: #c0392b;
+}

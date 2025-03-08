@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Términos y Condiciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-r from-gray-100 via-gray-200 to-gray-300 flex flex-col min-h-screen">
+    <%- include("partials/header", {}) %>
+
+    <main class="container mx-auto px-6 py-12">
+        <div class="bg-white shadow-lg rounded-lg p-8 max-w-3xl mx-auto">
+            <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-6">📜 Términos y Condiciones</h1>
+            <p class="text-lg text-gray-700 text-justify mb-6 leading-relaxed">
+                Bienvenido a <span class="font-semibold text-blue-600">LibrePost</span>. Al registrarte y utilizar nuestra plataforma, aceptas los siguientes términos y condiciones.
+            </p>
+
+            <div class="space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <span class="mr-2">1️⃣</span> Uso de la Plataforma
+                    </h2>
+                    <p class="text-gray-700 mt-2 leading-relaxed">
+                        Esta plataforma está destinada para la publicación y gestión de anuncios. Queda prohibido el uso indebido de la misma.
+                    </p>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <span class="mr-2">2️⃣</span> Protección de Datos
+                    </h2>
+                    <p class="text-gray-700 mt-2 leading-relaxed">
+                        Respetamos la privacidad de nuestros usuarios y nos comprometemos a proteger su información personal conforme a nuestra <a href="/politica-cookies" class="text-blue-500 hover:underline">Política de Cookies</a>.
+                    </p>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <span class="mr-2">3️⃣</span> Responsabilidades del Usuario
+                    </h2>
+                    <p class="text-gray-700 mt-2 leading-relaxed">
+                        Cada usuario es responsable de la veracidad de la información que proporciona, incluyendo su identidad y documentación.
+                    </p>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <span class="mr-2">4️⃣</span> Modificaciones de los Términos
+                    </h2>
+                    <p class="text-gray-700 mt-2 leading-relaxed">
+                        <span class="font-semibold text-blue-600">LibrePost</span> se reserva el derecho de modificar estos términos en cualquier momento. Los cambios serán notificados oportunamente.
+                    </p>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <span class="mr-2">5️⃣</span> Contacto
+                    </h2>
+                    <p class="text-gray-700 mt-2 leading-relaxed">
+                        Si tienes dudas, puedes contactarnos en nuestra <a href="/soporte" class="text-blue-500 font-medium hover:underline">página de contacto</a>.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center">
+                <a href="/" class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md font-semibold hover:bg-blue-700 transition">
+                    Volver al inicio
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <%- include("partials/footer", {}) %>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<%- include('partials/header', {}) -%>
+
+<link rel="stylesheet" href="/css/styleC.css">
+<div id="user-list">
+    <h3>Usuarios Conectados</h3>
+    <select id="target-user">
+        <option value="">Todos</option>
+    </select>
+</div>
+
+<div id="chat-container">
+    <h1>Chat de Soporte</h1>
+
+    <!-- Aviso para invitados -->
+    <% if (!user) { %>
+        <p class="chat-warning">Debes iniciar sesión para poder enviar mensajes.</p>
+    <% } %>
+
+    <!-- Lista de mensajes única -->
+    <ul id="messages"></ul>
+
+    <!-- Formulario de chat (bloqueado si es invitado) -->
+    <form id="chat-form">
+        <input id="message-input" type="text" placeholder="Escribe tu mensaje..." required <% if (!user) { %> disabled <% } %> />
+        <button type="submit" id="submit-btn" <% if (!user) { %> disabled class="btn-disabled" <% } %>>Enviar</button>
+    </form>
+</div>
+
+<div id="guest-list">
+    <h3>Invitados Activos</h3>
+    <ul id="active-guests"></ul>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/soporte.js"></script> 
+
+<style>
+/* Bloqueo visual si el usuario no ha iniciado sesión */
+.chat-warning {
+    color: red;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* Estilos para deshabilitar el input y el botón */
+input:disabled, button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Bloquear totalmente el clic en el botón */
+.btn-disabled {
+    pointer-events: none; /* Impide cualquier interacción */
+    cursor: not-allowed;
+}
+</style>
+
+<%- include('partials/footer') %>
+

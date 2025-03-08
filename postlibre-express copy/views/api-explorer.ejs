@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Explorer</title>
+</head>
+<body>
+    <h1>Explorador de APIs</h1>
+
+    <div>
+        <label for="endpoint">Selecciona un Endpoint:</label>
+        <select id="endpoint">
+            <option value="/api/anuncios">Obtener Anuncios (GET)</option>
+            <option value="/api/categorias">Obtener Categorías (GET)</option>
+        </select>
+        <button onclick="probarAPI()">Probar</button>
+    </div>
+
+    <h3>Respuesta de la API:</h3>
+    <pre id="resultado"></pre>
+
+    <script>
+        function probarAPI() {
+            const endpoint = document.getElementById("endpoint").value;
+            fetch(endpoint)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("resultado").innerText = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    document.getElementById("resultado").innerText = "Error al llamar a la API: " + error;
+                });
+        }
+    </script>
+</body>
+</html>

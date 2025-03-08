@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+
+    <!-- ✅ Importar el header y los estilos correctamente -->
+    <%- include("partials/header") %>
+    
+</head>
+<body class="bg-gray-100 flex h-screen">
+    
+    <!-- Panel Lateral de Conversaciones -->
+    <div class="w-1/4 bg-white shadow-lg overflow-y-auto">
+        <h2 class="text-lg font-bold text-center p-4 bg-gray-200">Mis Conversaciones</h2>
+        <ul id="lista-conversaciones" class="p-4">
+            <% if (conversaciones.length > 0) { %>
+                <% conversaciones.forEach(conversacion => { %>
+                    <% if (conversacion.contacto && conversacion.anuncioTitulo) { %>
+                        <li class="p-2 border-b cursor-pointer hover:bg-gray-100" 
+                            onclick="abrirChat('<%= conversacion.anuncioId %>', '<%= conversacion.contacto %>')">
+                            <strong><%= conversacion.contacto %></strong> - <%= conversacion.anuncioTitulo %>
+                        </li>
+                    <% } %>
+                <% }) %>
+            <% } else { %>
+                <p class="text-gray-500 text-center">No tienes conversaciones activas.</p>
+            <% } %>
+        </ul>
+        
+        
+    </div>
+
+    <!-- Área del Chat -->
+    <div class="w-3/4 flex flex-col">
+        <div id="chat-container" class="flex-1 p-4">
+            <h2 id="chat-titulo" class="text-xl font-bold"></h2>
+            <div id="mensajes" class="h-80 overflow-y-auto bg-white p-4 border rounded shadow-md mt-4"></div>
+
+            <div class="mt-4 flex">
+                <input type="text" id="mensaje" class="flex-1 p-2 border rounded" placeholder="Escribe un mensaje...">
+                <button id="btnEnviar" class="ml-2 px-4 py-2 bg-blue-500 text-black rounded">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io(); // Conectar con el servidor de sockets
+
+        // Obtener anuncioId y usuario destino desde la variable pasada por el backend
+        let anuncioIdActual = "<%= anuncioId %>";
+        let usuarioDestino = "<%= usuarioDestino %>";
+
+        console.log("📌 Anuncio ID:", anuncioIdActual);
+        console.log("📌 Usuario Destino:", usuarioDestino);
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const mensajesDiv = document.getElementById("mensajes");
+
+            // ✅ Cargar mensajes desde la base de datos al abrir el chat
+            fetch(`/chat/mensajes?anuncioId=${anuncioIdActual}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log("📥 Mensajes cargados desde la BD:", data.mensajes);
+                        data.mensajes.forEach(mensaje => agregarMensaje(mensaje));
+                        mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+                    } else {
+                        console.error("❌ Error cargando mensajes:", data.message);
+                    }
+                })
+                .catch(error => console.error("❌ Error en fetch:", error));
+        });
+
+        function enviarMensaje() {
+            const inputMensaje = document.getElementById("mensaje");
+            const mensaje = inputMensaje.value.trim();
+
+            if (!mensaje) return; // Evitar enviar mensajes vacíos
+
+            const datosMensaje = {
+                anuncioId: anuncioIdActual,
+                remitente: "<%= user.username %>",
+                destinatario: usuarioDestino,
+                contenido: mensaje,
+                fecha: new Date().toISOString()
+            };
+
+            console.log("📤 Enviando mensaje:", datosMensaje);
+            socket.emit("mensaje", datosMensaje, (ack) => {
+                if (ack.error) {
+                    console.error("❌ Error al enviar mensaje:", ack.error);
+                    alert("Hubo un error al enviar el mensaje.");
+                    return;
+                }
+                console.log("✅ Mensaje enviado correctamente.");
+            });
+
+            // Agregar mensaje al chat localmente
+            agregarMensaje(datosMensaje);
+            inputMensaje.value = ""; // Limpiar input
+        }
+
+        // Asegurar que el botón existe antes de asignarle el evento
+        document.addEventListener("DOMContentLoaded", function() {
+            const botonEnviar = document.getElementById("btnEnviar");
+            if (botonEnviar) {
+                botonEnviar.addEventListener("click", enviarMensaje);
+            } else {
+                console.error("⚠️ No se encontró el botón de enviar.");
+            }
+        });
+
+        // Escuchar mensajes en tiempo real
+        socket.on("mensaje", (mensaje) => {
+            console.log("📥 Mensaje recibido en el cliente:", mensaje);
+            agregarMensaje(mensaje);
+        });
+
+        function agregarMensaje(mensaje) {
+    const mensajesDiv = document.getElementById("mensajes");
+    const fechaMensaje = new Date(mensaje.fecha);
+    const fechaFormateada = fechaMensaje.toLocaleDateString('es-ES', { 
+        year: 'numeric', month: 'long', day: 'numeric' 
+    });
+    const horaFormateada = fechaMensaje.toLocaleTimeString('es-ES');
+
+    mensajesDiv.innerHTML += `
+        <div class="mb-2 ${mensaje.remitente === "<%= user.username %>" ? 'text-right' : 'text-left'}">
+            <span class="text-xs text-gray-500">
+                📅 ${fechaFormateada} 🕒 ${horaFormateada} - <strong>${mensaje.remitente}</strong>
+            </span>
+            <div class="inline-block p-2 rounded-lg ${mensaje.remitente === "<%= user.username %>" ? 'bg-blue-500 text-black' : 'bg-gray-200'}">
+                ${mensaje.contenido}
+            </div>
+        </div>
+    `;
+    mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+
+    // 🔔 Notificación si el mensaje es para el usuario actual
+    if (mensaje.destinatario === "<%= user.username %>") {
+        const notificacion = document.getElementById("notifButton");
+        notificacion.innerText = "🔴 Nuevo mensaje!";
+        notificacion.style.color = "red";
+    }
+}
+
+        
+    </script>
+</body>
+</html>

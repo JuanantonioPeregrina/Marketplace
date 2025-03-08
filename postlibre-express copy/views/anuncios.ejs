@@ -1,0 +1,357 @@
+
+<%- include("partials/header", {}) -%>
+<script>
+    var user = JSON.parse('<%- JSON.stringify(user || {}) %>');
+    console.log("Usuario cargado en cliente:", user);
+</script>
+
+
+
+<script src="/js/subasta.js"></script>
+<link rel="stylesheet" href="/css/styleA.css">
+
+<main class="container mx-auto px-6 py-6">
+    <h1 class="text-5xl font-bold text-center mb-1 text-gray-900 flex items-center justify-center">
+        🏷️ Anuncios Publicados
+    </h1>
+
+
+<!-- 🔎 Filtros Mejorados -->
+<form action="/anuncios" method="GET" class="flex flex-wrap justify-center items-center gap-2 bg-gray-100 p-3 rounded-lg shadow-sm max-w-4xl mx-auto">
+        
+    <select name="presupuesto" class="form-select border px-2 py-1 rounded-md text-gray-700 w-40 text-sm">
+        <option value="">Presupuesto</option>
+        <option value="menos-100">Menos de 100€</option>
+        <option value="100-500">Entre 100€ y 500€</option>
+        <option value="mas-500">Más de 500€</option>
+    </select>
+
+    <input type="text" name="ubicacion" placeholder="Ubicación" 
+        class="border px-2 py-1 rounded-md text-gray-700 w-40 text-sm" />
+
+    <select name="reputacion" class="form-select border px-2 py-1 rounded-md text-gray-700 w-40 text-sm">
+        <option value="">Reputación</option>
+        <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
+        <option value="3-4">⭐⭐⭐ - ⭐⭐⭐⭐ (3 a 4 estrellas)</option>
+        <option value="menos-3">⭐ - ⭐⭐ (Menos de 3 estrellas)</option>
+    </select>
+
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-semibold shadow-md hover:bg-blue-600 transition">
+        🔍 Filtrar
+    </button>
+</form>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <% anuncios.forEach(anuncio => { %>
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full p-6">
+                
+                <!-- Imagen optimizada -->
+                <div class="h-56 w-full bg-gray-200 overflow-hidden rounded-md">
+                    <img src="<%= anuncio.imagen %>" alt="Imagen de <%= anuncio.titulo %>" 
+                        class="w-full h-full object-cover">
+                </div>
+
+                <div class="p-5 flex flex-col flex-grow justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-3 line-clamp-2"><%= anuncio.titulo %></h2>
+                        <p class="text-gray-600 text-sm flex-grow line-clamp-3 h-16 overflow-hidden"><%= anuncio.descripcion %></p>
+                   <!-- Contenedor del contador con data-inicio y data-fin -->
+<div 
+class="countdown-container mt-4" 
+id="countdown-<%= anuncio._id %>"
+data-inicio="<%= anuncio.fechaInicioSubasta ? new Date(anuncio.fechaInicioSubasta).toISOString() : '' %>"
+data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOString() : '' %>"
+>
+<div class="countdown-box">
+    <div class="countdown-box-label">DÍAS</div>
+    <div class="countdown-box-value" id="days-<%= anuncio._id %>">00</div>
+</div>
+<span class="countdown-separator">:</span>
+<div class="countdown-box">
+    <div class="countdown-box-label">HORAS</div>
+    <div class="countdown-box-value" id="hours-<%= anuncio._id %>">00</div>
+</div>
+<span class="countdown-separator">:</span>
+<div class="countdown-box">
+    <div class="countdown-box-label">MINUTOS</div>
+    <div class="countdown-box-value" id="minutes-<%= anuncio._id %>">00</div>
+</div>
+<span class="countdown-separator">:</span>
+<div class="countdown-box">
+    <div class="countdown-box-label">SEGUNDOS</div>
+    <div class="countdown-box-value" id="seconds-<%= anuncio._id %>">00</div>
+</div>
+</div>
+
+                 
+
+  
+                        <p class="text-green-600 text-xl font-bold mt-4 flex items-center">
+                            💰 €<%= anuncio.precio %>
+                        </p>
+
+                        <div class="mt-3 text-gray-500 text-sm flex items-center">
+                            <span class="mr-2">📌 Publicado por:</span> <strong><%= anuncio.autor %></strong>
+                        </div>
+                        <div class="mt-3 text-gray-500 text-sm flex items-center">
+                            <span class="mr-2">📌 Ubicación:</span> <strong><%= anuncio.ubicacion %></strong>
+                        </div>
+                        
+                    </div>
+
+                    <!-- Botón de chat para inscritos -->
+                    <% if (user && user.username !== anuncio.autor && anuncio.inscritos.includes(user.username)) { %>
+                        <div class="mt-6 flex justify-center">
+                            <% if (anuncio.chatIniciado) { %>
+                                <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= anuncio.autor %>" 
+                                    class="block text-center bg-blue-600 text-white no-underline px-5 py-3 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition w-full">
+                                    💬 Ir al chat
+                                </a>
+                            <% } else { %>
+                                <button class="block text-center bg-gray-400 text-white px-5 py-3 rounded-lg opacity-70 cursor-not-allowed w-full">
+                                    ⏳ Esperando conversación
+                                </button>
+                            <% } %>
+                        </div>
+                    <% } %>
+
+                    <!-- Lista de inscritos con botón de chat -->
+                    <% if (user && user.username === anuncio.autor) { %>
+                        <div class="mt-6">
+                            <h4 class="text-md font-semibold text-gray-800 mb-3">📌 Usuarios inscritos:</h4>
+                            <ul class="space-y-3">
+                                <% if (anuncio.inscritos.length > 0) { %>
+                                    <% anuncio.inscritos.forEach(inscrito => { %>
+                                        <li class="flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-sm">
+                                            <span class="text-gray-700 font-medium"><%= inscrito %></span>
+                                            <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= inscrito %>" 
+                                                class="bg-blue-500 no-underline text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition text-sm flex items-center">
+                                                💬 Chatear
+                                            </a>
+                                        </li>
+                                    <% }); %>
+                                <% } else { %>
+                                    <p class="text-gray-400 text-sm">No hay usuarios inscritos todavía.</p>
+                                <% } %>
+                            </ul>
+                        </div>
+
+                        <% if (user && (user.username === anuncio.autor || anuncio.inscritos.includes(user.username))) { %>
+                            <div class="mt-6 bg-gray-100 p-4 rounded-lg">
+                                <h4 class="text-lg font-semibold mb-3">📢 Dejar una Reseña</h4>
+                                
+                                <!-- Reseñar al autor del anuncio -->
+                                <% if (user.username !== anuncio.autor) { %>
+                                    <h5 class="text-md font-semibold">Valorar a <%= anuncio.autor %></h5>
+                                    <form action="/resenas/<%= anuncio.autor %>/resenas" method="POST" class="space-y-3">
+                                        <label for="puntuacion" class="block">Puntuación:</label>
+                                        <select name="puntuacion" required class="border p-2 w-full">
+                                            <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
+                                            <option value="4">⭐⭐⭐⭐ (4 estrellas)</option>
+                                            <option value="3">⭐⭐⭐ (3 estrellas)</option>
+                                            <option value="2">⭐⭐ (2 estrellas)</option>
+                                            <option value="1">⭐ (1 estrella)</option>
+                                        </select>
+                        
+                                        <label for="comentario" class="block">Comentario:</label>
+                                        <textarea name="comentario" required class="border p-2 w-full" placeholder="Escribe tu opinión aquí..."></textarea>
+                        
+                                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Enviar Reseña</button>
+                                    </form>
+                                <% } %>
+                        
+                                <!-- Reseñar a los inscritos -->
+                                <% if (user.username === anuncio.autor && anuncio.inscritos.length > 0) { %>
+                                    <h5 class="text-md font-semibold mt-4">Valorar a los inscritos</h5>
+                                    <% anuncio.inscritos.forEach(inscrito => { %>
+                                        <% if (anuncio.inscritosConResenaPorAnuncio && anuncio.inscritosConResenaPorAnuncio[inscrito]) { %>
+                                            <p class="text-gray-500 text-sm">Ya has enviado una reseña a <%= inscrito %> en este anuncio.</p>
+                                        <% } else { %>
+                                            <form action="/resenas/<%= inscrito %>/<%= anuncio._id %>" method="POST" class="space-y-3">
+                                                <label for="puntuacion">Valorar a los inscritos <%= inscrito %></label>
+                                                <select name="puntuacion" required class="border p-2 w-full rounded-md shadow-sm">
+                                                    <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
+                                                    <option value="4">⭐⭐⭐⭐ (4 estrellas)</option>
+                                                    <option value="3">⭐⭐⭐ (3 estrellas)</option>
+                                                    <option value="2">⭐⭐ (2 estrellas)</option>
+                                                    <option value="1">⭐ (1 estrella)</option>
+                                                </select>
+                                                <textarea name="comentario" placeholder="Deja un comentario..." required class="border p-2 w-full rounded-md shadow-sm"></textarea>
+                                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 transition">
+                                                    Enviar Reseña
+                                                </button>
+                                            </form>
+                                        <% } %>
+                                    <% }) %>
+                                    
+                                <% } %>
+                                
+                                
+                                
+                                
+                        
+                            </div>
+                        <% } %>
+                        
+                    <% } %>
+
+                    <p class="precio-actual">Precio actual: €<span id="precio-<%= anuncio._id %>"><%= anuncio.precioActual %></span></p>
+                    <p class="temporizador">⏳ Tiempo restante: <span id="timer-<%= anuncio._id %>">5:00</span></p>
+                    
+<!-- 🔹 Sección para mostrar TODAS las pujas en tiempo real -->
+<div id="pujas-<%= anuncio._id %>" class="mt-4 p-2 border border-gray-300 rounded-lg bg-gray-50">
+    <h4 class="text-md font-semibold text-gray-700">📢 Pujas realizadas:</h4>
+    <% if (anuncio.pujas && anuncio.pujas.length > 0) { %>
+        <% anuncio.pujas.forEach(puja => { %>
+            <p class="text-gray-800">
+                <strong><%= puja.usuario %></strong> ha pujado €<%= puja.cantidad %>
+                <% if (puja.automatica) { %>
+                    <span class="text-green-500">🤖 (Automática)</span>
+                <% } %>
+            </p>
+        <% }); %>
+    <% } else { %>
+        <p class="text-gray-500">Aún no hay pujas.</p>
+    <% } %>
+</div>
+
+
+
+                    <% if (user) { %>
+                        <button class="pujar-btn mt-4" data-anuncio-id="<%= anuncio._id %>">🔥 Pujar</button>
+                    <% } else { %>
+                        <p class="text-red-500 text-sm font-bold mt-2">Debe iniciar sesión para pujar.</p>
+                    <% } %>
+                    <!-- Pujar manualmente 
+                    <form action="/anuncios/pujar/<%= anuncio._id %>" method="POST">
+
+                        <input type="number" name="precio" required>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded-lg font-bold">🔥 Pujar</button>
+                    </form> -->
+                    
+                    <!-- Oferta automática -->
+                    <form id="oferta-automatica-form-<%= anuncio._id %>" method="POST" action="/anuncios/oferta-automatica/<%= anuncio._id %>">
+                        <label for="precioMaximo">Introduce tu oferta programada:</label>
+                        <input type="number" name="precioMaximo" id="precioMaximo-<%= anuncio._id %>" min="0" max="<%= anuncio.precioActual %>" required class="border p-2 w-full">
+                        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold">
+                            🤖 Programar Oferta Automática
+                        </button>
+                    </form>
+                    
+                    
+                    <!-- 🔥 Mensaje de éxito (inicialmente oculto) -->
+                    <div id="mensaje-oferta-automatica-<%= anuncio._id %>" class="hidden bg-blue-500 text-white p-2 rounded mt-2">
+                        ✅ Oferta automática registrada con éxito
+                    </div>
+                    
+                    
+                    
+                    <!-- Botón de inscripción -->
+<% if (user && user.username !== anuncio.autor) { %>
+    <div class="text-center mt-4">
+        <% if (anuncio.inscritos.includes(user.username)) { %>
+            <button class="px-4 py-2 bg-gray-500 text-white rounded cursor-not-allowed" disabled>
+                Inscrito
+            </button>
+        <% } else { %>
+            <button onclick="inscribirse('<%= anuncio._id %>')" class="px-4 py-2 bg-green-500 text-white rounded">
+                Inscribirme
+            </button>
+        <% } %>
+    </div>
+    <% } else if (user && user.username === anuncio.autor) { %>
+        <p class="text-gray-500 mt-2">Eres el autor de este anuncio.</p>
+    <% } %>
+    
+
+                </div>
+            </div>
+        <% }); %>
+    </div>
+
+</main>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/countdown.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const socket = io();
+    
+        // 📢 Interceptar formularios de oferta automática para evitar redirección
+        document.querySelectorAll('[id^="oferta-automatica-form-"]').forEach(form => {
+            form.addEventListener("submit", function (event) {
+                event.preventDefault(); // 🔥 Evita la redirección predeterminada
+                
+                const formData = new FormData(form);
+                const anuncioId = form.id.replace("oferta-automatica-form-", "");
+                const mensajeDiv = document.getElementById(`mensaje-oferta-automatica-${anuncioId}`);
+    
+                fetch(`/anuncios/oferta-automatica/${anuncioId}`, {
+                    method: "POST",
+                    body: new URLSearchParams(formData),
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.mensaje) {
+                        mensajeDiv.innerText = "✅ " + data.mensaje;
+                        mensajeDiv.classList.remove("hidden"); // 🔥 Muestra el mensaje
+                        setTimeout(() => mensajeDiv.classList.add("hidden"), 3000); // Oculta en 3s
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            });
+        });
+    
+        // 📢 Evento cuando la subasta se actualiza
+        socket.on("actualizar_subasta", (data) => {
+            console.log("📢 Actualización recibida:", data);
+    
+            const { anuncioId, precioActual, tiempoRestante } = data;
+            const precioElement = document.getElementById(`precio-${anuncioId}`);
+            const timerElement = document.getElementById(`timer-${anuncioId}`);
+    
+            if (precioElement) precioElement.innerText = `€${precioActual}`;
+    
+            if (timerElement) {
+                if (!isNaN(tiempoRestante) && tiempoRestante >= 0) { 
+                    const minutos = Math.floor(tiempoRestante / 60);
+                    const segundos = tiempoRestante % 60;
+                    timerElement.innerText = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+                } else {
+                    timerElement.innerText = "00:00"; 
+                }
+            }
+        });
+    
+        // 📢 Evento cuando la subasta finaliza
+        socket.on("subasta_finalizada", (data) => {
+            alert(`La subasta del anuncio ${data.anuncioId} ha finalizado con un precio de €${data.precioFinal}`);
+        });
+    });
+
+
+ 
+     <!-- Archivo JS con la función de cuenta regresiva -->
+ 
+
+
+    // LLAMAMOS a la función iniciarCuentaRegresiva pasando:
+    // 1) el mismo "id" que usamos en el HTML (12345),
+    // 2) la fecha/hora de inicio (en formato ISO o "YYYY-MM-DDTHH:mm:ssZ"),
+    // 3) la fecha/hora de fin.
+    document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('.countdown-container').forEach(container => {
+        const id = container.id.replace('countdown-', '');
+        const fechaInicio = container.getAttribute('data-inicio');
+        const fechaFin = container.getAttribute('data-fin');
+
+        if (fechaInicio && fechaFin) {
+            iniciarCuentaRegresiva(id, fechaInicio, fechaFin);
+        }
+    });
+});
+
+  </script>
+
+<%- include("partials/footer") %>
