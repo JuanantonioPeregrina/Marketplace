@@ -326,6 +326,23 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
         <% }); %>
     </div>
 
+    <div class="pagination mt-6 flex justify-center">
+        <% if (page > 1) { %>
+            <a href="/anuncios?page=<%= page - 1 %>" class="bg-blue-500 text-white px-4 py-2 rounded mx-2">
+             Anterior
+            </a>
+        <% } %>
+        
+        <span class="px-4 py-2 text-gray-700 font-bold">Página <%= page %> de <%= totalPages %></span>
+    
+        <% if (page < totalPages) { %>
+            <a href="/anuncios?page=<%= page + 1 %>" class="bg-blue-500 text-white px-4 py-2 rounded mx-2">
+                Siguiente 
+            </a>
+        <% } %>
+    </div>
+    
+
 </main>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -336,10 +353,10 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
     var apiKey = "<%= apiKey ? apiKey : '' %>";
 
     if (apiKey && apiKey !== "null" && apiKey !== "undefined") {
-        localStorage.setItem("apiKey", apiKey); // ✅ Guardar API Key en localStorage
-        console.log("✅ API Key guardada en localStorage:", apiKey);
+        localStorage.setItem("apiKey", apiKey); // Guardar API Key en localStorage
+        console.log("API Key guardada en localStorage:", apiKey);
     } else {
-        console.warn("⚠️ API Key no disponible en la sesión.");
+        console.warn(" API Key no disponible en la sesión.");
     }
 
 
@@ -349,7 +366,7 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
         // 📢 Interceptar formularios de oferta automática para evitar redirección
         document.querySelectorAll('[id^="oferta-automatica-form-"]').forEach(form => {
             form.addEventListener("submit", function (event) {
-                event.preventDefault(); // 🔥 Evita la redirección predeterminada
+                event.preventDefault(); // Evita la redirección predeterminada
                 
                 const formData = new FormData(form);
                 const anuncioId = form.id.replace("oferta-automatica-form-", "");

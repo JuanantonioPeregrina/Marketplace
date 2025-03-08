@@ -13,60 +13,49 @@ module.exports = (io) => {
         try {
             const usuario = req.session.user ? req.session.user.username : null;
             let apiKey = "";
-    
+        
             if (usuario) {
                 const userData = await Usuario.findOne({ username: usuario });
                 if (userData && userData.apiKeys.length > 0) {
-                    apiKey = userData.apiKeys[0].key;  // ✅ Tomamos la primera API Key disponible
+                    apiKey = userData.apiKeys[0].key; 
                 }
             }
-    
+        
             console.log("📢 API Key enviada al frontend:", apiKey || "No disponible");
     
-            const anunciosDB = await Anuncio.find({});
+            // 📌 PAGINACIÓN: Límite de anuncios por página (20 por defecto)
+            const page = parseInt(req.query.page) || 1;  // Página actual
+            const limit = 20;  // 🔹 Solo mostramos 20 anuncios por página
+            const skip = (page - 1) * limit;  // 🔹 Saltamos los registros anteriores
     
-            let anunciosConDatos = await Promise.all(anunciosDB.map(async (anuncio) => {
-                let chatIniciado = false;
+            // 📌 FILTROS: Obtenemos los parámetros de búsqueda
+            let filtro = {};
+            if (req.query.presupuesto) {
+                if (req.query.presupuesto === "menos-100") filtro.precioActual = { $lt: 100 };
+                else if (req.query.presupuesto === "100-500") filtro.precioActual = { $gte: 100, $lte: 500 };
+                else if (req.query.presupuesto === "mas-500") filtro.precioActual = { $gt: 500 };
+            }
+            if (req.query.ubicacion) {
+                filtro.ubicacion = new RegExp(req.query.ubicacion, "i");
+            }
     
-                if (usuario && anuncio.inscritos.includes(usuario)) {
-                    chatIniciado = await Chat.exists({
-                        anuncioId: anuncio._id,
-                        $or: [
-                            { remitente: anuncio.autor, destinatario: usuario },
-                            { remitente: usuario, destinatario: anuncio.autor }
-                        ]
-                    });
-                }
+            // 📌 EJECUTAR CONSULTA PAGINADA CON FILTROS
+            const anunciosDB = await Anuncio.find(filtro)
+                .select("titulo precioActual imagen categoria autor ubicacion estadoSubasta fechaExpiracion") // Solo datos esenciales
+                .sort({ fechaPublicacion: -1 }) // Ordenamos por fecha más reciente
+                .skip(skip)
+                .limit(limit);
     
-                return {
-                    _id: anuncio._id.toString(),
-                    titulo: anuncio.titulo,
-                    descripcion: anuncio.descripcion,
-                    imagen: anuncio.imagen,
-                    precioInicial: anuncio.precioInicial,
-                    precioActual: anuncio.precioActual,
-                    autor: anuncio.autor,
-                    ubicacion: anuncio.ubicacion,
-                    inscritos: anuncio.inscritos || [],
-                    estadoSubasta: anuncio.estadoSubasta,
-                    fechaInicioSubasta: anuncio.fechaInicioSubasta,
-                    fechaExpiracion: anuncio.fechaExpiracion,
-                    chatIniciado,
-                    pujas: anuncio.pujas.map(puja => ({
-                        usuario: puja.usuario,
-                        cantidad: puja.cantidad,
-                        fecha: puja.fecha,
-                        automatica: puja.automatica || false  
-                    })),
-                    ofertasAutomaticas: anuncio.ofertasAutomaticas || []
-                };
-            }));
+            // 📌 Contar TOTAL de anuncios para calcular páginas
+            const total = await Anuncio.countDocuments(filtro);
     
             res.render("anuncios", {
                 title: "Anuncios - LibrePost",
                 user: req.session.user,
-                apiKey,  // ✅ Pasar la API Key al frontend
-                anuncios: anunciosConDatos
+                apiKey,
+                anuncios: anunciosDB,
+                page,
+                totalPages: Math.ceil(total / limit),
             });
     
         } catch (error) {
@@ -74,6 +63,7 @@ module.exports = (io) => {
             res.status(500).send("Error al cargar los anuncios.");
         }
     });
+    
     
     
     
