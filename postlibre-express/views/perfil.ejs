@@ -58,6 +58,23 @@
             </form>
         <% } %>
     </div>
+    <div class="bg-gray-50 shadow-lg rounded-lg p-6 mt-6">
+        <h3 class="text-lg font-semibold mb-4">📬 Sugerencias personalizadas</h3>
+      
+        <form action="/perfil/sugerencias" method="POST" class="flex items-center space-x-4">
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" name="recibirSugerencias" value="true"
+              <% if (usuario.recibirSugerencias) { %> checked <% } %>
+              class="form-checkbox h-5 w-5 text-blue-600">
+            <span>Quiero recibir sugerencias de anuncios por email</span>
+          </label>
+      
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700 transition">
+            Guardar Preferencia
+          </button>
+        </form>
+      </div>
+      
 
         <!-- 📝 Reseñas recibidas -->
         <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow">

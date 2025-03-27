@@ -57,5 +57,19 @@ router.post('/cambiar-password', async (req, res) => {
     }
 });
 
+router.post("/sugerencias", async (req, res) => {
+    try {
+      const user = await Usuario.findOne({ username: req.session.user.username });
+      user.recibirSugerencias = !!req.body.recibirSugerencias;
+      await user.save();
+      res.redirect("/perfil");
+    } catch (err) {
+      console.error("❌ Error al actualizar sugerencias:", err);
+      res.status(500).send("Error al guardar la preferencia.");
+    }
+  });
+  
+
+
 
 module.exports = router;

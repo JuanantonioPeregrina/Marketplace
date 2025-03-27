@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
     dni_path: { type: String, required: true },
     verificado: { type: Boolean, default: false },
     reseñas: { type: Array, default: [] },
+    recibirSugerencias: { type: Boolean, default: false },
     apiKeys: { type: [apiKeySchema], default: [] } // Múltiples API Keys permitidas
 });
 
