@@ -97,4 +97,7 @@ router.get("/:categoria", async (req, res) => {
     }
 });
 
-module.exports = router; // 🔥 Exportamos router correctamente
+module.exports = {
+    router,
+    categoriasData
+};

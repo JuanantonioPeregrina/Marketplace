@@ -2,22 +2,25 @@ const express = require('express');
 const Usuario = require('../database/models/user.model'); // Asegúrate de que el nombre del archivo sea correcto
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const { categoriasData } = require("../routes/api/categorias");
 
 
-// 📌 Ruta para mostrar el perfil del usuario
-router.get('/', async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login'); // Si no hay usuario, redirige al login
-    }
+
+// Ruta para mostrar el perfil del usuario
+router.get("/", async (req, res) => {
+    if (!req.session.user) return res.redirect("/login");
 
     try {
         const usuario = await Usuario.findOne({ username: req.session.user.username });
 
-        if (!usuario) {
-            return res.status(404).send("Usuario no encontrado.");
-        }
+        if (!usuario) return res.status(404).send("Usuario no encontrado.");
 
-        res.render('perfil', { title: 'Perfil de ' + usuario.username, usuario, user: req.session.user });
+        res.render("perfil", {
+            title: "Perfil de " + usuario.username,
+            usuario,
+            user: req.session.user,
+            categorias: categoriasData  // añadimos esto
+        });
 
     } catch (error) {
         console.error("❌ Error al cargar el perfil:", error);

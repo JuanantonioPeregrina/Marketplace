@@ -10,7 +10,7 @@ const socketIo = require('socket.io');
 
 const indexRouter = require('./routes/index');
 //const gameRouter = require('./routes/game');
-const categoriasRouter = require('./routes/api/categorias'); //con socket.io
+const { router: categoriasRouter } = require("./routes/api/categorias"); //con socket.io
 const loginRouter = require('./routes/login'); // Ajusta la ruta según la ubicación de tu archivo
 const restrictedRouter = require('./routes/restricted');
 const aboutRouter = require('./routes/about');
