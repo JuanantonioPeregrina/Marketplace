@@ -5,6 +5,13 @@ const Chat = require('../database/models/chat.model');
 const mongoose = require("mongoose");
 const path = require('path'); // 
 
+
+function calcularPromedioReseñas(usuario) {
+    if (!usuario.reseñas || usuario.reseñas.length === 0) return 0;
+    const total = usuario.reseñas.reduce((sum, r) => sum + (r.puntuacion || 0), 0);
+    return total / usuario.reseñas.length;
+}
+
 module.exports = (io) => {
     const router = express.Router();
 
@@ -73,9 +80,26 @@ module.exports = (io) => {
                 fechaExpiracion: anuncio.fechaExpiracion,
                 chatIniciado,
                 pujas: anuncio.pujas || [],
-                ofertasAutomaticas: anuncio.ofertasAutomaticas || []
+                ofertasAutomaticas: anuncio.ofertasAutomaticas || [],
+                sugerencias: await obtenerSugerencias(anuncio.inscritos)
             };
+            
         }));
+
+        async function obtenerSugerencias(inscritos) {
+            const usuarios = await Usuario.find({ username: { $in: inscritos } });
+        
+            const evaluados = usuarios.map(usuario => ({
+                username: usuario.username,
+                reputacion: calcularPromedioReseñas(usuario),
+                totalResenas: usuario.reseñas.length
+            }));
+        
+            return evaluados
+                .sort((a, b) => b.reputacion - a.reputacion)
+                .slice(0, 3); // Solo top 3 sugeridos
+        }
+        
         
     
             // 📌 Contar TOTAL de anuncios para calcular páginas

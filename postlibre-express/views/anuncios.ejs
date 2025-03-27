@@ -128,6 +128,25 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
 
                     <!-- Lista de inscritos con botón de chat -->
                     <% if (user && user.username === anuncio.autor) { %>
+                        <% if (anuncio.sugerencias && anuncio.sugerencias.length > 0) { %>
+    <div class="mt-4 bg-yellow-50 p-4 rounded-lg shadow-md border border-yellow-200">
+        <h5 class="text-md font-semibold text-yellow-800 mb-2">🎯 Usuarios recomendados para este anuncio:</h5>
+        <ul class="list-disc list-inside text-sm text-gray-800">
+            <% anuncio.sugerencias.forEach(s => { %>
+                <li>
+                    <strong><%= s.username %></strong> — 
+                    <span class="text-yellow-500">
+                        <% for (let i = 1; i <= 5; i++) { %>
+                            <%= i <= Math.round(s.reputacion) ? "★" : "☆" %>
+                        <% } %>
+                    </span>
+                    (<%= s.reputacion.toFixed(1) %> ⭐ — <%= s.totalResenas %> reseñas)
+                </li>
+            <% }) %>
+        </ul>
+    </div>
+<% } %>
+
                         <div class="mt-6">
                             <h4 class="text-md font-semibold text-gray-800 mb-3">📌 Usuarios inscritos:</h4>
                             <ul class="space-y-3">
@@ -206,6 +225,7 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
         </form>
       <% } %>
     <% }) %>
+
   <% } %>
                                 
                                 
