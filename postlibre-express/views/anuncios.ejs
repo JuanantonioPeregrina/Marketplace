@@ -157,13 +157,19 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
                                     <h5 class="text-md font-semibold">Valorar a <%= anuncio.autor %></h5>
                                     <form action="/resenas/<%= anuncio.autor %>/resenas" method="POST" class="space-y-3">
                                         <label for="puntuacion" class="block">Puntuación:</label>
-                                        <select name="puntuacion" required class="border p-2 w-full">
-                                            <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
-                                            <option value="4">⭐⭐⭐⭐ (4 estrellas)</option>
-                                            <option value="3">⭐⭐⭐ (3 estrellas)</option>
-                                            <option value="2">⭐⭐ (2 estrellas)</option>
-                                            <option value="1">⭐ (1 estrella)</option>
-                                        </select>
+                                        <div class="rating">
+                                            <input type="radio" name="puntuacion" id="star5" value="5">
+                                            <label for="star5" title="5 estrellas"></label>
+                                            <input type="radio" name="puntuacion" id="star4" value="4">
+                                            <label for="star4" title="4 estrellas"></label>
+                                            <input type="radio" name="puntuacion" id="star3" value="3">
+                                            <label for="star3" title="3 estrellas"></label>
+                                            <input type="radio" name="puntuacion" id="star2" value="2">
+                                            <label for="star2" title="2 estrellas"></label>
+                                            <input type="radio" name="puntuacion" id="star1" value="1">
+                                            <label for="star1" title="1 estrella"></label>
+                                          </div>
+                                          
                         
                                         <label for="comentario" class="block">Comentario:</label>
                                         <textarea name="comentario" required class="border p-2 w-full" placeholder="Escribe tu opinión aquí..."></textarea>
@@ -172,32 +178,35 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
                                     </form>
                                 <% } %>
                         
-                                <!-- Reseñar a los inscritos -->
-                                <% if (user.username === anuncio.autor && anuncio.inscritos && anuncio.inscritos.length > 0) { %>
-
-                                    <h5 class="text-md font-semibold mt-4">Valorar a los inscritos</h5>
-                                    <% anuncio.inscritos.forEach(inscrito => { %>
-                                        <% if (anuncio.inscritosConResenaPorAnuncio && anuncio.inscritosConResenaPorAnuncio[inscrito]) { %>
-                                            <p class="text-gray-500 text-sm">Ya has enviado una reseña a <%= inscrito %> en este anuncio.</p>
-                                        <% } else { %>
-                                            <form action="/resenas/<%= inscrito %>/<%= anuncio._id %>" method="POST" class="space-y-3">
-                                                <label for="puntuacion">Valorar a los inscritos <%= inscrito %></label>
-                                                <select name="puntuacion" required class="border p-2 w-full rounded-md shadow-sm">
-                                                    <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
-                                                    <option value="4">⭐⭐⭐⭐ (4 estrellas)</option>
-                                                    <option value="3">⭐⭐⭐ (3 estrellas)</option>
-                                                    <option value="2">⭐⭐ (2 estrellas)</option>
-                                                    <option value="1">⭐ (1 estrella)</option>
-                                                </select>
-                                                <textarea name="comentario" placeholder="Deja un comentario..." required class="border p-2 w-full rounded-md shadow-sm"></textarea>
-                                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 transition">
-                                                    Enviar Reseña
-                                                </button>
-                                            </form>
-                                        <% } %>
-                                    <% }) %>
-                                    
-                                <% } %>
+  <!-- Reseñar a los inscritos -->
+  <% if (user.username === anuncio.autor && anuncio.inscritos && anuncio.inscritos.length > 0) { %>
+    <h5 class="text-md font-semibold mt-4">Valorar a los inscritos</h5>
+    <% anuncio.inscritos.forEach(inscrito => { %>
+      <% if (anuncio.inscritosConResenaPorAnuncio && anuncio.inscritosConResenaPorAnuncio[inscrito]) { %>
+        <p class="text-gray-500 text-sm">Ya has enviado una reseña a <%= inscrito %> en este anuncio.</p>
+      <% } else { %>
+        <form action="/resenas/<%= inscrito %>/<%= anuncio._id %>" method="POST" class="space-y-3">
+          <label class="block mb-1">Valorar a los inscritos <%= inscrito %></label>
+          <div class="rating">
+            <input type="radio" id="star5-<%= inscrito %>-<%= anuncio._id %>" name="puntuacion" value="5" required>
+            <label for="star5-<%= inscrito %>-<%= anuncio._id %>" title="5 estrellas"></label>
+            <input type="radio" id="star4-<%= inscrito %>-<%= anuncio._id %>" name="puntuacion" value="4">
+            <label for="star4-<%= inscrito %>-<%= anuncio._id %>" title="4 estrellas"></label>
+            <input type="radio" id="star3-<%= inscrito %>-<%= anuncio._id %>" name="puntuacion" value="3">
+            <label for="star3-<%= inscrito %>-<%= anuncio._id %>" title="3 estrellas"></label>
+            <input type="radio" id="star2-<%= inscrito %>-<%= anuncio._id %>" name="puntuacion" value="2">
+            <label for="star2-<%= inscrito %>-<%= anuncio._id %>" title="2 estrellas"></label>
+            <input type="radio" id="star1-<%= inscrito %>-<%= anuncio._id %>" name="puntuacion" value="1">
+            <label for="star1-<%= inscrito %>-<%= anuncio._id %>" title="1 estrella"></label>
+          </div>
+          <textarea name="comentario" placeholder="Deja un comentario..." required class="border p-2 w-full rounded-md shadow-sm"></textarea>
+          <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 transition">
+            Enviar Reseña
+          </button>
+        </form>
+      <% } %>
+    <% }) %>
+  <% } %>
                                 
                                 
                                 
