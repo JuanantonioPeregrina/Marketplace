@@ -66,8 +66,11 @@
                 <ul class="space-y-3">
                     <% usuario.reseñas.forEach(reseña => { %>
                         <li class="bg-white p-4 rounded-lg shadow-md">
-                            <h5 class="font-bold text-gray-900 mb-2"><%= reseña.autor %></h5>
-                
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-600">👤 Valorado por: <span class="font-semibold"><%= reseña.autor %></span></span>
+                                <span class="text-sm text-gray-500"><%= new Date(reseña.fecha).toLocaleDateString() %></span>
+                            </div>
+                        
                             <div class="flex items-center mb-2">
                                 <% for (let i = 1; i <= 5; i++) { %>
                                     <% if (i <= reseña.puntuacion) { %>
@@ -77,10 +80,10 @@
                                     <% } %>
                                 <% } %>
                             </div>
-                
-                            <p class="text-gray-700 italic">"<%= reseña.comentario %>"</p>
-                            <p class="text-sm text-gray-500 mt-1"><%= new Date(reseña.fecha).toLocaleDateString() %></p>
+                        
+                            <p class="text-gray-800 italic">"<%= reseña.comentario %>"</p>
                         </li>
+                        
                     <% }); %>
                 </ul>
                 
