@@ -66,12 +66,24 @@
                 <ul class="space-y-3">
                     <% usuario.reseñas.forEach(reseña => { %>
                         <li class="bg-white p-4 rounded-lg shadow-md">
-                            <p class="font-semibold"><%= reseña.autor %> - <%= reseña.puntuacion %> ⭐</p>
-                            <p class="text-gray-700"><%= reseña.comentario %></p>
-                            <p class="text-xs text-gray-500 mt-1"><%= new Date(reseña.fecha).toLocaleDateString() %></p>
+                            <h5 class="font-bold text-gray-900 mb-2"><%= reseña.autor %></h5>
+                
+                            <div class="flex items-center mb-2">
+                                <% for (let i = 1; i <= 5; i++) { %>
+                                    <% if (i <= reseña.puntuacion) { %>
+                                        <span class="text-yellow-400 text-lg">★</span>
+                                    <% } else { %>
+                                        <span class="text-gray-300 text-lg">★</span>
+                                    <% } %>
+                                <% } %>
+                            </div>
+                
+                            <p class="text-gray-700 italic">"<%= reseña.comentario %>"</p>
+                            <p class="text-sm text-gray-500 mt-1"><%= new Date(reseña.fecha).toLocaleDateString() %></p>
                         </li>
                     <% }); %>
                 </ul>
+                
             <% } else { %>
                 <p class="text-gray-500">Este usuario aún no tiene reseñas.</p>
             <% } %>
