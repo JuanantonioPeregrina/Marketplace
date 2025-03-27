@@ -69,6 +69,28 @@ router.post("/sugerencias", async (req, res) => {
     }
   });
   
+  router.post('/preferencias', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+
+    const { categoria, ubicacion } = req.body;
+
+    try {
+        const usuario = await Usuario.findOne({ username: req.session.user.username });
+
+        if (!usuario) return res.status(404).send("Usuario no encontrado");
+
+        usuario.preferencias = {
+            categoria: categoria || "",
+            ubicacion: ubicacion || ""
+        };
+
+        await usuario.save();
+        res.redirect('/perfil');
+    } catch (error) {
+        console.error("❌ Error guardando preferencias:", error);
+        res.status(500).send("Error al guardar preferencias");
+    }
+});
 
 
 

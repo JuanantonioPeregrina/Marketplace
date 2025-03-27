@@ -61,7 +61,7 @@
     <div class="bg-gray-50 shadow-lg rounded-lg p-6 mt-6">
         <h3 class="text-lg font-semibold mb-4">📬 Sugerencias personalizadas</h3>
       
-        <form action="/perfil/sugerencias" method="POST" class="flex items-center space-x-4">
+        <form action="/perfil/sugerencias" method="POST" class="space-y-4">
           <label class="flex items-center space-x-2">
             <input type="checkbox" name="recibirSugerencias" value="true"
               <% if (usuario.recibirSugerencias) { %> checked <% } %>
@@ -69,11 +69,29 @@
             <span>Quiero recibir sugerencias de anuncios por email</span>
           </label>
       
+          <div class="grid md:grid-cols-2 gap-4">
+            <label class="block">
+              <span class="text-sm font-medium text-gray-700">Categoría de interés:</span>
+              <input type="text" name="categoria" placeholder="Ej. Tecnología, Diseño..."
+                value="<%= usuario.preferencias?.categoria || '' %>"
+                class="border mt-1 p-2 w-full rounded-md shadow-sm">
+            </label>
+      
+            <label class="block">
+              <span class="text-sm font-medium text-gray-700">Ubicación deseada:</span>
+              <input type="text" name="ubicacion" placeholder="Ej. Madrid, Sevilla..."
+                value="<%= usuario.preferencias?.ubicacion || '' %>"
+                class="border mt-1 p-2 w-full rounded-md shadow-sm">
+            </label>
+          </div>
+      
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700 transition">
-            Guardar Preferencia
+            Guardar preferencias
           </button>
         </form>
       </div>
+      
+
       
 
         <!-- 📝 Reseñas recibidas -->
