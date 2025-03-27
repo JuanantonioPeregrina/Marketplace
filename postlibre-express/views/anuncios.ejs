@@ -131,7 +131,8 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
                         <div class="mt-6">
                             <h4 class="text-md font-semibold text-gray-800 mb-3">📌 Usuarios inscritos:</h4>
                             <ul class="space-y-3">
-                                <% if (anuncio.inscritos.length > 0) { %>
+                                <% if (anuncio.inscritos && anuncio.inscritos.length > 0) { %>
+
                                     <% anuncio.inscritos.forEach(inscrito => { %>
                                         <li class="flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-sm">
                                             <span class="text-gray-700 font-medium"><%= inscrito %></span>
@@ -172,7 +173,8 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
                                 <% } %>
                         
                                 <!-- Reseñar a los inscritos -->
-                                <% if (user.username === anuncio.autor && anuncio.inscritos.length > 0) { %>
+                                <% if (user.username === anuncio.autor && anuncio.inscritos && anuncio.inscritos.length > 0) { %>
+
                                     <h5 class="text-md font-semibold mt-4">Valorar a los inscritos</h5>
                                     <% anuncio.inscritos.forEach(inscrito => { %>
                                         <% if (anuncio.inscritosConResenaPorAnuncio && anuncio.inscritosConResenaPorAnuncio[inscrito]) { %>
