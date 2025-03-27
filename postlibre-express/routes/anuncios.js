@@ -40,11 +40,43 @@ module.exports = (io) => {
             }
     
             // 📌 EJECUTAR CONSULTA PAGINADA CON FILTROS
-            const anunciosDB = await Anuncio.find(filtro)
-                .select("titulo precioActual imagen categoria autor ubicacion estadoSubasta fechaExpiracion") // Solo datos esenciales
-                .sort({ fechaPublicacion: -1 }) // Ordenamos por fecha más reciente
-                .skip(skip)
-                .limit(limit);
+            const anunciosFiltrados = await Anuncio.find(filtro)
+            .sort({ fechaPublicacion: -1 })
+            .skip(skip)
+            .limit(limit);
+        
+        let anunciosConDatos = await Promise.all(anunciosFiltrados.map(async (anuncio) => {
+            let chatIniciado = false;
+        
+            if (usuario && anuncio.inscritos.includes(usuario)) {
+                chatIniciado = await Chat.exists({
+                    anuncioId: anuncio._id,
+                    $or: [
+                        { remitente: anuncio.autor, destinatario: usuario },
+                        { remitente: usuario, destinatario: anuncio.autor }
+                    ]
+                });
+            }
+        
+            return {
+                _id: anuncio._id.toString(),
+                titulo: anuncio.titulo,
+                descripcion: anuncio.descripcion,
+                imagen: anuncio.imagen,
+                precioInicial: anuncio.precioInicial,
+                precioActual: anuncio.precioActual,
+                autor: anuncio.autor,
+                ubicacion: anuncio.ubicacion,
+                inscritos: anuncio.inscritos || [],
+                estadoSubasta: anuncio.estadoSubasta,
+                fechaInicioSubasta: anuncio.fechaInicioSubasta,
+                fechaExpiracion: anuncio.fechaExpiracion,
+                chatIniciado,
+                pujas: anuncio.pujas || [],
+                ofertasAutomaticas: anuncio.ofertasAutomaticas || []
+            };
+        }));
+        
     
             // 📌 Contar TOTAL de anuncios para calcular páginas
             const total = await Anuncio.countDocuments(filtro);
@@ -53,10 +85,11 @@ module.exports = (io) => {
                 title: "Anuncios - LibrePost",
                 user: req.session.user,
                 apiKey,
-                anuncios: anunciosDB,
+                anuncios: anunciosConDatos,
                 page,
-                totalPages: Math.ceil(total / limit),
+                totalPages: Math.ceil(total / limit)
             });
+            
     
         } catch (error) {
             console.error("❌ Error cargando anuncios:", error);

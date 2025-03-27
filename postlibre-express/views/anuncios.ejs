@@ -351,31 +351,30 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/countdown.js"></script>
-<script>
 
+<script>
     var user = JSON.parse('<%- JSON.stringify(user || {}) %>');
     var apiKey = "<%= apiKey ? apiKey : '' %>";
 
     if (apiKey && apiKey !== "null" && apiKey !== "undefined") {
-        localStorage.setItem("apiKey", apiKey); // Guardar API Key en localStorage
-        console.log("API Key guardada en localStorage:", apiKey);
+        localStorage.setItem("apiKey", apiKey);
+        console.log("✅ API Key guardada en localStorage:", apiKey);
     } else {
-        console.warn(" API Key no disponible en la sesión.");
+        console.warn("⚠️ API Key no disponible en la sesión.");
     }
-
 
     document.addEventListener("DOMContentLoaded", function () {
         const socket = io();
-    
-        // 📢 Interceptar formularios de oferta automática para evitar redirección
+
+        // Interceptar formularios de oferta automática
         document.querySelectorAll('[id^="oferta-automatica-form-"]').forEach(form => {
             form.addEventListener("submit", function (event) {
-                event.preventDefault(); // Evita la redirección predeterminada
+                event.preventDefault();
                 
                 const formData = new FormData(form);
                 const anuncioId = form.id.replace("oferta-automatica-form-", "");
                 const mensajeDiv = document.getElementById(`mensaje-oferta-automatica-${anuncioId}`);
-    
+
                 fetch(`/anuncios/oferta-automatica/${anuncioId}`, {
                     method: "POST",
                     body: new URLSearchParams(formData),
@@ -385,184 +384,162 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
                 .then(data => {
                     if (data.mensaje) {
                         mensajeDiv.innerText = "✅ " + data.mensaje;
-                        mensajeDiv.classList.remove("hidden"); // 🔥 Muestra el mensaje
-                        setTimeout(() => mensajeDiv.classList.add("hidden"), 3000); // Oculta en 3s
+                        mensajeDiv.classList.remove("hidden");
+                        setTimeout(() => mensajeDiv.classList.add("hidden"), 3000);
                     }
                 })
                 .catch(error => console.error("Error:", error));
             });
         });
-    
-        // 📢 Evento cuando la subasta se actualiza
+
+        // Actualización de subasta
         socket.on("actualizar_subasta", (data) => {
             console.log("📢 Actualización recibida:", data);
-    
+
             const { anuncioId, precioActual, tiempoRestante } = data;
             const precioElement = document.getElementById(`precio-${anuncioId}`);
             const timerElement = document.getElementById(`timer-${anuncioId}`);
-    
+
             if (precioElement) precioElement.innerText = `€${precioActual}`;
-    
+
             if (timerElement) {
-                if (!isNaN(tiempoRestante) && tiempoRestante >= 0) { 
+                if (!isNaN(tiempoRestante) && tiempoRestante >= 0) {
                     const minutos = Math.floor(tiempoRestante / 60);
                     const segundos = tiempoRestante % 60;
                     timerElement.innerText = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
                 } else {
-                    timerElement.innerText = "00:00"; 
+                    timerElement.innerText = "00:00";
                 }
             }
         });
-    
-        // 📢 Evento cuando la subasta finaliza
+
+        // Subasta finalizada
         socket.on("subasta_finalizada", (data) => {
             alert(`La subasta del anuncio ${data.anuncioId} ha finalizado con un precio de €${data.precioFinal}`);
         });
-    });
 
+        // Cuenta regresiva
+        document.querySelectorAll('.countdown-container').forEach(container => {
+            const id = container.id.replace('countdown-', '');
+            const fechaInicio = container.getAttribute('data-inicio');
+            const fechaFin = container.getAttribute('data-fin');
 
- 
-     <!-- Archivo JS con la función de cuenta regresiva -->
- 
-
-
-    // LLAMAMOS a la función iniciarCuentaRegresiva pasando:
-    // 1) el mismo "id" que usamos en el HTML (12345),
-    // 2) la fecha/hora de inicio (en formato ISO o "YYYY-MM-DDTHH:mm:ssZ"),
-    // 3) la fecha/hora de fin.
-    document.addEventListener("DOMContentLoaded", function() {
-    document.querySelectorAll('.countdown-container').forEach(container => {
-        const id = container.id.replace('countdown-', '');
-        const fechaInicio = container.getAttribute('data-inicio');
-        const fechaFin = container.getAttribute('data-fin');
-
-        if (fechaInicio && fechaFin) {
-            iniciarCuentaRegresiva(id, fechaInicio, fechaFin);
-        }
-    });
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-    const editModal = document.getElementById("editModal");
-    const editForm = document.getElementById("editForm");
-    const editAnuncioId = document.getElementById("editAnuncioId");
-    const editTitulo = document.getElementById("editTitulo");
-    const editDescripcion = document.getElementById("editDescripcion");
-    const editPrecio = document.getElementById("editPrecio");
-    const cancelEdit = document.getElementById("cancelEdit");
-
-    let userApiKey = localStorage.getItem("apiKey") || ""; // ✅ Recuperar API Key
-    console.log("🔑 API Key cargada desde localStorage:", userApiKey);
-
-    // 🖊️ Evento para abrir el modal de edición
-    document.querySelectorAll(".edit-btn").forEach(button => {
-        button.addEventListener("click", function () {
-            editAnuncioId.value = this.dataset.id;
-            editTitulo.value = this.dataset.titulo;
-            editDescripcion.value = this.dataset.descripcion;
-            editPrecio.value = this.dataset.precio;
-            editModal.classList.remove("hidden");
-        });
-    });
-
-    // ❌ Cerrar el modal de edición
-    cancelEdit.addEventListener("click", function () {
-        editModal.classList.add("hidden");
-    });
-
-    // ✅ Enviar la actualización del anuncio con API Key
-    editForm.addEventListener("submit", async function (event) {
-        event.preventDefault();
-        const id = editAnuncioId.value;
-        const updatedData = {
-            titulo: editTitulo.value,
-            descripcion: editDescripcion.value,
-            precioActual: Number(editPrecio.value)
-        };
-
-        try {
-            const response = await fetch(`/api/anuncios/${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-api-key": userApiKey
-                },
-                body: JSON.stringify(updatedData)
-            });
-
-            const result = await response.json();
-            console.log("🔍 Respuesta de actualización:", result);
-
-            if (result.success) {
-                alert("✅ Anuncio actualizado correctamente");
-                location.reload();
-            } else {
-                alert("❌ Error al actualizar el anuncio: " + result.error);
+            if (fechaInicio && fechaFin) {
+                iniciarCuentaRegresiva(id, fechaInicio, fechaFin);
             }
-        } catch (error) {
-            console.error("❌ Error en la actualización:", error);
-            alert("❌ Error al actualizar el anuncio.");
-        }
-    });
+        });
 
-    
-    function attachDeleteEventListeners() {
-        console.log("📢 Registrando eventos de eliminación...");
-        document.querySelectorAll(".delete-btn").forEach(button => {
-            button.addEventListener("click", async function (event) {
-                event.preventDefault();
-                const id = this.dataset.id;
-                console.log(`🗑️ Intentando eliminar anuncio con ID: ${id}`);
+        // Edición de anuncio
+        const editModal = document.getElementById("editModal");
+        const editForm = document.getElementById("editForm");
+        const editAnuncioId = document.getElementById("editAnuncioId");
+        const editTitulo = document.getElementById("editTitulo");
+        const editDescripcion = document.getElementById("editDescripcion");
+        const editPrecio = document.getElementById("editPrecio");
+        const cancelEdit = document.getElementById("cancelEdit");
 
-                if (!id) {
-                    console.error("⚠️ No se encontró un ID de anuncio.");
-                    return;
-                }
+        let userApiKey = localStorage.getItem("apiKey") || "";
 
-                if (confirm("❗¿Estás seguro de que quieres eliminar este anuncio?")) {
-                    try {
-                        const response = await fetch(`/api/anuncios/${id}`, {
-                            method: "DELETE",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "x-api-key": localStorage.getItem("apiKey") || ""
-                            }
-                        });
-
-                        const result = await response.json();
-                        console.log("🔍 Respuesta del servidor:", result);
-
-                        if (response.ok && result.success) {
-                            alert("✅ Anuncio eliminado correctamente");
-
-                            // Seleccionamos el contenedor del anuncio y lo eliminamos si existe
-                            const anuncioElemento = document.querySelector(`button[data-id='${id}']`)?.closest(".anuncio-container");
-                            
-                            if (anuncioElemento) {
-                                anuncioElemento.remove();
-                            } else {
-                                console.warn("⚠️ No se encontró el contenedor del anuncio en el DOM.");
-                            }
-                        } else {
-                            throw new Error(result.error || "Error desconocido");
-                        }
-                    } catch (error) {
-                        console.error("❌ Error en la eliminación:", error);
-                        alert(`❌ Error al eliminar el anuncio: ${error.message}`);
-                    }
-                }
+        document.querySelectorAll(".edit-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                editAnuncioId.value = this.dataset.id;
+                editTitulo.value = this.dataset.titulo;
+                editDescripcion.value = this.dataset.descripcion;
+                editPrecio.value = this.dataset.precio;
+                editModal.classList.remove("hidden");
             });
         });
-    }
-   
-    // Esperar 1 segundo para asegurar que los elementos están cargados antes de asignar eventos
-    setTimeout(attachDeleteEventListeners, 1000);
-});
 
- 
+        cancelEdit.addEventListener("click", function () {
+            editModal.classList.add("hidden");
+        });
 
+        editForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const id = editAnuncioId.value;
+            const updatedData = {
+                titulo: editTitulo.value,
+                descripcion: editDescripcion.value,
+                precioActual: Number(editPrecio.value)
+            };
 
+            try {
+                const response = await fetch(`/api/anuncios/${id}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-api-key": userApiKey
+                    },
+                    body: JSON.stringify(updatedData)
+                });
 
-  </script>
+                const result = await response.json();
+                console.log("🔍 Respuesta de actualización:", result);
+
+                if (result.success) {
+                    alert("✅ Anuncio actualizado correctamente");
+                    location.reload();
+                } else {
+                    alert("❌ Error al actualizar el anuncio: " + result.error);
+                }
+            } catch (error) {
+                console.error("❌ Error en la actualización:", error);
+                alert("❌ Error al actualizar el anuncio.");
+            }
+        });
+
+        // Eliminar anuncio
+        function attachDeleteEventListeners() {
+            console.log("📢 Registrando eventos de eliminación...");
+            document.querySelectorAll(".delete-btn").forEach(button => {
+                button.addEventListener("click", async function (event) {
+                    event.preventDefault();
+                    const id = this.dataset.id;
+                    console.log(`🗑️ Intentando eliminar anuncio con ID: ${id}`);
+
+                    if (!id) {
+                        console.error("⚠️ No se encontró un ID de anuncio.");
+                        return;
+                    }
+
+                    if (confirm("❗¿Estás seguro de que quieres eliminar este anuncio?")) {
+                        try {
+                            const response = await fetch(`/api/anuncios/${id}`, {
+                                method: "DELETE",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "x-api-key": localStorage.getItem("apiKey") || ""
+                                }
+                            });
+
+                            const result = await response.json();
+                            console.log("🔍 Respuesta del servidor:", result);
+
+                            if (response.ok && result.success) {
+                                alert("✅ Anuncio eliminado correctamente");
+
+                                const anuncioElemento = document.querySelector(`button[data-id='${id}']`)?.closest(".anuncio-container");
+                                if (anuncioElemento) {
+                                    anuncioElemento.remove();
+                                } else {
+                                    console.warn("⚠️ No se encontró el contenedor del anuncio en el DOM.");
+                                }
+                            } else {
+                                throw new Error(result.error || "Error desconocido");
+                            }
+                        } catch (error) {
+                            console.error("❌ Error en la eliminación:", error);
+                            alert(`❌ Error al eliminar el anuncio: ${error.message}`);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Esperar un segundo antes de adjuntar eventos
+        setTimeout(attachDeleteEventListeners, 1000);
+    });
+</script>
+
 
 <%- include("partials/footer") %>
