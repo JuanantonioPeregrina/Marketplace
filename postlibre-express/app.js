@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
@@ -12,6 +14,7 @@ const indexRouter = require('./routes/index');
 //const gameRouter = require('./routes/game');
 const { router: categoriasRouter } = require("./routes/api/categorias"); //con socket.io
 const loginRouter = require('./routes/login'); // Ajusta la ruta según la ubicación de tu archivo
+const verificarEmailRoutes = require('./routes/verificar-email');
 const restrictedRouter = require('./routes/restricted');
 const aboutRouter = require('./routes/about');
 const publicarRouter = require('./routes/publicar');
@@ -192,6 +195,7 @@ app.use("/terminos", terminosRouter);
 app.use("/mi-cuenta", perfilRouter);
 app.use("/editar-perfil", editarPerfilRouter);
 app.use('/perfil', valoracionRouter);
+app.use("/verificar-email",verificarEmailRoutes);
 app.use('/resenas', resenasRoutes);
 
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
