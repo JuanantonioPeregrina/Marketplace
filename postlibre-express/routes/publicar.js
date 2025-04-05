@@ -2,6 +2,8 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const Anuncio = require("../database/models/anuncio.model");
+const Usuario = require("../database/models/user.model"); 
+const enviarCorreo = require("../utils/email");
 
 const router = express.Router();
 
@@ -39,23 +41,54 @@ router.post("/", upload.single("imagen"), async (req, res) => {
             titulo,
             descripcion,
             precioInicial: Number(precio),
-            precioActual: Number(precio), // Inicialmente igual al precio inicial
+            precioActual: Number(precio),
             imagen,
             categoria,
             ubicacion,
             fechaExpiracion: new Date(fechaExpiracion),
-            fechaInicioSubasta: new Date(fechaInicioSubasta), 
+            fechaInicioSubasta: new Date(fechaInicioSubasta),
             autor,
             inscritos: [],
             estadoSubasta: "pendiente"
         });
 
         await nuevoAnuncio.save();
+
+        // 📬 Lógica para enviar sugerencias por correo
+        const interesados = await Usuario.find({
+            recibirSugerencias: true,
+            $or: [
+                { "preferencias.categoria": nuevoAnuncio.categoria },
+                { "preferencias.ubicacion": { $regex: nuevoAnuncio.ubicacion, $options: "i" } }
+            ]
+        });
+
+        for (const usuario of interesados) {
+            await enviarCorreo({
+                to: usuario.email,
+                subject: `📢 Nuevo anuncio que podría interesarte`,
+                html: `
+                    <h2>Hola <strong>${usuario.username}</strong>,</h2>
+                    <p>Se ha publicado un nuevo anuncio que podría interesarte:</p>
+                    <ul>
+                        <li><strong>Título:</strong> ${nuevoAnuncio.titulo}</li>
+                        <li><strong>Categoría:</strong> ${nuevoAnuncio.categoria}</li>
+                        <li><strong>Ubicación:</strong> ${nuevoAnuncio.ubicacion}</li>
+                    </ul>
+                    <p><a href="http://localhost:3000/anuncios/${nuevoAnuncio._id}" style="background-color:#007bff;padding:10px 20px;color:white;border-radius:5px;text-decoration:none;">Ver anuncio</a></p>
+                    <p>Gracias por usar LibrePost.</p>
+                `
+            });
+        }
+
         res.redirect("/anuncios");
+
     } catch (error) {
         console.error("❌ Error al guardar el anuncio:", error);
         res.status(500).send("Error interno del servidor.");
     }
 });
+
+
 
 module.exports = router;

@@ -27,6 +27,30 @@ router.get("/", async (req, res) => {
         res.status(500).send("Error interno del servidor.");
     }
 });
+router.post("/", async (req, res) => {
+    if (!req.session.user) return res.redirect("/login");
+
+    try {
+        const usuario = await Usuario.findOne({ username: req.session.user.username });
+
+        if (!usuario) return res.status(404).send("Usuario no encontrado");
+
+        // ✅ Actualiza sugerencias
+        usuario.recibirSugerencias = !!req.body.recibirSugerencias;
+
+        // ✅ Actualiza preferencias
+        usuario.preferencias = {
+            categoria: req.body.categoria || "",
+            ubicacion: req.body.ubicacion || ""
+        };
+
+        await usuario.save();
+        res.redirect("/perfil");
+    } catch (err) {
+        console.error("❌ Error actualizando perfil:", err);
+        res.status(500).send("Error al actualizar el perfil");
+    }
+});
 
 router.post('/cambiar-password', async (req, res) => {
     if (!req.session.user) {
@@ -60,40 +84,7 @@ router.post('/cambiar-password', async (req, res) => {
     }
 });
 
-router.post("/sugerencias", async (req, res) => {
-    try {
-      const user = await Usuario.findOne({ username: req.session.user.username });
-      user.recibirSugerencias = !!req.body.recibirSugerencias;
-      await user.save();
-      res.redirect("/perfil");
-    } catch (err) {
-      console.error("❌ Error al actualizar sugerencias:", err);
-      res.status(500).send("Error al guardar la preferencia.");
-    }
-  });
-  
-  router.post('/preferencias', async (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
 
-    const { categoria, ubicacion } = req.body;
-
-    try {
-        const usuario = await Usuario.findOne({ username: req.session.user.username });
-
-        if (!usuario) return res.status(404).send("Usuario no encontrado");
-
-        usuario.preferencias = {
-            categoria: categoria || "",
-            ubicacion: ubicacion || ""
-        };
-
-        await usuario.save();
-        res.redirect('/perfil');
-    } catch (error) {
-        console.error("❌ Error guardando preferencias:", error);
-        res.status(500).send("Error al guardar preferencias");
-    }
-});
 
 
 
