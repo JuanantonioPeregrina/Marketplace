@@ -1,39 +1,66 @@
-<%- include("partials/header") %>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mis Anuncios</title>
+  <link rel="stylesheet" href="/css/styleA.css">
+</head>
+<body class="flex flex-col min-h-screen">
+  <%- include("partials/header") %>
 
-<main class="max-w-5xl mx-auto p-6 mt-8 bg-white shadow rounded-lg">
+  <main class="flex-grow max-w-5xl mx-auto p-6 mt-8 bg-white shadow rounded-lg">
     <h1 class="text-3xl font-bold mb-6">Mis Anuncios</h1>
 
     <h2 class="text-xl font-semibold mt-6 mb-3">Publicados por mí</h2>
     <% if (publicados.length === 0) { %>
-        <p class="text-gray-500">No has publicado ningún anuncio todavía.</p>
+      <p class="text-gray-500">No has publicado ningún anuncio todavía.</p>
     <% } else { %>
-        <ul class="space-y-4">
-            <% publicados.forEach(a => { %>
-                <li class="p-4 border rounded">
-                    <h3 class="text-lg font-semibold"><%= a.titulo %></h3>
-                    <p><strong>Categoría:</strong> <%= a.categoria %></p>
-                    <p><strong>Estado:</strong> <%= a.estadoSubasta %></p>
-                    <a href="/anuncios/<%= a._id %>" class="text-blue-600 underline">Ver anuncio</a>
-                </li>
-            <% }) %>
-        </ul>
+      <ul class="space-y-4">
+        <% publicados.forEach(a => { %>
+          <li class="p-4 border rounded">
+            <h3 class="text-lg font-semibold"><%= a.titulo %></h3>
+            <p><strong>Categoría:</strong> <%= a.categoria %></p>
+            <p><strong>Estado:</strong> <%= a.estadoSubasta %></p>
+            <a href="/anuncios/<%= a._id %>" class="text-blue-600 underline">Ver anuncio</a>
+          </li>
+        <% }) %>
+      </ul>
     <% } %>
 
     <h2 class="text-xl font-semibold mt-10 mb-3">Estoy participando</h2>
     <% if (participando.length === 0) { %>
-        <p class="text-gray-500">No estás participando en ningún anuncio.</p>
+      <p class="text-gray-500">No estás participando en ningún anuncio.</p>
     <% } else { %>
-        <ul class="space-y-4">
-            <% participando.forEach(a => { %>
-                <li class="p-4 border rounded">
-                    <h3 class="text-lg font-semibold"><%= a.titulo %></h3>
-                    <p><strong>Autor:</strong> <%= a.autor %></p>
-                    <p><strong>Estado:</strong> <%= a.estadoSubasta %></p>
-                    <a href="/anuncios/<%= a._id %>" class="text-blue-600 underline">Ver anuncio</a>
-                </li>
-            <% }) %>
-        </ul>
+      <ul class="space-y-4">
+        <% participando.forEach(a => { %>
+          <li class="p-4 border rounded">
+            <h3 class="text-lg font-semibold"><%= a.titulo %></h3>
+            <p><strong>Autor:</strong> <%= a.autor %></p>
+            <p><strong>Estado:</strong> <%= a.estadoSubasta %></p>
+            <a href="/anuncios/<%= a._id %>" class="text-blue-600 underline">Ver anuncio</a>
+          </li>
+        <% }) %>
+      </ul>
     <% } %>
-</main>
 
-<%- include("partials/footer") %>
+    <h2 class="text-xl font-semibold mt-10 mb-3">Mis favoritos ❤️</h2>
+    <% if (favoritos.length === 0) { %>
+      <p class="text-gray-500">No has marcado ningún anuncio como favorito.</p>
+    <% } else { %>
+      <ul class="space-y-4">
+        <% favoritos.forEach(a => { %>
+          <li class="p-4 border rounded">
+            <h3 class="text-lg font-semibold"><%= a.titulo %></h3>
+            <p><strong>Categoría:</strong> <%= a.categoria %></p>
+            <p><strong>Ubicación:</strong> <%= a.ubicacion %></p>
+            <p><strong>Publicado por:</strong> <%= a.autor %></p>
+            <a href="/anuncios/<%= a._id %>" class="text-blue-600 underline">Ver anuncio</a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </main>
+
+  <%- include("partials/footer") %>
+</body>
+</html>

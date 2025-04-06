@@ -1,25 +1,32 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const Usuario = require("../database/models/user.model");
 const Anuncio = require("../database/models/anuncio.model");
 
-router.post("/agregar", async (req, res) => {
-    const { anuncioId } = req.body;
-    if (!req.session.user) return res.status(401).send("No autenticado");
+// Ruta para marcar un anuncio como favorito
+router.post("/:id", async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).send("No autorizado");
+    }
 
     try {
-        const usuario = await Usuario.findOne({ username: req.session.user.username });
+        const user = await Usuario.findOne({ username: req.session.user.username });
 
-        if (!usuario.favoritos.includes(anuncioId)) {
-            usuario.favoritos.push(anuncioId);
-            await usuario.save();
+        if (!user) return res.status(404).send("Usuario no encontrado");
+
+        const anuncioId = req.params.id;
+
+        if (!user.favoritos.includes(anuncioId)) {
+            user.favoritos.push(anuncioId);
+            await user.save();
         }
 
-        res.redirect("/anuncios");
+        res.redirect("/anuncios"); // o res.redirect("back") para volver a la página anterior
     } catch (err) {
-        console.error("Error agregando a favoritos:", err);
-        res.status(500).send("Error interno");
+        console.error("Error al guardar favorito:", err);
+        res.status(500).send("Error interno del servidor");
     }
 });
 
 module.exports = router;
+
