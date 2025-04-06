@@ -29,7 +29,8 @@ const userSchema = new mongoose.Schema({
     verificado: { type: Boolean, default: false },
     codigoVerificacion: { type: String }, // Para el email
     reseñas: { type: Array, default: [] },
-    
+    favoritos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Anuncio' }],
+
     recibirSugerencias: { type: Boolean, default: false },
     preferencias: {
         categoria: { type: String, default: "" },

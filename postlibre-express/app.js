@@ -27,7 +27,7 @@ const soporteRouter = require('./routes/soporte');
 const perfilRouter = require('./routes/mi-cuenta');
 const editarPerfilRouter = require('./routes/editar-perfil');
 const misAnunciosRouter = require('./routes/mis-anuncios');
-
+const favoritosRouter = require("./routes/favoritos");
 
 const anunciosApi = require('./routes/api/anuncios'); // Rutas REST
 const apiExplorerRoutes = require('./routes/api-explorer');
@@ -200,6 +200,8 @@ app.use('/perfil', valoracionRouter);
 app.use("/verificar-email",verificarEmailRoutes);
 app.use('/resenas', resenasRoutes);
 app.use('/mis-anuncios', misAnunciosRouter);
+app.use("/favoritos", favoritosRouter);
+
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)
 app.use('/logout', (req,res) =>{
