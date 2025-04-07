@@ -20,13 +20,15 @@ module.exports = (io) => {
         try {
             const usuario = req.session.user ? req.session.user.username : null;
             let apiKey = "";
-        
+            let userData = null;
+
             if (usuario) {
-                const userData = await Usuario.findOne({ username: usuario });
+                userData = await Usuario.findOne({ username: usuario });
                 if (userData && userData.apiKeys.length > 0) {
                     apiKey = userData.apiKeys[0].key; 
                 }
-            }
+}
+
         
             console.log("📢 API Key enviada al frontend:", apiKey || "No disponible");
     
@@ -64,7 +66,8 @@ module.exports = (io) => {
                     ]
                 });
             }
-        
+        const esFavorito = userData && userData.favoritos.includes(anuncio._id);
+
             return {
                 _id: anuncio._id.toString(),
                 titulo: anuncio.titulo,
@@ -81,7 +84,8 @@ module.exports = (io) => {
                 chatIniciado,
                 pujas: anuncio.pujas || [],
                 ofertasAutomaticas: anuncio.ofertasAutomaticas || [],
-                sugerencias: await obtenerSugerencias(anuncio.inscritos)
+                sugerencias: await obtenerSugerencias(anuncio.inscritos),
+                esFavorito: userData?.favoritos?.some(fav => fav.toString() === anuncio._id.toString()) || false
             };
             
         }));

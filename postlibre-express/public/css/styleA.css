@@ -322,16 +322,23 @@ button:hover {
   animation: movingBorders 3s infinite;
 }
 
-.filled,
-.empty {
-  fill: rgb(255, 110, 110);
-  transition: opacity 100ms ease-in-out;
-}
 
-.filled {
-  position: absolute;
+
+/* Por defecto, los dos corazones están visibles y luego lo gestionamos por clase */
+
+
+/* Animación al pasar el ratón */
+button:hover .empty {
   opacity: 0;
 }
+
+button:hover .filled {
+  opacity: 1;
+  animation: beatingHeart 1.2s infinite;
+}
+
+
+
 
 @keyframes beatingHeart {
   0% {
@@ -362,4 +369,47 @@ button:hover .empty {
 button:hover .filled {
   opacity: 1;
   animation: beatingHeart 1.2s infinite;
+}
+
+/* Estilo para el botón de favoritos */
+.favorite-btn {
+  background-color: #e8e8e8;
+  border: 4px solid #ffdada;
+  border-radius: 50%;
+  padding: 12px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.favorite-btn:hover {
+  background-color: #f1f1f1;
+  transform: scale(1.1);
+}
+
+/* Corazones */
+.favorite-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Corazón lleno: por defecto oculto */
+.favorite-btn .filled {
+  display: none;
+  fill: #ff4b4b;
+}
+
+/* Corazón vacío: por defecto visible */
+.favorite-btn .empty {
+  display: inline;
+  fill: #ff4b4b;
+}
+
+/* Si está en favoritos, mostrar lleno y ocultar vacío */
+.favorite-btn.favorito .filled {
+  display: inline;
+}
+
+.favorite-btn.favorito .empty {
+  display: none;
 }
