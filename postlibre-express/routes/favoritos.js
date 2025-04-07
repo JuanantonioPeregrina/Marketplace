@@ -11,22 +11,31 @@ router.post("/:id", async (req, res) => {
 
     try {
         const user = await Usuario.findOne({ username: req.session.user.username });
-
         if (!user) return res.status(404).send("Usuario no encontrado");
 
         const anuncioId = req.params.id;
 
-        if (!user.favoritos.includes(anuncioId)) {
+        // Convertimos el ObjectId a string para comparar correctamente
+        const index = user.favoritos.findIndex(fav => fav.toString() === anuncioId);
+
+        if (index !== -1) {
+            // Ya está en favoritos → quitar
+            user.favoritos.splice(index, 1);
+        } else {
+            // No está en favoritos → añadir
             user.favoritos.push(anuncioId);
-            await user.save();
         }
 
-        res.redirect("/anuncios"); // o res.redirect("back") para volver a la página anterior
+        await user.save();
+
+        // Redirige de vuelta a la página anterior
+        res.redirect("back");
     } catch (err) {
-        console.error("Error al guardar favorito:", err);
+        console.error("Error al hacer toggle de favorito:", err);
         res.status(500).send("Error interno del servidor");
     }
 });
+
 
 module.exports = router;
 
