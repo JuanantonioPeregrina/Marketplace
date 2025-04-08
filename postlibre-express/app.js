@@ -123,13 +123,69 @@ io.on("connection", (socket) => {
     }
 });
 
+  const usuariosSoporte = {}; // socket.id => { role, nombre }
+  // Cliente se conecta al soporte
+  socket.on('joinSupport', ({ role, username }) => {
+    const nombre = username || (role === 'admin' ? 'Soporte' : `Invitado-${socket.id.slice(0, 5)}`);
+    usuariosSoporte[socket.id] = { role, username: nombre };
 
-
-  socket.on("disconnect", () => {
-      console.log("Cliente desconectado.");
+  
+      // Notificar a todos (si quieres lista general)
+      const usuariosList = Object.entries(usuariosSoporte).map(([id, data]) => ({
+          socketId: id,
+          username: data.username
+      }));
+      io.emit('updateUsersList', usuariosList);
+  
+      // Si es admin, enviarle solo los invitados
+      if (role === 'admin') {
+          const invitados = {};
+          for (const [id, data] of Object.entries(usuariosSoporte)) {
+              if (data.role === 'guest') invitados[id] = data.username;
+          }
+          socket.emit('activeGuests', invitados);
+      }
   });
-});
+  
+  // Enviar mensaje entre usuarios
+  socket.on('sendMessage', ({ message, targetUserId }) => {
+    const sender = usuariosSoporte[socket.id]?.username || 'Desconocido';
+    const senderId = socket.id;
 
+    if (targetUserId) {
+        io.to(targetUserId).emit('receiveMessage', { sender, senderId, message });
+    } else {
+        socket.broadcast.emit('receiveMessage', { sender, senderId, message });
+    }
+
+    // El propio emisor también debería recibir su mensaje si no lo añadimos manualmente en el cliente
+    socket.emit('receiveMessage', { sender: 'Tú', senderId, message });
+});
+  
+  // Enviar historial ficticio (si deseas almacenar en el futuro puedes usar MongoDB aquí)
+  socket.on('requestChatHistory', (targetId) => {
+      // Aquí podrías conectar a una base de datos o devolver mensajes almacenados
+      // De momento, simulemos una carga
+      socket.emit('loadChatHistory', [
+          { sender: 'Invitado', message: 'Hola, ¿puedo preguntar algo?' },
+          { sender: 'Soporte', message: 'Por supuesto, dime.' }
+      ]);
+  });
+  
+  // Cliente se desconecta
+  socket.on('disconnect', () => {
+      delete usuariosSoporte[socket.id];
+      console.log(`Cliente desconectado: ${socket.id}`);
+  
+      // Notificar nueva lista
+      const usuariosList = Object.entries(usuariosSoporte).map(([id, data]) => ({
+          socketId: id,
+          username: data.username
+      }));
+      io.emit('updateUsersList', usuariosList);
+  });
+  
+});
 // Definir el puerto ya no hace falta porque se encarga /bin/www
 //const PORT = 3000;
 
