@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema({
         enum: ['usuario', 'admin'],
         default: 'usuario'
       },
+    baneado: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
     imagen_perfil: { type: String, default: "/images/avatar.webp" },
     email: { type: String, unique: true, required: true },
