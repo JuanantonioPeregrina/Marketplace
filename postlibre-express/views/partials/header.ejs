@@ -110,30 +110,28 @@
             <div>
                 <% if (user && user.rol !== 'admin') { %>
                     <a href="/mis-anuncios">📢 Mis Anuncios</a>
-                <% } else { %>
-                    <a href="/login">📢 Mis Anuncios</a>
                 <% } %>
+
             </div>
             <div>
-                <% if (user) { %>
+                <% if (user && user.rol !== 'admin') { %>
                     <a href="/chats">💬 Mis Chats</a>
                     <a href="/soporte">💬 Atención al cliente</a>
 
-                <% } else { %>
-                    <a href="/login">💬 Mis Chats</a>
                 <% } %>
+                    
             </div>
     
             <!-- Comprobación si el usuario es administrador -->
             <% if (user && user.rol === 'admin') { %>
                 <div>
-                    <a href="/gestion_usuarios">🧑‍💼 Gestión de Usuarios</a>
+                    <a href="/gestion-usuarios">🧑‍💼 Gestión de Usuarios</a>
                 </div>
                 <div>
                     <a href="/gestion-anuncios">🛠️ Gestionar Anuncios</a>
                 </div>
                 <div>
-                    <a href="/soporte">🎧 Soporte</a>
+                    <a href="/soporte">💬 Atención al cliente</a>
                 </div>
             <% } %>
             
