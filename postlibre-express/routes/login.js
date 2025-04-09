@@ -62,7 +62,8 @@ router.post('/', async (req, res) => {
             req.session.user = {
                 username: foundUser.username,
                 email: foundUser.email,
-                nombre_real: foundUser.nombre_real
+                nombre_real: foundUser.nombre_real,
+                rol: foundUser.rol
             };
 
             req.session.message = "¡Login correcto!";

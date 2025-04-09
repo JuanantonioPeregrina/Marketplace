@@ -1,79 +1,57 @@
-<%- include('partials/header', {}) -%>
-<body data-user-logged="<%= user ? 'true' : 'false' %>" data-username="<%= user?.username || '' %>">
-  <link rel="stylesheet" href="/css/styleC.css">
+<%- include("partials/header", {}) %>
 
-  <div id="user-list">
-      <h3>Usuarios Conectados</h3>
-      <select id="target-user">
-          <option value="">Todos</option>
-      </select>
-  </div>
+<link rel="stylesheet" href="/css/soporte-whats.css">
 
-  <div id="chat-container">
-      <h1>Chat de Soporte</h1>
+<div class="chat-wrapper">
+  <!-- Lista de chats -->
+  <aside class="chat-sidebar">
+    <h2>Chats</h2>
+    <ul class="chat-list">
+      <% chats.forEach(chat => { %>
+        <li onclick="location.href='/soporte/<%= chat._id %>'">
+          <div class="chat-user">
+            <img src="/images/avatar.webp" class="avatar" />
+            <div class="chat-info">
+              <strong><%= chat.nombre %></strong>
+              <p><%= chat.ultimoMensaje %></p>
+            </div>
+            <div class="chat-meta">
+              <span class="fecha"><%= chat.fecha %></span>
+            </div>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  </aside>
 
-      <!-- Aviso para invitados -->
-      <% if (!user) { %>
-          <p class="chat-warning">Debes iniciar sesión para poder enviar mensajes.</p>
-      <% } %>
+  <!-- Panel de conversación -->
+  <main class="chat-main">
+    <% if (conversacion) { %>
+      <div class="chat-header">
+        <h3><%= conversacion.nombre %></h3>
+      </div>
 
-      <!-- Lista de mensajes única -->
-      <ul id="messages"></ul>
+      <ul id="chat-mensajes" class="chat-messages">
+        <% conversacion.mensajes.forEach(msg => { %>
+          <li class="<%= msg.remitente === user.username ? 'msg-self' : 'msg-other' %>">
+            <div class="bubble"><%= msg.contenido %> <span class="hora"><%= new Date(msg.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %></span></div>
+          </li>
+        <% }) %>
+      </ul>
 
-      <!-- Formulario de chat (bloqueado si es invitado) -->
-      <form id="chat-form">
-          <input id="message-input" type="text" placeholder="Escribe tu mensaje..." required <% if (!user) { %> disabled <% } %> />
-          <button type="submit" id="submit-btn" <% if (!user) { %> disabled class="btn-disabled" <% } %>>Enviar</button>
+      <form id="chat-form" class="chat-form">
+        <input type="text" name="contenido" placeholder="Escribe tu mensaje..." required>
+        <button>Enviar</button>
       </form>
-  </div>
+    <% } else { %>
+      <div class="chat-placeholder">
+        <p>Selecciona una conversación para empezar</p>
+      </div>
+    <% } %>
+  </main>
+</div>
 
-  <div id="guest-list">
-      <h3>Invitados Activos</h3>
-      <ul id="active-guests"></ul>
-  </div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/soporte-chat.js"></script>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="/js/soporte.js"></script> 
-
-  <style>
-    .chat-warning {
-        color: red;
-        font-size: 14px;
-        text-align: center;
-        margin-bottom: 10px;
-    }
-
-    input:disabled, button:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
-    }
-
-    .btn-disabled {
-        pointer-events: none;
-        cursor: not-allowed;
-    }
-
-    /* Estilos para los mensajes */
-    #messages li.self {
-        text-align: right;
-        color: #007bff;
-        margin-bottom: 5px;
-    }
-
-    #messages li.other {
-        text-align: left;
-        color: #333;
-        margin-bottom: 5px;
-    }
-
-    #messages li.system {
-        text-align: center;
-        font-style: italic;
-        color: #666;
-        margin-bottom: 5px;
-    }
-  </style>
-
-<%- include('partials/footer') %>
-</body>
-
+<%- include("partials/footer") %>

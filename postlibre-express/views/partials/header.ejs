@@ -108,7 +108,7 @@
                 <% } %>
             </div>
             <div>
-                <% if (user) { %>
+                <% if (user && user.rol !== 'admin') { %>
                     <a href="/mis-anuncios">📢 Mis Anuncios</a>
                 <% } else { %>
                     <a href="/login">📢 Mis Anuncios</a>
@@ -125,7 +125,10 @@
             </div>
     
             <!-- Comprobación si el usuario es administrador -->
-            <% if (user && user.es_admin) { %>
+            <% if (user && user.rol === 'admin') { %>
+                <div>
+                    <a href="/gestion_usuarios">🧑‍💼 Gestión de Usuarios</a>
+                </div>
                 <div>
                     <a href="/gestion-anuncios">🛠️ Gestionar Anuncios</a>
                 </div>
@@ -133,6 +136,7 @@
                     <a href="/soporte">🎧 Soporte</a>
                 </div>
             <% } %>
+            
     
             <a href="/terminos">📜 Términos y Condiciones</a>
     

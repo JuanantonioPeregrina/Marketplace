@@ -21,6 +21,11 @@ const userSchema = new mongoose.Schema({
     username: { type: String, unique: true, required: true },
     nombre_real: { type: String, required: true },
     password: { type: String, required: true },
+    rol: {
+        type: String,
+        enum: ['usuario', 'admin'],
+        default: 'usuario'
+      },
     createdAt: { type: Date, default: Date.now },
     imagen_perfil: { type: String, default: "/images/avatar.webp" },
     email: { type: String, unique: true, required: true },

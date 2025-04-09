@@ -148,29 +148,76 @@ io.on("connection", (socket) => {
   });
   
   // Enviar mensaje entre usuarios
-  socket.on('sendMessage', ({ message, targetUserId }) => {
-    const sender = usuariosSoporte[socket.id]?.username || 'Desconocido';
-    const senderId = socket.id;
+  const SoporteChat = require("./database/models/soporte.model"); 
 
-    if (targetUserId) {
-        io.to(targetUserId).emit('receiveMessage', { sender, senderId, message });
-    } else {
-        socket.broadcast.emit('receiveMessage', { sender, senderId, message });
+  socket.on('sendMessage', async ({ message, targetUserId }) => {
+      const sender = usuariosSoporte[socket.id]?.username || 'Desconocido';
+      const senderId = socket.id;
+      let receptorId = targetUserId;
+
+      if (!receptorId) {
+        // Buscar primer admin conectado
+        const admin = Object.entries(usuariosSoporte).find(([_, u]) => u.role === 'admin');
+        receptorId = admin?.[0] || 'soporte'; // fallback por si no hay admin conectado
+      }
+
+      const participantes = [socket.id, receptorId].sort();
+
+  
+      const nuevoMensaje = {
+          remitente: sender,
+          contenido: message,
+          fecha: new Date()
+      };
+  
+      // Guardar en base de datos
+      try {
+          let chat = await SoporteChat.findOne({ participantes });
+  
+          if (!chat) {
+              chat = new SoporteChat({ participantes, mensajes: [] });
+          }
+  
+          chat.mensajes.push(nuevoMensaje);
+          await chat.save();
+      } catch (err) {
+          console.error("Error guardando mensaje de soporte:", err);
+      }
+  
+      // Emitir a ambos lados
+      if (targetUserId) {
+          io.to(targetUserId).emit('receiveMessage', {
+              sender, senderId, message, fecha: nuevoMensaje.fecha
+          });
+      } else {
+          socket.broadcast.emit('receiveMessage', {
+              sender, senderId, message, fecha: nuevoMensaje.fecha
+          });
+      }
+  
+      socket.emit('receiveMessage', {
+          sender: sender, senderId, message, fecha: nuevoMensaje.fecha
+      });
+  });
+  socket.on('requestChatHistory', async (targetId) => {
+    let receptorId = targetId;
+
+    if (!receptorId) {
+        const admin = Object.entries(usuariosSoporte).find(([_, u]) => u.role === 'admin');
+        receptorId = admin?.[0] || 'soporte';
     }
 
-    // El propio emisor también debería recibir su mensaje si no lo añadimos manualmente en el cliente
-    socket.emit('receiveMessage', { sender: 'Tú', senderId, message });
+    const participantes = [socket.id, receptorId].sort();
+
+    try {
+        const chat = await SoporteChat.findOne({ participantes });
+        socket.emit('loadChatHistory', chat?.mensajes || []);
+    } catch (err) {
+        console.error("Error cargando historial de soporte:", err);
+        socket.emit('loadChatHistory', []);
+    }
 });
-  
-  // Enviar historial ficticio (si deseas almacenar en el futuro puedes usar MongoDB aquí)
-  socket.on('requestChatHistory', (targetId) => {
-      // Aquí podrías conectar a una base de datos o devolver mensajes almacenados
-      // De momento, simulemos una carga
-      socket.emit('loadChatHistory', [
-          { sender: 'Invitado', message: 'Hola, ¿puedo preguntar algo?' },
-          { sender: 'Soporte', message: 'Por supuesto, dime.' }
-      ]);
-  });
+
   
   // Cliente se desconecta
   socket.on('disconnect', () => {
@@ -280,7 +327,7 @@ app.use((req, res, next) => {
       res.locals.user = req.session.user; // Pasa el usuario completo
       res.locals.imagen_perfil = req.session.user.imagen_perfil || "/images/avatar.webp"; // Si no tiene imagen, usa una por defecto
   } else {
-      res.locals.user = { username: "Invitado" };
+      res.locals.user = { username: "Invitado", rol: null };
       res.locals.imagen_perfil = "/images/avatar.webp"; // Imagen por defecto para invitados
   }
   next();
