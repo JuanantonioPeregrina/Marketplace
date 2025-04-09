@@ -38,6 +38,7 @@ const politicaCookiesRouter = require("./routes/politica-cookies");
 const terminosRouter = require("./routes/terminos");
 const valoracionRouter = require('./routes/perfil');
 const resenasRoutes = require('./routes/resenas');
+const gestionUsuariosRoutes = require('./routes/gestion-usuarios');
 const { iniciarVerificacionSubastas } = require('./routes/subasta'); 
 const { registrarPuja } = require("./routes/subasta");
 
@@ -304,6 +305,7 @@ app.use("/verificar-email",verificarEmailRoutes);
 app.use('/resenas', resenasRoutes);
 app.use('/mis-anuncios', misAnunciosRouter);
 app.use("/favoritos", favoritosRouter);
+app.use("/gestion-usuarios", gestionUsuariosRoutes);
 
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)

@@ -4,7 +4,7 @@ const Usuario = require('../database/models/user.model'); // Ajusta si tu modelo
 
 // Middleware para comprobar si es admin
 function soloAdmins(req, res, next) {
-    if (req.session.user?.es_admin) {
+    if (req.session.user?.rol === 'admin') {
         next();
     } else {
         res.status(403).send("Acceso denegado");
@@ -15,7 +15,7 @@ function soloAdmins(req, res, next) {
 router.get('/', soloAdmins, async (req, res) => {
     try {
         const usuarios = await Usuario.find({}, '-__v'); // sin versión
-        res.render('gestion_usuarios', {
+        res.render('gestion-usuarios', {
             title: 'Gestión de Usuarios',
             usuarios,
             user: req.session.user
@@ -31,7 +31,7 @@ router.post('/banear', soloAdmins, async (req, res) => {
     try {
         const { id } = req.body;
         await Usuario.findByIdAndUpdate(id, { baneado: true });
-        res.redirect('/gestion_usuarios');
+        res.redirect('/gestion-usuarios');
     } catch (err) {
         console.error(err);
         res.status(500).send("Error al banear usuario");

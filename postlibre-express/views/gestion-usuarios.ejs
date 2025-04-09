@@ -3,47 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title><%= title %></title>
-    <link rel="stylesheet" href="/css/estilos.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="fondo-gestion-usuarios">
+<body class="bg-gray-100 min-h-screen">
+
     <%- include('partials/header') %>
 
-    <h1 class="user-management-title">Gestión de Usuarios</h1>
+    <div class="container mx-auto px-4 mt-10">
+        <h1 class="text-3xl font-bold mb-6 text-center">👥 Gestión de Usuarios</h1>
 
-    <table class="user-management-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Correo Electrónico</th>
-                <th>Nombre</th>
-                <th>Contraseña</th>
-                <th>Es Admin</th>
-                <th>Baneado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% usuarios.forEach(usuario => { %>
-                <tr>
-                    <td><%= usuario._id %></td>
-                    <td><%= usuario.correo %></td>
-                    <td><%= usuario.username %></td>
-                    <td><%= usuario.contrasena %></td>
-                    <td><%= usuario.es_admin ? 'Sí' : 'No' %></td>
-                    <td><%= usuario.baneado ? 'Sí' : 'No' %></td>
-                    <td>
-                        <% if (!usuario.baneado) { %>
-                            <form action="/gestion_usuarios/banear" method="post" style="display:inline;">
-                                <input type="hidden" name="id" value="<%= usuario._id %>">
-                                <button type="submit">Banear</button>
-                            </form>
-                        <% } else { %>
-                            Baneado
-                        <% } %>
-                    </td>
-                </tr>
-            <% }); %>
-        </tbody>
-    </table>
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full bg-white shadow-md rounded-lg overflow-hidden">
+                <thead class="bg-gray-800 text-white">
+                    <tr>
+                        <th class="px-4 py-2 text-left">ID</th>
+                        <th class="px-4 py-2 text-left">Correo Electrónico</th>
+                        <th class="px-4 py-2 text-left">Nombre</th>
+                        <th class="px-4 py-2 text-left">Contraseña</th>
+                        <th class="px-4 py-2 text-center">Es Admin</th>
+                        <th class="px-4 py-2 text-center">Baneado</th>
+                        <th class="px-4 py-2 text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <% usuarios.forEach(usuario => { %>
+                        <tr class="hover:bg-gray-100">
+                            <td class="px-4 py-2 text-sm text-gray-800"><%= usuario._id %></td>
+                            <td class="px-4 py-2 text-sm"><%= usuario.email %></td>
+                            <td class="px-4 py-2 text-sm"><%= usuario.username %></td>
+                            <td class="px-4 py-2 text-sm truncate max-w-xs"><%= usuario.password %></td>
+                            <td class="px-4 py-2 text-center"><%= usuario.rol === 'admin' ? 'Sí' : 'No' %></td>
+                            <td class="px-4 py-2 text-center"><%= usuario.baneado ? 'Sí' : 'No' %></td>
+                            <td class="px-4 py-2 text-center">
+                                <% if (!usuario.baneado) { %>
+                                    <form action="/gestion-usuarios/banear" method="POST" class="inline">
+                                        <input type="hidden" name="id" value="<%= usuario._id %>">
+                                        <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Banear</button>
+                                    </form>
+                                <% } else { %>
+                                    <span class="text-red-600 font-semibold">Baneado</span>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </body>
 </html>
