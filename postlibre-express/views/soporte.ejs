@@ -1,18 +1,21 @@
 <%- include("partials/header", {}) %>
 
+<!-- ⚠️ Importante para el JS -->
+<body data-user-logged="<%= user?.rol === 'admin' %>" data-username="<%= user?.username || '' %>">
+
 <link rel="stylesheet" href="/css/soporte-whats.css">
 
 <div class="chat-wrapper">
   <!-- Lista de chats -->
   <aside class="chat-sidebar">
     <h2>Chats</h2>
-  
+
     <% if (user?.rol === 'admin') { %>
       <ul id="admin-chats" class="chat-list"></ul>
     <% } else { %>
       <ul class="chat-list">
         <% chats.forEach(chat => { %>
-          <li onclick="location.href='/soporte/<%= chat._id %>'">
+          <li>
             <div class="chat-user">
               <img src="/images/avatar.webp" class="avatar" />
               <div class="chat-info">
@@ -28,44 +31,32 @@
       </ul>
     <% } %>
   </aside>
+
   <% if (user?.rol === 'admin') { %>
     <aside class="admin-chat-sidebar">
       <h3>Usuarios activos</h3>
-      <ul id="active-guests" class="admin-users-list">
-        <!-- Se llenará dinámicamente con JS -->
-      </ul>
+      <ul id="active-guests" class="admin-users-list"></ul>
     </aside>
   <% } %>
-  
 
   <!-- Panel de conversación -->
   <main class="chat-main">
-    <% if (conversacion) { %>
-      <div class="chat-header">
-        <h3><%= conversacion.nombre %></h3>
-      </div>
+    <div class="chat-header">
+      <h3>soporte</h3>
+    </div>
 
-      <ul id="chat-mensajes" class="chat-messages">
-        <% conversacion.mensajes.forEach(msg => { %>
-          <li class="<%= msg.remitente === user.username ? 'msg-self' : 'msg-other' %>">
-            <div class="bubble"><%= msg.contenido %> <span class="hora"><%= new Date(msg.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %></span></div>
-          </li>
-        <% }) %>
-      </ul>
+    <ul id="messages" class="chat-messages"></ul>
 
-      <form id="chat-form" class="chat-form">
-        <input type="text" name="contenido" placeholder="Escribe tu mensaje..." required>
-        <button>Enviar</button>
-      </form>
-    <% } else { %>
-      <div class="chat-placeholder">
-        <p>Selecciona una conversación para empezar</p>
-      </div>
-    <% } %>
+    <!--Form corregido -->
+    <form id="chat-form" class="chat-form">
+      <input type="text" id="message-input" placeholder="Escribe tu mensaje..." required>
+      <button type="submit">Enviar</button>
+    </form>
+    
   </main>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
-<script src="/js/soporte-chat.js"></script>
+<script src="/js/soporte.js"></script>
 
 <%- include("partials/footer") %>

@@ -51,21 +51,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Enviar mensaje
-    document.getElementById('chat-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const input = document.getElementById('message-input');
-        const message = input.value.trim();
-        if (!message) return;
+const form = document.getElementById('chat-form');
+const input = document.getElementById('message-input');
 
-        const targetUserId = document.getElementById('target-user')?.value || null;
+form?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const message = input?.value?.trim();
+  if (!message) return;
 
-        socket.emit('sendMessage', {
-            message,
-            targetUserId: currentRoom || targetUserId
-        });
+  const targetUserId = document.getElementById('target-user')?.value || null;
 
-        input.value = '';
-    });
+  socket.emit('sendMessage', {
+    message,
+    targetUserId: currentRoom || targetUserId
+  });
+
+  input.value = '';
+});
+
 
     // Mostrar mensaje recibido
     socket.on('receiveMessage', ({ sender, senderId, message, fecha }) => {
