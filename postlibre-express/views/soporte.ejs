@@ -6,23 +6,37 @@
   <!-- Lista de chats -->
   <aside class="chat-sidebar">
     <h2>Chats</h2>
-    <ul class="chat-list">
-      <% chats.forEach(chat => { %>
-        <li onclick="location.href='/soporte/<%= chat._id %>'">
-          <div class="chat-user">
-            <img src="/images/avatar.webp" class="avatar" />
-            <div class="chat-info">
-              <strong><%= chat.nombre %></strong>
-              <p><%= chat.ultimoMensaje %></p>
+  
+    <% if (user?.rol === 'admin') { %>
+      <ul id="admin-chats" class="chat-list"></ul>
+    <% } else { %>
+      <ul class="chat-list">
+        <% chats.forEach(chat => { %>
+          <li onclick="location.href='/soporte/<%= chat._id %>'">
+            <div class="chat-user">
+              <img src="/images/avatar.webp" class="avatar" />
+              <div class="chat-info">
+                <strong><%= chat.nombre %></strong>
+                <p><%= chat.ultimoMensaje %></p>
+              </div>
+              <div class="chat-meta">
+                <span class="fecha"><%= chat.fecha %></span>
+              </div>
             </div>
-            <div class="chat-meta">
-              <span class="fecha"><%= chat.fecha %></span>
-            </div>
-          </div>
-        </li>
-      <% }) %>
-    </ul>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
   </aside>
+  <% if (user?.rol === 'admin') { %>
+    <aside class="admin-chat-sidebar">
+      <h3>Usuarios activos</h3>
+      <ul id="active-guests" class="admin-users-list">
+        <!-- Se llenará dinámicamente con JS -->
+      </ul>
+    </aside>
+  <% } %>
+  
 
   <!-- Panel de conversación -->
   <main class="chat-main">
