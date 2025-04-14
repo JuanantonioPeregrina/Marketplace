@@ -1,7 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const SoporteChat = require('../database/models/soporte.model');
-router.get('/', async (req, res) => {
+
+// Middleware para restringir acceso solo a usuarios autenticados
+function soloUsuarios(req, res, next) {
+  if (!req.session.user) {
+    return res.redirect('/login');
+  }
+  next();
+}
+
+router.get('/', soloUsuarios, async (req, res) => {
   const username = req.session.user?.username || `Invitado-${req.sessionID.slice(0, 5)}`;
 
   let chat = await SoporteChat.findOne({ participantes: { $in: [username] } });
