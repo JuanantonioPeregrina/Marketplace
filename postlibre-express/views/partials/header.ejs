@@ -136,12 +136,14 @@
             <% } %>
             
     
-            <a href="/terminos">📜 Términos y Condiciones</a>
+
     
             <% if (user) { %>
                 <a href="/logout">🚪 Cerrar Sesión</a>
+                <a href="/terminos">📜 Términos y Condiciones</a>
             <% } else { %>
                 <a href="/login">🔑 Iniciar Sesión</a>
+                <a href="/terminos">📜 Términos y Condiciones</a>
             <% } %>
     
             <button onclick="toggleProfileMenu()">Cerrar</button>
