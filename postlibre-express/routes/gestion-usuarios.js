@@ -1,15 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Usuario = require('../database/models/user.model'); // Ajusta si tu modelo tiene otro nombre
-
-// Middleware para comprobar si es admin
-function soloAdmins(req, res, next) {
-    if (req.session.user?.rol === 'admin') {
-        next();
-    } else {
-        res.status(403).send("Acceso denegado");
-    }
-}
+const { soloAdmins } = require('../middlewares/auth'); // Importar el middleware compartido
 
 // GET: Mostrar todos los usuarios
 router.get('/', soloAdmins, async (req, res) => {
