@@ -154,72 +154,55 @@ io.on("connection", (socket) => {
   const SoporteChat = require("./database/models/soporte.model"); 
 
   socket.on('sendMessage', async ({ message, targetUserId }) => {
-      const sender = usuariosSoporte[socket.id]?.username || 'Desconocido';
-      const senderId = socket.id;
-      let receptorId = targetUserId;
+    const senderUsername = usuariosSoporte[socket.id]?.username || 'Desconocido';
+    const receptorUsername = usuariosSoporte[targetUserId]?.username || 'admin';
 
-      if (!receptorId) {
-        // Buscar primer admin conectado
-        const admin = Object.entries(usuariosSoporte).find(([_, u]) => u.role === 'admin');
-        receptorId = admin?.[0] || 'soporte'; // fallback por si no hay admin conectado
-      }
+    const participantes = [senderUsername, receptorUsername].sort(); // 🔑 IMPORTANTE
 
-      const participantes = [socket.id, receptorId].sort();
+    const nuevoMensaje = {
+        remitente: senderUsername,
+        contenido: message,
+        fecha: new Date()
+    };
 
-  
-      const nuevoMensaje = {
-          remitente: sender,
-          contenido: message,
-          fecha: new Date()
-      };
-  
-      // Guardar en base de datos
-      try {
-          let chat = await SoporteChat.findOne({ participantes });
-  
-          if (!chat) {
-              chat = new SoporteChat({ participantes, mensajes: [] });
-          }
-  
-          chat.mensajes.push(nuevoMensaje);
-          await chat.save();
-      } catch (err) {
-          console.error("Error guardando mensaje de soporte:", err);
-      }
-  
-      // Emitir a ambos lados
-      if (targetUserId) {
-          io.to(targetUserId).emit('receiveMessage', {
-              sender, senderId, message, fecha: nuevoMensaje.fecha
-          });
-      } else {
-          socket.broadcast.emit('receiveMessage', {
-              sender, senderId, message, fecha: nuevoMensaje.fecha
-          });
-      }
-  
-      socket.emit('receiveMessage', {
-          sender: sender, senderId, message, fecha: nuevoMensaje.fecha
-      });
-  });
-  socket.on('requestChatHistory', async (targetId) => {
-    let receptorId = targetId;
+    try {
+        let chat = await SoporteChat.findOne({ participantes });
 
-    if (!receptorId) {
-        const admin = Object.entries(usuariosSoporte).find(([_, u]) => u.role === 'admin');
-        receptorId = admin?.[0] || 'soporte';
+        if (!chat) {
+            chat = new SoporteChat({ participantes, mensajes: [] });
+        }
+
+        chat.mensajes.push(nuevoMensaje);
+        await chat.save();
+    } catch (err) {
+        console.error("❌ Error guardando mensaje de soporte:", err);
     }
 
-    const participantes = [socket.id, receptorId].sort();
+    // Emitir a ambos lados
+    io.emit('receiveMessage', {
+        sender: senderUsername,
+        senderId: socket.id,
+        message,
+        fecha: nuevoMensaje.fecha
+    });
+});
+
+
+socket.on('requestChatHistory', async (targetId) => {
+    const senderUsername = usuariosSoporte[socket.id]?.username || 'Desconocido';
+    const receptorUsername = usuariosSoporte[targetId]?.username || 'admin';
+    const participantes = [senderUsername, receptorUsername].sort();
 
     try {
         const chat = await SoporteChat.findOne({ participantes });
         socket.emit('loadChatHistory', chat?.mensajes || []);
     } catch (err) {
-        console.error("Error cargando historial de soporte:", err);
+        console.error("❌ Error cargando historial de soporte:", err);
         socket.emit('loadChatHistory', []);
     }
 });
+
+  
 
   
   // Cliente se desconecta

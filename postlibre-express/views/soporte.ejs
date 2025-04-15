@@ -1,7 +1,11 @@
 <%- include("partials/header", {}) %>
 
-<!-- ⚠️ Importante para el JS -->
-<body data-user-logged="<%= user?.rol === 'admin' %>" data-username="<%= user?.username || '' %>">
+<!--Importante para el JS --><body 
+data-user-logged="<%= user?.rol === 'admin' %>" 
+data-username="<%= usuarioNombre %>" 
+data-conversacion-activa="<%= conversacion?.nombre || '' %>"
+data-mensajes-json='<%= JSON.stringify(mensajesJSON).replace(/'/g, "&apos;").replace(/"/g, '&quot;') %>'>
+
 
 <link rel="stylesheet" href="/css/soporte-whats.css">
 
@@ -11,11 +15,9 @@
     <h2>Chats</h2>
 
     <% if (user?.rol === 'admin') { %>
-      <ul id="admin-chats" class="chat-list"></ul>
-    <% } else { %>
-      <ul class="chat-list">
+      <ul id="admin-chats" class="chat-list">
         <% chats.forEach(chat => { %>
-          <li>
+          <li onclick="window.location.href='/soporte/<%= chat.nombre %>'">
             <div class="chat-user">
               <img src="/images/avatar.webp" class="avatar" />
               <div class="chat-info">
@@ -29,6 +31,7 @@
           </li>
         <% }) %>
       </ul>
+      
     <% } %>
   </aside>
 
@@ -58,5 +61,6 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/soporte.js"></script>
+
 
 <%- include("partials/footer") %>
