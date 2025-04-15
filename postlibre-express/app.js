@@ -130,35 +130,44 @@ io.on("connection", (socket) => {
   // Cliente se conecta al soporte
   socket.on('joinSupport', ({ role, username }) => {
     const nombre = username || (role === 'admin' ? 'Soporte' : `Invitado-${socket.id.slice(0, 5)}`);
+    
+    socket.username = nombre; // ✅ guardamos el nombre en el socket
+    
     usuariosSoporte[socket.id] = { role, username: nombre };
 
-  
-      // Notificar a todos (si quieres lista general)
-      const usuariosList = Object.entries(usuariosSoporte).map(([id, data]) => ({
-          socketId: id,
-          username: data.username
-      }));
-      io.emit('updateUsersList', usuariosList);
-  
-      // Si es admin, enviarle solo los invitados
-      if (role === 'admin') {
-          const invitados = {};
-          for (const [id, data] of Object.entries(usuariosSoporte)) {
-              if (data.role === 'guest') invitados[id] = data.username;
-          }
-          socket.emit('activeGuests', invitados);
-      }
-  });
-  
+    // Emitir lista
+    const usuariosList = Object.entries(usuariosSoporte).map(([id, data]) => ({
+        socketId: id,
+        username: data.username
+    }));
+    io.emit('updateUsersList', usuariosList);
+
+    // Emitir solo invitados al admin
+    if (role === 'admin') {
+        const invitados = {};
+        for (const [id, data] of Object.entries(usuariosSoporte)) {
+            if (data.role === 'guest') invitados[id] = data.username;
+        }
+        socket.emit('activeGuests', invitados);
+    }
+});
+
   // Enviar mensaje entre usuarios
   const SoporteChat = require("./database/models/soporte.model"); 
 
-  socket.on('sendMessage', async ({ message, targetUserId }) => {
-    const senderUsername = usuariosSoporte[socket.id]?.username || 'Desconocido';
-    const receptorUsername = usuariosSoporte[targetUserId]?.username || 'admin';
+  socket.on('sendMessage', async ({ message, targetUserId, targetUsername }) => {
+    const senderUsername = socket.username || 'Desconocido';
 
-    const participantes = [senderUsername, receptorUsername].sort(); // 🔑 IMPORTANTE
+    
+    let receptorUsername = 'admin';
+    if (targetUsername) {
+        receptorUsername = targetUsername;
+    } else if (usuariosSoporte[targetUserId]) {
+        receptorUsername = usuariosSoporte[targetUserId].username;
+    }
 
+    const participantes = [senderUsername, receptorUsername].sort();
+    
     const nuevoMensaje = {
         remitente: senderUsername,
         contenido: message,

@@ -13,7 +13,13 @@ data-mensajes-json='<%= JSON.stringify(mensajesJSON).replace(/'/g, "&apos;").rep
   <!-- Lista de chats -->
   <aside class="chat-sidebar">
     <h2>Chats</h2>
-
+    <% if (user && user.rol !== 'admin') { %>
+      <p style="color: red; font-weight: bold;">
+        Aviso: Si cierras o actualizas la página, se perderá la conversación actual con el soporte.
+      </p>
+    <% } %>
+    
+    
     <% if (user?.rol === 'admin') { %>
       <ul id="admin-chats" class="chat-list">
         <% chats.forEach(chat => { %>

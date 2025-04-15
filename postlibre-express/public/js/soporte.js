@@ -72,12 +72,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const message = input.value.trim();
             if (!message) return;
 
-            const targetUserId = document.getElementById('target-user')?.value || null;
+          // Enviar también el nombre del receptor (solo si eres admin)
+        let targetUserId = null;
+        let targetUsername = null;
 
-            socket.emit('sendMessage', {
-                message,
-                targetUserId: currentRoom || targetUserId
-            });
+        if (role === 'admin') {
+            targetUserId = currentRoom; // socketId
+            targetUsername = document.querySelector('#active-guests li.selected')?.textContent || conversacionActiva;
+        }
+
+        socket.emit('sendMessage', {
+            message,
+            targetUserId,
+            targetUsername
+        });
+
+
 
             input.value = '';
         });
