@@ -204,7 +204,7 @@ function actualizarCuentaRegresiva(id, fechaExpiracion) {
                             });
                         }
                     } catch (error) {
-                        console.error("❌ Error cargando listado de notificaciones:", error);
+                        console.error("Error cargando listado de notificaciones:", error);
                     }
                 }
                 
@@ -219,4 +219,20 @@ function actualizarCuentaRegresiva(id, fechaExpiracion) {
                     actualizarDropdownNotificaciones();
                 });
 
+                async function marcarTodasLeidas() {
+                    try {
+                      const res = await fetch("/notificaciones/marcar-todas", {
+                        method: "POST"
+                      });
+                      const data = await res.json();
+                      if (data.success) {
+                        await actualizarDropdownNotificaciones();
+                        await cargarNotificaciones(); // para resetear el contador
+                      }
+                    } catch (error) {
+                      console.error(" Error marcando todas como leídas:", error);
+                    }
+                  }
+                  
+                  
                   

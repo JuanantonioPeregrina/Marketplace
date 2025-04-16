@@ -71,12 +71,14 @@
     </button>
   
     <ul class="dropdown-menu dropdown-menu-end p-2 shadow-lg" id="notifDropdown" style="width: 300px; max-height: 300px; overflow-y: auto;">
-      <h6 class="dropdown-header">Notificaciones</h6>
-      <ul id="notifList" class="list-group list-group-flush">
-        <!-- Mensajes por JavaScript -->
-      </ul>
-    </ul>
-  </div>
+        <h6 class="dropdown-header d-flex justify-content-between align-items-center">
+            Notificaciones
+            <button onclick="marcarTodasLeidas()" class="btn btn-sm btn-link text-primary">Marcar todas</button>
+          </h6>
+          <ul id="notifList" class="list-group list-group-flush">
+            <!-- Mensajes por JavaScript -->
+          </ul>
+          
   
   
   
