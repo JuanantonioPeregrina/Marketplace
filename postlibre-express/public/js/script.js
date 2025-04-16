@@ -199,7 +199,16 @@ function actualizarCuentaRegresiva(id, fechaExpiracion) {
                 
                                 const item = document.createElement("li");
                                 item.className = "list-group-item";
-                                item.innerHTML = `📩 <strong>${msg.remitente}</strong> te ha escrito<br><small>${fecha}</small>`;
+                                item.innerHTML = `
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                    📩 <strong>${msg.remitente}</strong> te ha escrito<br>
+                                    <small>${fecha}</small>
+                                    </div>
+                                    <a href="/chat?anuncioId=${msg.anuncioId}&usuario=${msg.remitente}" class="btn btn-sm btn-outline-primary ms-2">Ver</a>
+                                </div>
+                                `;
+
                                 notifList.appendChild(item);
                             });
                         }
