@@ -39,5 +39,39 @@ router.get("/contador", async (req, res) => {
         return res.json({ success: false, notificaciones: 0 });
     }
 });
+router.get("/listado", async (req, res) => {
+    if (!req.session.user) {
+        return res.json({ success: false, mensajes: [] });
+    }
+
+    const username = req.session.user.username;
+
+    try {
+        const chats = await Chat.find({
+            $or: [{ remitente: username }, { destinatario: username }]
+        });
+
+        const mensajesNoLeidos = [];
+
+        for (const chat of chats) {
+            chat.mensajes.forEach(m => {
+                if (!m.leido && m.remitente !== username) {
+                    mensajesNoLeidos.push({
+                        remitente: m.remitente,
+                        fecha: m.fecha,
+                        anuncioId: chat.anuncioId
+                    });
+                }
+            });
+        }
+
+        res.json({ success: true, mensajes: mensajesNoLeidos });
+
+    } catch (error) {
+        console.error(" Error obteniendo notificaciones:", error);
+        return res.json({ success: false, mensajes: [] });
+    }
+});
+
 
 module.exports = router;

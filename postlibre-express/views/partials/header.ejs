@@ -63,22 +63,23 @@
       
 <!-- 🔔 Botón de Notificaciones -->
 <div class="dropdown d-inline-block ms-3">
-  <button id="notifButton" class="btn btn-outline-light position-relative dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+    <button id="notifButton" class="btn btn-outline-light position-relative dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
       <i class="fas fa-bell"></i>
       <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger <%= notificaciones > 0 ? '' : 'hidden' %>">
         <%= notificaciones %>
       </span>
-      
-      
-  </button>
-
-  <!-- Dropdown de notificaciones (se mostrará con Bootstrap) -->
-  <ul id="notifDropdown" class="dropdown-menu dropdown-menu-end p-2 shadow-lg">
+    </button>
+  
+    <ul class="dropdown-menu dropdown-menu-end p-2 shadow-lg" id="notifDropdown" style="width: 300px; max-height: 300px; overflow-y: auto;">
       <h6 class="dropdown-header">Notificaciones</h6>
-      <ul id="notifList" class="list-group"></ul>
-  </ul>
-</div>
-
+      <ul id="notifList" class="list-group list-group-flush">
+        <!-- Mensajes por JavaScript -->
+      </ul>
+    </ul>
+  </div>
+  
+  
+  
      </div>
         <!-- Icono de perfil con menú desplegable -->
      <div class="user-profile ml-4" id="profile-icon" onclick="toggleProfileMenu()">

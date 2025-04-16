@@ -62,10 +62,7 @@ function actualizarCuentaRegresiva(id, fechaExpiracion) {
                     const notifButton = document.getElementById("notifButton");
                     const notifDropdown = document.getElementById("notifDropdown");
                 
-                    // Función para alternar la visibilidad del dropdown
-                    notifButton.addEventListener("click", function () {
-                        notifDropdown.classList.toggle("show");
-                    });
+                
                 
                     // Cerrar el dropdown si se hace clic fuera de él
                     document.addEventListener("click", function (event) {
@@ -180,10 +177,46 @@ function actualizarCuentaRegresiva(id, fechaExpiracion) {
                     }
                 }
                 
-                // Llama la función cada 15 segundos
-                setInterval(cargarNotificaciones, 15000);
-                window.addEventListener("DOMContentLoaded", cargarNotificaciones);
+                async function actualizarDropdownNotificaciones() {
+                    try {
+                        const response = await fetch("/notificaciones/listado");
+                        const data = await response.json();
                 
-                  
-                  
+                        if (data.success) {
+                            const notifList = document.getElementById("notifList");
+                            notifList.innerHTML = ""; // Limpiar
+                
+                            if (data.mensajes.length === 0) {
+                                notifList.innerHTML = `<li class="list-group-item text-muted">Sin notificaciones nuevas</li>`;
+                                return;
+                            }
+                
+                            data.mensajes.forEach(msg => {
+                                const fecha = new Date(msg.fecha).toLocaleString("es-ES", {
+                                    dateStyle: "short",
+                                    timeStyle: "short"
+                                });
+                
+                                const item = document.createElement("li");
+                                item.className = "list-group-item";
+                                item.innerHTML = `📩 <strong>${msg.remitente}</strong> te ha escrito<br><small>${fecha}</small>`;
+                                notifList.appendChild(item);
+                            });
+                        }
+                    } catch (error) {
+                        console.error("❌ Error cargando listado de notificaciones:", error);
+                    }
+                }
+                
+                // Llama ambas cada 15s
+                setInterval(() => {
+                    cargarNotificaciones();
+                    actualizarDropdownNotificaciones();
+                }, 15000);
+
+                window.addEventListener("DOMContentLoaded", () => {
+                    cargarNotificaciones();
+                    actualizarDropdownNotificaciones();
+                });
+
                   
