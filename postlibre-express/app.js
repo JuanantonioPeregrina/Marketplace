@@ -43,6 +43,8 @@ const { iniciarVerificacionSubastas } = require('./routes/subasta');
 const { registrarPuja } = require("./routes/subasta");
 const gestionAnunciosRoutes = require("./routes/gestion-anuncios");
 const chatsRoute = require('./routes/mis-chats');
+const notificacionesRoutes = require("./routes/notificaciones");
+
 
 
 ;
@@ -61,8 +63,8 @@ const app = express();
 const server = http.createServer(app); // Usa tu app Express
 const io = socketIo(server); // Configurar Socket.IO con el servidor
 
-// ✅ Iniciar la verificación de subastas pendientes en el servidor
-iniciarVerificacionSubastas(io);  // ✅ Ahora sí existe
+// Iniciar la verificación de subastas pendientes en el servidor
+iniciarVerificacionSubastas(io);  //Ahora sí existe
 
 
 // Escuchar eventos de conexión de los clientes
@@ -101,12 +103,12 @@ io.on("connection", (socket) => {
         });
 
         if (!chat) {
-            console.log("ℹ️ No se encontró un chat, creando uno nuevo...");
+            console.log("ℹNo se encontró un chat, creando uno nuevo...");
             chat = new Chat({ 
                 anuncioId, 
                 remitente, 
                 destinatario, 
-                mensajes: []  // ✅ Asegurar que `mensajes` existe
+                mensajes: []  // Asegurar que `mensajes` existe
             });
         }
 
@@ -115,17 +117,17 @@ io.on("connection", (socket) => {
             chat.mensajes = [];
         }
 
-        // ✅ Guardamos el mensaje dentro de `mensajes`
-        chat.mensajes.push({ remitente, contenido, fecha });
+        //  Guardamos el mensaje dentro de `mensajes`
+        chat.mensajes.push({ remitente, contenido, fecha, leido: false });
         await chat.save();
 
-        console.log("✅ Mensaje guardado correctamente en MongoDB:", chat);
+        console.log(" Mensaje guardado correctamente en MongoDB:", chat);
 
         // Emitimos el mensaje al cliente en tiempo real
         io.to(anuncioId).emit("mensaje", { remitente, contenido, fecha });
 
     } catch (error) {
-        console.error("❌ Error guardando el mensaje en MongoDB:", error);
+        console.error(" Error guardando el mensaje en MongoDB:", error);
     }
 });
 
@@ -134,7 +136,7 @@ io.on("connection", (socket) => {
   socket.on('joinSupport', ({ role, username }) => {
     const nombre = username || (role === 'admin' ? 'Soporte' : `Invitado-${socket.id.slice(0, 5)}`);
     
-    socket.username = nombre; // ✅ guardamos el nombre en el socket
+    socket.username = nombre; //  guardamos el nombre en el socket
     
     usuariosSoporte[socket.id] = { role, username: nombre };
 
@@ -184,10 +186,10 @@ io.on("connection", (socket) => {
             chat = new SoporteChat({ participantes, mensajes: [] });
         }
 
-        chat.mensajes.push(nuevoMensaje);
+        chat.mensajes.push({nuevoMensaje, leido: false});
         await chat.save();
     } catch (err) {
-        console.error("❌ Error guardando mensaje de soporte:", err);
+        console.error(" Error guardando mensaje de soporte:", err);
     }
 
     // Emitir a ambos lados
@@ -209,7 +211,7 @@ socket.on('requestChatHistory', async (targetId) => {
         const chat = await SoporteChat.findOne({ participantes });
         socket.emit('loadChatHistory', chat?.mensajes || []);
     } catch (err) {
-        console.error("❌ Error cargando historial de soporte:", err);
+        console.error(" Error cargando historial de soporte:", err);
         socket.emit('loadChatHistory', []);
     }
 });
@@ -268,7 +270,7 @@ app.use((req, res, next) => {
 
   res.locals.message = ""; // Inicializa el mensaje local como vacío
   res.locals.error = ""; // Inicializa el error local como vacío
-
+  res.locals.notificaciones = 0;
   if (message) res.locals.message = `<p>${message}</p>`; // Si hay mensaje, lo formatea como HTML
   if (error) res.locals.error = `<p>${error}</p>`; // Si hay error, lo formatea como HTML
 
@@ -305,6 +307,7 @@ app.use("/favoritos", favoritosRouter);
 app.use("/gestion-usuarios", gestionUsuariosRoutes);
 app.use("/gestion-anuncios", gestionAnunciosRoutes);
 app.use('/mis-chats', chatsRoute);
+app.use("/notificaciones", notificacionesRoutes);
 
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)

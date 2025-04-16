@@ -152,3 +152,38 @@ function actualizarCuentaRegresiva(id, fechaExpiracion) {
                     }
                 });
                 
+
+
+                function actualizarNotificaciones(n) {
+                    const badge = document.getElementById("notifBadge");
+                    if (!badge) return;
+                    if (n > 0) {
+                      badge.textContent = n;
+                      badge.classList.remove("hidden");
+                    } else {
+                      badge.textContent = "0";
+                      badge.classList.add("hidden");
+                    }
+                  }
+                  
+
+                  async function cargarNotificaciones() {
+                    try {
+                        const response = await fetch("/notificaciones/contador");
+                        const data = await response.json();
+                
+                        if (data.success) {
+                            actualizarNotificaciones(data.notificaciones);
+                        }
+                    } catch (error) {
+                        console.error("❌ Error obteniendo notificaciones:", error);
+                    }
+                }
+                
+                // Llama la función cada 15 segundos
+                setInterval(cargarNotificaciones, 15000);
+                window.addEventListener("DOMContentLoaded", cargarNotificaciones);
+                
+                  
+                  
+                  

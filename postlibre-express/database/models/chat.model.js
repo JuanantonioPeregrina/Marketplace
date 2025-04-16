@@ -7,7 +7,8 @@ const ChatSchema = new mongoose.Schema({
     mensajes: [{ 
         remitente: String,
         contenido: String,
-        fecha: { type: Date, default: Date.now }
+        fecha: { type: Date, default: Date.now },
+        leido: { type: Boolean, default: false }
     }]
 });
 

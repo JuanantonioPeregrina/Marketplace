@@ -30,7 +30,6 @@ router.post("/iniciar", async (req, res) => {
 
 
 // Ruta para cargar el chat
-
 router.get("/", async (req, res) => {
     if (!req.session.user) {
         return res.redirect("/login");
@@ -56,17 +55,64 @@ router.get("/", async (req, res) => {
             return res.status(400).send("No hay destinatario válido para este chat.");
         }
 
-        // Buscar todas las conversaciones del usuario autenticado
+        // Buscar todas las conversaciones
         const conversaciones = await Chat.find({
             $or: [{ remitente: username }, { destinatario: username }]
         }).lean();
 
-        res.render("chat", { 
+        //Marcar como leídos los mensajes del otro usuario
+        await Chat.updateMany(
+            {
+              anuncioId,
+              mensajes: {
+                $elemMatch: {
+                  leido: false,
+                  remitente: { $ne: username }
+                }
+              }
+            },
+            {
+              $set: { "mensajes.$[elem].leido": true }
+            },
+            {
+              arrayFilters: [{ "elem.remitente": { $ne: username } }],
+              multi: true
+            }
+          );
+          
+
+        //Calcular mensajes no leídos
+        const sinLeer = await Chat.aggregate([
+            {
+              $match: {
+                $or: [
+                  { remitente: username },
+                  { destinatario: username }
+                ]
+              }
+            },
+            { $unwind: "$mensajes" },
+            {
+              $match: {
+                "mensajes.leido": false,
+                "mensajes.remitente": { $ne: username }
+              }
+            },
+            {
+              $count: "noLeidos"
+            }
+          ]);
+          
+          const totalNoLeidos = sinLeer[0]?.noLeidos || 0;
+          
+        // ✅ Renderizar con la variable incluida
+        res.render("chat", {
             title: "Chat - LibrePost",
             user: req.session.user,
             anuncioId,
             usuarioDestino,
-            conversaciones // 🔹 Ahora pasamos conversaciones correctamente
+            conversaciones,
+            notificaciones: totalNoLeidos // 🔥 aquí pasa la variable al EJS
         });
 
     } catch (error) {
@@ -76,6 +122,7 @@ router.get("/", async (req, res) => {
 });
 
 
+  
 
 
 // Ruta para obtener los mensajes de una conversación específica

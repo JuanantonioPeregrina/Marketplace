@@ -116,6 +116,7 @@ module.exports = (io) => {
                 anuncios: anunciosConDatos,
                 page,
                 totalPages: Math.ceil(total / limit)
+                
             });
             
     
