@@ -79,13 +79,28 @@
         <pre class="bg-white p-3 border mt-3" id="outputInscribirse">...</pre>
       </div>
     </div>
+
+     <!-- Oferta automática -->
+<div class="card mb-5">
+    <div class="card-header bg-primary text-white">6️⃣ Oferta Automática (POST)</div>
+    <div class="card-body">
+      <input type="text" id="autoId" class="form-control mb-2" placeholder="ID del anuncio">
+      <input type="number" id="precioMaximo" class="form-control mb-2" placeholder="Precio Máximo de la Puja">
+      <button class="btn btn-primary" id="ofertarAuto">Ofertar Automáticamente</button>
+      <pre class="bg-white p-3 border mt-3" id="outputAuto">...</pre>
+    </div>
   </div>
+
+  </div>
+
+ 
+  
 
   <!-- Scripts -->
   <script>
     async function fetchAPI(url, method = 'GET', body = null) {
       const apiKey = document.getElementById('apiKey').value.trim();
-      if (!apiKey) return { result: "⚠️ Ingresa una API Key válida." };
+      if (!apiKey) return { result: " Ingresa una API Key válida." };
 
       const options = {
         method,

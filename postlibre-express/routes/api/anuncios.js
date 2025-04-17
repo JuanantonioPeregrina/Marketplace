@@ -61,7 +61,7 @@ router.get("/", async (req, res) => {
     }
 });
 
-// 📌 Obtener un anuncio por ID
+// Obtener un anuncio por ID
 router.get("/:id", async (req, res) => {
     try {
         const anuncio = await Anuncio.findById(req.params.id);
@@ -87,7 +87,7 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-// 📌 Ruta GET para mostrar información sobre cómo usar /api/anuncios/nuevo
+// Ruta GET para mostrar información sobre cómo usar /api/anuncios/nuevo
 router.get("/nuevo", (req, res) => {
   res.status(200).json({
       mensaje: "Para crear un anuncio, usa una solicitud POST a esta misma URL con los datos del anuncio."
@@ -127,16 +127,16 @@ if (!titulo || !descripcion || !precio || !categoria || !fechaExpiracion || !fec
         res.status(201).json({ mensaje: "Anuncio creado con éxito", anuncio: nuevoAnuncio });
 
     } catch (error) {
-        console.error("❌ Error al guardar el anuncio:", error);
+        console.error("Error al guardar el anuncio:", error);
         res.status(500).json({ error: "Error interno del servidor." });
     }
 });
 
-// 📌 Editar un anuncio
+// Editar un anuncio
 router.put("/:id", async (req, res) => {
   try {
       const anuncioId = req.params.id.trim();  // 🧹 Eliminar espacios en blanco
-      console.log("🟢 Intentando actualizar anuncio con ID:", anuncioId);
+      console.log(" Intentando actualizar anuncio con ID:", anuncioId);
 
       const anuncio = await Anuncio.findById(anuncioId);
       if (!anuncio) {
@@ -150,28 +150,28 @@ router.put("/:id", async (req, res) => {
           return res.status(403).json({ error: "No tienes permiso para editar este anuncio." });
       }
 
-      // ✅ Aplicar actualización usando `findByIdAndUpdate`
+      //  Aplicar actualización usando `findByIdAndUpdate`
       const anuncioActualizado = await Anuncio.findByIdAndUpdate(
           anuncioId,
-          { $set: req.body },  // 👈 Solo los campos que llegan en `req.body`
-          { new: true }  // 👈 Devuelve el documento actualizado
+          { $set: req.body },  // Solo los campos que llegan en `req.body`
+          { new: true }  // Devuelve el documento actualizado
       );
 
-      console.log("✅ Anuncio actualizado correctamente:", anuncioActualizado);
+      console.log(" Anuncio actualizado correctamente:", anuncioActualizado);
       res.json({ success: true, anuncio: anuncioActualizado });
 
   } catch (error) {
-      console.error("❌ Error al actualizar el anuncio:", error);
+      console.error(" Error al actualizar el anuncio:", error);
       res.status(500).json({ error: "Error al actualizar el anuncio.", detalle: error.message });
   }
 });
 
 
-// 📌 Eliminar un anuncio
+//Eliminar un anuncio
 router.delete("/:id", async (req, res) => {
   try {
       const anuncioId = req.params.id;
-      console.log(`🗑️ Eliminando anuncio con ID: ${anuncioId}`);
+      console.log(`Eliminando anuncio con ID: ${anuncioId}`);
 
       const anuncio = await Anuncio.findById(anuncioId);
       if (!anuncio) {
@@ -179,16 +179,16 @@ router.delete("/:id", async (req, res) => {
       }
 
       await Anuncio.findByIdAndDelete(anuncioId);
-      console.log("✅ Anuncio eliminado correctamente");
+      console.log("Anuncio eliminado correctamente");
 
       res.json({ success: true, message: "Anuncio eliminado exitosamente" });
   } catch (error) {
-      console.error("❌ Error en la eliminación del anuncio:", error);
+      console.error("Error en la eliminación del anuncio:", error);
       res.status(500).json({ success: false, error: "Error interno del servidor" });
   }
 });
 
-// 📌 Inscribirse en un anuncio
+// Inscribirse en un anuncio
 router.post("/:id/inscribirse", async (req, res) => {
     try {
         const anuncio = await Anuncio.findById(req.params.id);
@@ -204,5 +204,45 @@ router.post("/:id/inscribirse", async (req, res) => {
         res.status(500).json({ error: "Error al inscribirse en el anuncio." });
     }
 });
+
+// Registrar una puja automática (API REST)
+router.post("/:id/oferta-automatica", async (req, res) => {
+    try {
+      const anuncio = await Anuncio.findById(req.params.id);
+      if (!anuncio) {
+        return res.status(404).json({ error: "Anuncio no encontrado" });
+      }
+  
+      const { precioMaximo } = req.body;
+      const usuario = req.user.username;
+  
+      if (isNaN(precioMaximo) || precioMaximo <= 0) {
+        return res.status(400).json({ error: "Precio máximo inválido." });
+      }
+  
+      if (anuncio.estadoSubasta !== "activa") {
+        anuncio.ofertasAutomaticas.push({
+          usuario,
+          precioMaximo,
+          fecha: new Date()
+        });
+      } else {
+        anuncio.pujas.push({
+          usuario,
+          cantidad: precioMaximo,
+          fecha: new Date(),
+          automatica: true
+        });
+      }
+  
+      await anuncio.save();
+      return res.json({ success: true, mensaje: "Oferta automática registrada.", anuncio });
+  
+    } catch (error) {
+      console.error("Error registrando oferta automática (API):", error);
+      res.status(500).json({ error: "Error al registrar la oferta automática." });
+    }
+  });
+  
 
 module.exports = router;
