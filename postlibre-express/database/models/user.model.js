@@ -34,7 +34,19 @@ const userSchema = new mongoose.Schema({
     
     verificado: { type: Boolean, default: false },
     codigoVerificacion: { type: String }, // Para el email
-    reseñas: { type: Array, default: [] },
+    reseñas: [{
+        autor: { type: String, required: true },
+        puntuacion: { type: Number, required: true },
+        comentario: { type: String, required: true },
+        fecha: { type: Date, default: Date.now },
+        anuncioId: { type: mongoose.Schema.Types.ObjectId, ref: 'Anuncio', required: true },
+        rol: {
+            type: String,
+            enum: ['anunciante', 'proveedor'],
+            required: true
+        }
+    }],
+    
     favoritos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Anuncio' }],
 
     recibirSugerencias: { type: Boolean, default: false },

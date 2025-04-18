@@ -81,7 +81,17 @@ module.exports = (io) => {
                 }
             }
             
-            
+            let inscritosConResenaPorAnuncio = {};
+
+            if (usuario === anuncio.autor && anuncio.inscritos?.length > 0) {
+                for (const inscrito of anuncio.inscritos) {
+                    const userInscrito = await Usuario.findOne({ username: inscrito });
+                    inscritosConResenaPorAnuncio[inscrito] = userInscrito?.reseñas?.some(r =>
+                        r.autor === usuario && r.anuncioId?.toString() === anuncio._id.toString()
+                    );
+                }
+            }
+
             return {
                 _id: anuncio._id.toString(),
                 titulo: anuncio.titulo,
@@ -100,7 +110,8 @@ module.exports = (io) => {
                 ofertasAutomaticas: anuncio.ofertasAutomaticas || [],
                 sugerencias: await obtenerSugerencias(anuncio.inscritos),
                 esFavorito: userData?.favoritos?.some(fav => fav.toString() === anuncio._id.toString()) || false,
-                resenaEnviadaAlAutor: yaResenoAlAutor
+                resenaEnviadaAlAutor: yaResenoAlAutor,
+                inscritosConResenaPorAnuncio
             };
             
         }));

@@ -103,37 +103,64 @@
       
 
         <!-- 📝 Reseñas recibidas -->
-        <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow">
-            <h2 class="text-lg font-semibold mb-3">⭐ Reseñas Recibidas</h2>
-            <% if (usuario.reseñas.length > 0) { %>
-                <ul class="space-y-3">
-                    <% usuario.reseñas.forEach(reseña => { %>
-                        <li class="bg-white p-4 rounded-lg shadow-md">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm text-gray-600">👤 Valorado por: <span class="font-semibold"><%= reseña.autor %></span></span>
-                                <span class="text-sm text-gray-500"><%= new Date(reseña.fecha).toLocaleDateString() %></span>
-                            </div>
-                        
-                            <div class="flex items-center mb-2">
-                                <% for (let i = 1; i <= 5; i++) { %>
-                                    <% if (i <= reseña.puntuacion) { %>
-                                        <span class="text-yellow-400 text-lg">★</span>
-                                    <% } else { %>
-                                        <span class="text-gray-300 text-lg">★</span>
-                                    <% } %>
-                                <% } %>
-                            </div>
-                        
-                            <p class="text-gray-800 italic">"<%= reseña.comentario %>"</p>
-                        </li>
-                        
-                    <% }); %>
-                </ul>
-                
-            <% } else { %>
-                <p class="text-gray-500">Este usuario aún no tiene reseñas.</p>
-            <% } %>
-        </div>
+        <!-- ⭐ Reseñas como Acompañante/Inscrito -->
+<div class="mt-6 bg-gray-50 p-4 rounded-lg shadow">
+    <h2 class="text-lg font-semibold mb-3">🧳 Reseñas como Proveedor (Inscrito)</h2>
+    <% if (reseñasComoInscrito.length > 0) { %>
+        <ul class="space-y-3">
+            <% reseñasComoInscrito.forEach(reseña => { %>
+                <li class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-600">👤 Valorado por: <span class="font-semibold"><%= reseña.autor %></span></span>
+                        <span class="text-sm text-gray-500"><%= new Date(reseña.fecha).toLocaleDateString() %></span>
+                    </div>
+                    <div class="flex items-center mb-2">
+                        <% for (let i = 1; i <= 5; i++) { %>
+                            <% if (i <= reseña.puntuacion) { %>
+                                <span class="text-yellow-400 text-lg">★</span>
+                            <% } else { %>
+                                <span class="text-gray-300 text-lg">★</span>
+                            <% } %>
+                        <% } %>
+                    </div>
+                    <p class="text-gray-800 italic">"<%= reseña.comentario %>"</p>
+                </li>
+            <% }); %>
+        </ul>
+    <% } else { %>
+        <p class="text-gray-500">No tienes reseñas como inscrito aún.</p>
+    <% } %>
+</div>
+
+<!-- ⭐ Reseñas como Anunciante -->
+<div class="mt-6 bg-gray-50 p-4 rounded-lg shadow">
+    <h2 class="text-lg font-semibold mb-3">📢 Reseñas como Anunciante</h2>
+    <% if (reseñasComoAnunciante.length > 0) { %>
+        <ul class="space-y-3">
+            <% reseñasComoAnunciante.forEach(reseña => { %>
+                <li class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-600">👤 Valorado por: <span class="font-semibold"><%= reseña.autor %></span></span>
+                        <span class="text-sm text-gray-500"><%= new Date(reseña.fecha).toLocaleDateString() %></span>
+                    </div>
+                    <div class="flex items-center mb-2">
+                        <% for (let i = 1; i <= 5; i++) { %>
+                            <% if (i <= reseña.puntuacion) { %>
+                                <span class="text-yellow-400 text-lg">★</span>
+                            <% } else { %>
+                                <span class="text-gray-300 text-lg">★</span>
+                            <% } %>
+                        <% } %>
+                    </div>
+                    <p class="text-gray-800 italic">"<%= reseña.comentario %>"</p>
+                </li>
+            <% }); %>
+        </ul>
+    <% } else { %>
+        <p class="text-gray-500">No tienes reseñas como anunciante aún.</p>
+    <% } %>
+</div>
+
     </main>
 
     <!-- Script para copiar API Key -->
