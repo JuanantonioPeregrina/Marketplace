@@ -67,7 +67,21 @@ module.exports = (io) => {
                 });
             }
         const esFavorito = userData && userData.favoritos.includes(anuncio._id);
+            // Buscar si el usuario inscrito ha valorado ya al autor del anuncio
+            let yaResenoAlAutor = false;
 
+            if (usuario && anuncio.autor !== usuario) {
+                const autor = await Usuario.findOne({ username: anuncio.autor });
+            
+                if (autor && Array.isArray(autor.reseñas)) {
+                    yaResenoAlAutor = autor.reseñas.some(r => {
+                        // Comprobar si existe el campo autor y si es igual al username
+                        return r.autor === usuario;
+                    });
+                }
+            }
+            
+            
             return {
                 _id: anuncio._id.toString(),
                 titulo: anuncio.titulo,
@@ -85,7 +99,8 @@ module.exports = (io) => {
                 pujas: anuncio.pujas || [],
                 ofertasAutomaticas: anuncio.ofertasAutomaticas || [],
                 sugerencias: await obtenerSugerencias(anuncio.inscritos),
-                esFavorito: userData?.favoritos?.some(fav => fav.toString() === anuncio._id.toString()) || false
+                esFavorito: userData?.favoritos?.some(fav => fav.toString() === anuncio._id.toString()) || false,
+                resenaEnviadaAlAutor: yaResenoAlAutor
             };
             
         }));

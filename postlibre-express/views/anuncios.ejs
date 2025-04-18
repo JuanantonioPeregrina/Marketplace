@@ -128,6 +128,48 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
                             <% } %>
                         </div>
                     <% } %>
+                        <!-- Reseñar al autor si eres inscrito -->
+                        <% if (
+                            user && 
+                            user.username !== anuncio.autor && 
+                            Array.isArray(anuncio.inscritos) && 
+                            anuncio.inscritos.includes(user.username) && 
+                            !anuncio.resenaEnviadaAlAutor
+                        ) { %>
+                            <div class="mt-6 bg-gray-100 p-4 rounded-lg">
+                                <h4 class="text-lg font-semibold mb-3">📢 Valorar al autor del anuncio</h4>
+
+                                <form action="/resenas/<%= anuncio.autor %>/<%= anuncio._id %>" method="POST"
+                                    class="space-y-3">
+                                    <label for="puntuacion" class="block">Puntuación:</label>
+                                    <div class="rating">
+                                        <input type="radio" name="puntuacion" id="star5-autor-<%= anuncio._id %>" value="5">
+                                        <label for="star5-autor-<%= anuncio._id %>" title="5 estrellas"></label>
+                                        <input type="radio" name="puntuacion" id="star4-autor-<%= anuncio._id %>" value="4">
+                                        <label for="star4-autor-<%= anuncio._id %>" title="4 estrellas"></label>
+                                        <input type="radio" name="puntuacion" id="star3-autor-<%= anuncio._id %>" value="3">
+                                        <label for="star3-autor-<%= anuncio._id %>" title="3 estrellas"></label>
+                                        <input type="radio" name="puntuacion" id="star2-autor-<%= anuncio._id %>" value="2">
+                                        <label for="star2-autor-<%= anuncio._id %>" title="2 estrellas"></label>
+                                        <input type="radio" name="puntuacion" id="star1-autor-<%= anuncio._id %>" value="1">
+                                        <label for="star1-autor-<%= anuncio._id %>" title="1 estrella"></label>
+                                    </div>
+
+                                    <label for="comentario" class="block">Comentario:</label>
+                                    <textarea name="comentario" required class="border p-2 w-full" placeholder="Escribe tu opinión aquí..."></textarea>
+
+                                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Enviar Reseña</button>
+                                </form>
+                            </div>
+                        <% } else if (
+                            user && 
+                            user.username !== anuncio.autor && 
+                            Array.isArray(anuncio.inscritos) && 
+                            anuncio.inscritos.includes(user.username) && 
+                            anuncio.resenaEnviadaAlAutor
+                        ) { %>
+                            <p class="text-sm text-gray-500 mt-2">✅ Ya has enviado una reseña al autor.</p>
+                        <% } %>
 
                     <!-- Lista de inscritos con botón de chat -->
                     <% if (user && user.username === anuncio.autor) { %>
@@ -175,7 +217,13 @@ data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOS
                                 <h4 class="text-lg font-semibold mb-3">📢 Dejar una Reseña</h4>
                                 
                                 <!-- Reseñar al autor del anuncio -->
-                                <% if (user.username !== anuncio.autor) { %>
+                                <% if (
+                                        user.username !== anuncio.autor &&
+                                        Array.isArray(anuncio.inscritos) &&
+                                        anuncio.inscritos.includes(user.username) &&
+                                        !anuncio.resenaEnviadaAlAutor
+                                    ) { %>
+
                                     <h5 class="text-md font-semibold">Valorar a <%= anuncio.autor %></h5>
                                     <form action="/resenas/<%= anuncio.autor %>/resenas" method="POST" class="space-y-3">
                                         <label for="puntuacion" class="block">Puntuación:</label>
