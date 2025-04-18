@@ -1,6 +1,7 @@
 const express = require('express');
-const Usuario = require('../database/models/user.model'); 
-const mongoose = require('mongoose'); // Asegurar que ObjectId sea manejado correctamente
+const Usuario = require('../database/models/user.model');
+const Anuncio = require('../database/models/anuncio.model');
+const mongoose = require('mongoose');
 const router = express.Router();
 
 router.post('/:usuario/:anuncioId', async (req, res) => {
@@ -18,30 +19,37 @@ router.post('/:usuario/:anuncioId', async (req, res) => {
         }
 
         const usuarioResenado = await Usuario.findOne({ username: usuario });
+        const anuncio = await Anuncio.findById(anuncioId); // Obtener anuncio completo
 
-        if (!usuarioResenado) {
-            return res.redirect(`/anuncios?error=El usuario que intentas reseñar no existe.`);
+        if (!usuarioResenado || !anuncio) {
+            return res.redirect(`/anuncios?error=Usuario o anuncio no encontrado.`);
         }
 
-        // ✅ Convertimos anuncioId a ObjectId para evitar errores
-        anuncioId = new mongoose.Types.ObjectId(anuncioId);
-
-        // ✅ Verificamos si el usuario ya ha recibido una reseña en este anuncio por el mismo autor
+        // Comprobamos si ya existe una reseña previa
         const yaResenado = usuarioResenado.reseñas.some(
-            r => r.autor === autor && r.anuncioId && r.anuncioId.toString() === anuncioId.toString()
+            r => r.autor === autor && r.anuncioId && r.anuncioId.toString() === anuncioId
         );
 
         if (yaResenado) {
             return res.redirect(`/anuncios?error=Ya has enviado una reseña a este usuario en este anuncio.`);
         }
 
-        // 🔹 Si no ha sido reseñado en este anuncio, guardamos la reseña
+        // Determinar el rol de esta reseña
+        let rol = "proveedor";
+        if (autor === anuncio.autor && usuarioResenado.username !== autor) {
+            rol = "anunciante"; // El autor del anuncio reseña al proveedor (inscrito)
+        }
+
+        console.log("💬 Guardando reseña como:", rol);
+
+        //Guardar la reseña con el campo `rol`
         usuarioResenado.reseñas.push({
             autor,
             puntuacion: parseInt(puntuacion),
             comentario,
             fecha: new Date(),
-            anuncioId: anuncioId // Guardamos correctamente el ID del anuncio
+            anuncioId: new mongoose.Types.ObjectId(anuncioId),
+            rol
         });
 
         await usuarioResenado.save();

@@ -16,9 +16,9 @@ router.get("/", async (req, res) => {
         if (!usuario) return res.status(404).send("Usuario no encontrado.");
 
         // Separamos reseñas como anunciante e inscrito
-        const reseñasComoAnunciante = usuario.reseñas.filter(r => r.autor && r.anuncioId);
-        const reseñasComoInscrito = usuario.reseñas.filter(r => r.autor && r.anuncioId);
-
+        const reseñasComoAnunciante = usuario.reseñas.filter(r => r.rol === "anunciante");
+        const reseñasComoInscrito = usuario.reseñas.filter(r => r.rol === "proveedor");
+        
         res.render("perfil", {
             title: "Perfil de " + usuario.username,
             usuario,
