@@ -44,10 +44,12 @@ const { registrarPuja } = require("./routes/subasta");
 const gestionAnunciosRoutes = require("./routes/gestion-anuncios");
 const chatsRoute = require('./routes/mis-chats');
 const notificacionesRoutes = require("./routes/notificaciones");
+const feedbackRoutes = require('./routes/feedback');
 
 
 
-;
+
+
 
 
 
@@ -308,6 +310,7 @@ app.use("/gestion-usuarios", gestionUsuariosRoutes);
 app.use("/gestion-anuncios", gestionAnunciosRoutes);
 app.use('/mis-chats', chatsRoute);
 app.use("/notificaciones", notificacionesRoutes);
+app.use('/feedback', feedbackRoutes);
 
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)
