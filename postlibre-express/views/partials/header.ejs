@@ -51,7 +51,7 @@
         
         
 
-        <div class="text-end">
+        <div class="text-end d-flex align-items-center">
           <% if (!user || user.username === "Invitado") { %>
             <a href="/login" class="btn btn-outline-light me-2">Login</a>
             <a href="/registro" class="btn btn-warning">Sign-up</a>
@@ -78,10 +78,6 @@
           <ul id="notifList" class="list-group list-group-flush">
             <!-- Mensajes por JavaScript -->
           </ul>
-          
-  
-  
-  
      </div>
         <!-- Icono de perfil con menú desplegable -->
      <div class="user-profile ml-4" id="profile-icon" onclick="toggleProfileMenu()">
