@@ -26,7 +26,7 @@ router.get("/buscar", async (req, res) => {
                 tipo: "usuario",
                 titulo: u.username,
                 contenido: `Perfil de usuario`,
-                url: `/perfil-usuario/${u.username}`
+                url: `/perfil-publico/${u.username}`
             }))
         ];
 
