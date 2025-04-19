@@ -47,12 +47,7 @@ const notificacionesRoutes = require("./routes/notificaciones");
 const feedbackRoutes = require('./routes/feedback');
 const busquedaRoutes = require('./routes/buscar');
 const perfilUsuarioRouter = require('./routes/perfil-publico');
-
-
-
-
-
-
+const pagoRouter = require('./routes/pago');
 
 
 
@@ -311,6 +306,7 @@ app.use("/gestion-anuncios", gestionAnunciosRoutes);
 app.use('/mis-chats', chatsRoute);
 app.use("/notificaciones", notificacionesRoutes);
 app.use('/feedback', feedbackRoutes);
+app.use('/pago', pagoRouter);
 
 app.use('/restricted', restricted, restrictedRouter); //middleware en una funcion aparte
 //Se define sin ninguna ruta(solo en el server)

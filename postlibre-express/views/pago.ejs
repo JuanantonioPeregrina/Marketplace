@@ -1,0 +1,21 @@
+<script src="https://js.stripe.com/v3/"></script>
+<button id="pagar">Pagar ahora</button>
+
+<script>
+  const stripe = Stripe('pk_test_51QLsXtFbnZOINmh9dklrByRQGQrJPpxvnTboYEcEYwsMVrDAIIkLcGpwiswvGUEPIosI7i6aTMZJ85e70el4rl1c00zlnlMczy');
+
+  document.getElementById('pagar').addEventListener('click', async () => {
+    const res = await fetch('/pago/confirmar', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        amount: 5000, // 50€ por ejemplo
+        currency: 'eur',
+        anuncioId: '<%= anuncio._id %>'
+      })
+    });
+
+    const data = await res.json();
+    stripe.redirectToCheckout({ sessionId: data.id });
+  });
+</script>

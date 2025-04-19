@@ -32,6 +32,7 @@
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "string-similarity": "^4.0.4",
+    "stripe": "^18.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "tesseract.js": "^6.0.0",
