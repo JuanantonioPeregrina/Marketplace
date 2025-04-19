@@ -54,6 +54,8 @@ const userSchema = new mongoose.Schema({
         categoria: { type: String, default: "" },
         ubicacion: { type: String, default: "" }
     },
+    resetToken: String,
+    resetTokenExpires: Date,
 
     apiKeys: { type: [apiKeySchema], default: [] }
 });

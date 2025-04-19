@@ -16,7 +16,7 @@ router.get('/:username', async (req, res) => {
         usuario,
         reseñasComoInscrito,
         reseñasComoAnunciante,
-        user: req.session.user || null  // 🔥 AÑADIDO: evita el error
+        user: req.session.user || null  
       });
     } catch (error) {
       console.error("❌ Error al cargar perfil público:", error);
