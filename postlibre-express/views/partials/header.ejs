@@ -13,6 +13,8 @@
 
     <link rel="stylesheet" href="/css/style.css">
     <script src="/js/script.js"></script>
+    <script src="/js/busqueda.js"></script>
+
 
     <header class="p-3 text-bg-dark">
     <div class="container">
@@ -43,7 +45,11 @@
 
           <div class="d-flex align-items-center">
             <!-- Campo de búsqueda -->
-            <input type="search" class="form-control form-control-dark text-bg-white me-4" placeholder="Buscar..." aria-label="Search" style="width: 200px; max-width: 250px;">
+            <div class="search-bar position-relative">
+              <input type="text" id="search-input" placeholder="Buscar..." class="form-control">
+              <div id="search-results" class="dropdown-menu show" style="position:absolute; z-index:9999; display: none;"></div>
+            </div>
+            
         
            
         </div>
@@ -61,7 +67,7 @@
           <% } %>
         
       
-<!-- 🔔 Botón de Notificaciones -->
+<!-- Botón de Notificaciones -->
 <div class="dropdown d-inline-block ms-3">
     <button id="notifButton" class="btn btn-outline-light position-relative dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
       <i class="fas fa-bell"></i>

@@ -45,7 +45,7 @@ const gestionAnunciosRoutes = require("./routes/gestion-anuncios");
 const chatsRoute = require('./routes/mis-chats');
 const notificacionesRoutes = require("./routes/notificaciones");
 const feedbackRoutes = require('./routes/feedback');
-
+const busquedaRoutes = require('./routes/buscar');
 
 
 
@@ -322,6 +322,7 @@ app.use('/logout', (req,res) =>{
 app.use('/api/anuncios', anunciosApi);
 app.use('/api-explorer', apiExplorerRoutes);
 app.use("/api", generateApiKeyRoutes);
+app.use('/', busquedaRoutes);
 
 //Actualizar el nombre de usuario en la vista con el que ha iniciado sesión en vez de hardcodeado Invitado o el mismo nombre para todas las vistas.
 /*app.use((req, res, next) => {
