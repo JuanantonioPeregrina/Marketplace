@@ -75,28 +75,29 @@
 
     <!-- Footer -->
     <%- include("partials/footer") %>
-</body>
-<script>
+</body><script>
     const input = document.getElementById('ubicacion');
     const sugerencias = document.getElementById('sugerencias');
-    const API_KEY = '4f1899c3c7a141a4999f3724d6e11464'; // Tu API Key real de Geoapify
+    const API_KEY = '4f1899c3c7a141a4999f3724d6e11464';
   
     input.addEventListener('input', function () {
       const query = input.value;
   
       if (query.length < 2) {
         sugerencias.classList.add('hidden');
+        sugerencias.style.display = 'none';
         return;
       }
   
+      sugerencias.style.display = 'block'; // vuelve a mostrarse si hay sugerencias
+  
       fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&type=city&lang=es&limit=10&apiKey=${API_KEY}`)
-
-
         .then(res => res.json())
         .then(data => {
           sugerencias.innerHTML = '';
           if (!data.features || data.features.length === 0) {
             sugerencias.classList.add('hidden');
+            sugerencias.style.display = 'none';
             return;
           }
   
@@ -110,11 +111,14 @@
             const option = document.createElement('li');
             option.textContent = `${city}, ${country}`;
             option.classList.add('p-3', 'text-base', 'hover:bg-blue-100', 'cursor-pointer', 'transition-all');
-
+  
             option.addEventListener('click', () => {
               input.value = `${city}, ${country}`;
+              sugerencias.innerHTML = '';
               sugerencias.classList.add('hidden');
+              sugerencias.style.display = 'none'; // ocultamos por completo
             });
+  
             sugerencias.appendChild(option);
           });
   
@@ -123,13 +127,16 @@
         .catch(err => {
           console.error("Error al obtener sugerencias:", err);
           sugerencias.classList.add('hidden');
+          sugerencias.style.display = 'none';
         });
     });
   
     document.addEventListener('click', (e) => {
       if (!sugerencias.contains(e.target) && e.target !== input) {
+        sugerencias.innerHTML = '';
         sugerencias.classList.add('hidden');
+        sugerencias.style.display = 'none';
       }
     });
   </script>
-</html>
+  
