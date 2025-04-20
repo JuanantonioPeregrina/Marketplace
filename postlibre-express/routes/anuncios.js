@@ -32,12 +32,12 @@ module.exports = (io) => {
         
             console.log("📢 API Key enviada al frontend:", apiKey || "No disponible");
     
-            // 📌 PAGINACIÓN: Límite de anuncios por página (20 por defecto)
+            // PAGINACIÓN: Límite de anuncios por página (20 por defecto)
             const page = parseInt(req.query.page) || 1;  // Página actual
             const limit = 20;  // 🔹 Solo mostramos 20 anuncios por página
             const skip = (page - 1) * limit;  // 🔹 Saltamos los registros anteriores
     
-            // 📌 FILTROS: Obtenemos los parámetros de búsqueda
+            // FILTROS: Obtenemos los parámetros de búsqueda
             let filtro = {};
             if (req.query.presupuesto) {
                 if (req.query.presupuesto === "menos-100") filtro.precioActual = { $lt: 100 };
@@ -47,8 +47,20 @@ module.exports = (io) => {
             if (req.query.ubicacion) {
                 filtro.ubicacion = new RegExp(req.query.ubicacion, "i");
             }
-    
-            // 📌 EJECUTAR CONSULTA PAGINADA CON FILTROS
+            const estado = req.query.estado;
+
+            
+
+            // Filtrado por estado
+            if (estado === 'activos') {
+                filtro.estadoSubasta = 'activa';
+            } else if (estado === 'finalizados') {
+                filtro.estadoSubasta = 'finalizada';
+            } else if (estado === 'en_produccion') {
+                filtro.estadoSubasta = 'en_produccion'; 
+            }
+            
+            // EJECUTAR CONSULTA PAGINADA CON FILTROS
             const anunciosFiltrados = await Anuncio.find(filtro)
             .sort({ fechaPublicacion: -1 })
             .skip(skip)
@@ -141,8 +153,8 @@ module.exports = (io) => {
                 apiKey,
                 anuncios: anunciosConDatos,
                 page,
-                totalPages: Math.ceil(total / limit)
-                
+                totalPages: Math.ceil(total / limit),
+                estado: req.query.estado
             });
             
     
@@ -155,7 +167,7 @@ module.exports = (io) => {
     
     
     
-    // ✅ Ruta para registrar oferta automática antes del inicio de la subasta
+    // Ruta para registrar oferta automática antes del inicio de la subasta
 router.post("/oferta-automatica/:id", async (req, res) => {
     try {
         console.log("📥 Datos recibidos en oferta automática:", req.body); // 🔥 Depuración
@@ -176,7 +188,7 @@ router.post("/oferta-automatica/:id", async (req, res) => {
             return res.status(400).json({ error: "El anuncio no existe." });
         }
 
-        // ✅ Verificar si la subasta aún no ha comenzado o está en curso
+        // Verificar si la subasta aún no ha comenzado o está en curso
         if (anuncio.estadoSubasta !== "activa") {
             console.log("🔹 Guardando oferta automática para la futura subasta.");
             anuncio.ofertasAutomaticas.push({

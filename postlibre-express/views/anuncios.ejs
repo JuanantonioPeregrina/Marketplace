@@ -16,7 +16,7 @@
     </h1>
 
 
-<!-- 🔎 Filtros Mejorados -->
+<!-- Filtros Mejorados -->
 <form action="/anuncios" method="GET" class="flex flex-wrap justify-center items-center gap-2 bg-gray-100 p-3 rounded-lg shadow-sm max-w-4xl mx-auto">
         
     <select name="presupuesto" class="form-select border px-2 py-1 rounded-md text-gray-700 w-40 text-sm">
@@ -35,7 +35,13 @@
         <option value="3-4">⭐⭐⭐ - ⭐⭐⭐⭐ (3 a 4 estrellas)</option>
         <option value="menos-3">⭐ - ⭐⭐ (Menos de 3 estrellas)</option>
     </select>
-
+    <select name="estado" class="form-select border px-2 py-1 rounded-md text-gray-700 w-40 text-sm">
+        <option value="" <%= !estado ? 'selected' : '' %>>Estado</option>
+        <option value="activos" <%= estado === 'activos' ? 'selected' : '' %>>Activos</option>
+        <option value="finalizados" <%= estado === 'finalizados' ? 'selected' : '' %>>Finalizados</option>
+        <option value="en_produccion" <%= estado === 'en_produccion' ? 'selected' : '' %>>En Producción</option>
+    </select>
+    
     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-semibold shadow-md hover:bg-blue-600 transition">
         🔍 Filtrar
     </button>
@@ -44,7 +50,10 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <% anuncios.forEach(anuncio => { %>
             <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full p-6">
+              
+
                 
+                         
                
                    
  <!-- Enlace al anuncio específico -->
@@ -66,32 +75,32 @@
         </p>
 
                         <!-- Contenedor del contador con data-inicio y data-fin -->
-<div 
-class="countdown-container mt-4" 
-id="countdown-<%= anuncio._id %>"
-data-inicio="<%= anuncio.fechaInicioSubasta ? new Date(anuncio.fechaInicioSubasta).toISOString() : '' %>"
-data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOString() : '' %>"
->
-<div class="countdown-box">
-    <div class="countdown-box-label">DÍAS</div>
-    <div class="countdown-box-value" id="days-<%= anuncio._id %>">00</div>
-</div>
-<span class="countdown-separator">:</span>
-<div class="countdown-box">
-    <div class="countdown-box-label">HORAS</div>
-    <div class="countdown-box-value" id="hours-<%= anuncio._id %>">00</div>
-</div>
-<span class="countdown-separator">:</span>
-<div class="countdown-box">
-    <div class="countdown-box-label">MINUTOS</div>
-    <div class="countdown-box-value" id="minutes-<%= anuncio._id %>">00</div>
-</div>
-<span class="countdown-separator">:</span>
-<div class="countdown-box">
-    <div class="countdown-box-label">SEGUNDOS</div>
-    <div class="countdown-box-value" id="seconds-<%= anuncio._id %>">00</div>
-</div>
-</div>
+        <div 
+        class="countdown-container mt-4" 
+        id="countdown-<%= anuncio._id %>"
+        data-inicio="<%= anuncio.fechaInicioSubasta ? new Date(anuncio.fechaInicioSubasta).toISOString() : '' %>"
+        data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOString() : '' %>"
+        >
+        <div class="countdown-box">
+            <div class="countdown-box-label">DÍAS</div>
+            <div class="countdown-box-value" id="days-<%= anuncio._id %>">00</div>
+        </div>
+        <span class="countdown-separator">:</span>
+        <div class="countdown-box">
+            <div class="countdown-box-label">HORAS</div>
+            <div class="countdown-box-value" id="hours-<%= anuncio._id %>">00</div>
+        </div>
+        <span class="countdown-separator">:</span>
+        <div class="countdown-box">
+            <div class="countdown-box-label">MINUTOS</div>
+            <div class="countdown-box-value" id="minutes-<%= anuncio._id %>">00</div>
+        </div>
+        <span class="countdown-separator">:</span>
+        <div class="countdown-box">
+            <div class="countdown-box-label">SEGUNDOS</div>
+            <div class="countdown-box-value" id="seconds-<%= anuncio._id %>">00</div>
+        </div>
+        </div>
 
                  
 
