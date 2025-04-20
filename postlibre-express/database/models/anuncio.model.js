@@ -14,6 +14,11 @@ const AnuncioSchema = new mongoose.Schema({
     fechaExpiracion: { type: Date, required: true },
     fechaInicioSubasta: { type: Date, required: false },
     estadoSubasta: { type: String, enum: ["pendiente", "activa", "finalizada"], default: "pendiente" },
+    estado: {
+        type: String,
+        enum: ["en_subasta", "esperando_inicio", "en_produccion", "finalizado"],
+        default: "esperando_inicio"
+    },
     
     // 🔹 Nueva propiedad para ofertas automáticas
     ofertasAutomaticas: [

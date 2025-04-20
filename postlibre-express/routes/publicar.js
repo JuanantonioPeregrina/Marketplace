@@ -36,6 +36,18 @@ router.post("/", upload.single("imagen"), async (req, res) => {
         return res.status(400).send("Todos los campos son obligatorios.");
     }
 
+    const ahora = new Date();
+    const fechaInicio = new Date(fechaInicioSubasta);
+
+    let estadoSubasta = "pendiente";
+    if (fechaInicio <= ahora) {
+        estadoSubasta = "activa";
+    }
+    let estado = "esperando_inicio";
+        if (estadoSubasta === "activa") {
+            estado = "en_subasta";
+        }
+
     try {
         const nuevoAnuncio = new Anuncio({
             titulo,
@@ -49,7 +61,8 @@ router.post("/", upload.single("imagen"), async (req, res) => {
             fechaInicioSubasta: new Date(fechaInicioSubasta),
             autor,
             inscritos: [],
-            estadoSubasta: "pendiente"
+            estadoSubasta,
+            estado               
         });
 
         await nuevoAnuncio.save();

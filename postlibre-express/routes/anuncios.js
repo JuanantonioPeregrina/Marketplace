@@ -47,7 +47,8 @@ module.exports = (io) => {
             if (req.query.ubicacion) {
                 filtro.ubicacion = new RegExp(req.query.ubicacion, "i");
             }
-            const estado = req.query.estado;
+            const estado = req.query.estado || 'activos'; //Por defecto "activos"
+
 
             
 
@@ -154,7 +155,7 @@ module.exports = (io) => {
                 anuncios: anunciosConDatos,
                 page,
                 totalPages: Math.ceil(total / limit),
-                estado: req.query.estado
+                estado
             });
             
     
