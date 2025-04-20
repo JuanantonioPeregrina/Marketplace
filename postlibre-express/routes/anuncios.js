@@ -29,7 +29,21 @@ module.exports = (io) => {
                 }
 }
 
-        
+// Auto-actualización simple de estados antes de mostrar anuncios
+
+const ahora = new Date();
+
+// Pasar de "pendiente" a "activa"
+await Anuncio.updateMany(
+  { estadoSubasta: "pendiente", fechaInicioSubasta: { $lte: ahora } },
+  { $set: { estadoSubasta: "activa", estado: "en_subasta" } }
+);
+
+// Pasar de "pendiente" o "activa" a "finalizada"
+await Anuncio.updateMany(
+  { estadoSubasta: { $in: ["pendiente", "activa"] }, fechaExpiracion: { $lte: ahora } },
+  { $set: { estadoSubasta: "finalizada", estado: "finalizado" } }
+);        
             console.log("📢 API Key enviada al frontend:", apiKey || "No disponible");
     
             // PAGINACIÓN: Límite de anuncios por página (20 por defecto)
@@ -54,7 +68,7 @@ module.exports = (io) => {
 
             // Filtrado por estado
             if (estado === 'activos') {
-                filtro.estadoSubasta = 'activa';
+                filtro.estado = { $in: ['en_subasta', 'esperando_inicio'] };
             } else if (estado === 'finalizados') {
                 filtro.estadoSubasta = 'finalizada';
             } else if (estado === 'en_produccion') {
