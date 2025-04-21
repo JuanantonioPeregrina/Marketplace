@@ -49,6 +49,9 @@ const busquedaRoutes = require('./routes/buscar');
 const perfilUsuarioRouter = require('./routes/perfil-publico');
 const pagoRouter = require('./routes/pago');
 
+const actualizarEstadosDeAnuncios = require("./utils/estadoAnuncios");
+setInterval(actualizarEstadosDeAnuncios, 10000); // cada 10 segundos
+
 
 
 require("./database");

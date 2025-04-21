@@ -75,7 +75,7 @@ router.post("/", upload.single("imagen"), async (req, res) => {
                         <li><strong>Categoría:</strong> ${nuevoAnuncio.categoria}</li>
                         <li><strong>Ubicación:</strong> ${nuevoAnuncio.ubicacion}</li>
                     </ul>
-                    <p><a href="http://localhost:3000/anuncios/${nuevoAnuncio._id}" style="background-color:#007bff;padding:10px 20px;color:white;border-radius:5px;text-decoration:none;">Ver anuncio</a></p>
+                    <p><a href="http://localhost:4000/anuncios/${nuevoAnuncio._id}" style="background-color:#007bff;padding:10px 20px;color:white;border-radius:5px;text-decoration:none;">Ver anuncio</a></p>
                     <p>Gracias por usar LibrePost.</p>
                 `
             });
