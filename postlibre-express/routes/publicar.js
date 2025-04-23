@@ -28,17 +28,18 @@ router.get("/", (req, res) => {
 router.post("/", upload.single("imagen"), async (req, res) => {
     if (!req.session.user) return res.redirect("/login");
 
-    const { titulo, descripcion, precio, categoria, fechaExpiracion, ubicacion, fechaInicioSubasta } = req.body;
+    const { titulo, descripcion, precio, categoria, ubicacion, fechaInicioSubasta } = req.body;
     const imagen = req.file ? `/uploads/${req.file.filename}` : null;
     const autor = req.session.user.username;
 
-    if (!titulo || !descripcion || !precio || !categoria || !imagen || !fechaExpiracion || !fechaInicioSubasta) {
+    if (!titulo || !descripcion || !precio || !categoria || !imagen || !fechaInicioSubasta) {
         return res.status(400).send("Todos los campos son obligatorios.");
     }
 
     const ahora = new Date();
     const fechaInicio = new Date(fechaInicioSubasta);
-
+    const fechaExpiracion = new Date(fechaInicio.getTime() + 5 * 60 * 1000); // +5 minutos
+    
     let estadoSubasta = "pendiente";
     if (fechaInicio <= ahora) {
         estadoSubasta = "activa";
@@ -57,14 +58,14 @@ router.post("/", upload.single("imagen"), async (req, res) => {
             imagen,
             categoria,
             ubicacion,
-            fechaExpiracion: new Date(fechaExpiracion),
-            fechaInicioSubasta: new Date(fechaInicioSubasta),
+            fechaInicioSubasta: fechaInicio,
+            fechaExpiracion,
             autor,
             inscritos: [],
             estadoSubasta,
-            estado               
+            estado
         });
-
+        
         await nuevoAnuncio.save();
 
         // 📬 Lógica para enviar sugerencias por correo

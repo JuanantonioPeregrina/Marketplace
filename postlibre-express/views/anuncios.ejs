@@ -79,7 +79,7 @@
         class="countdown-container mt-4" 
         id="countdown-<%= anuncio._id %>"
         data-inicio="<%= anuncio.fechaInicioSubasta ? new Date(anuncio.fechaInicioSubasta).toISOString() : '' %>"
-        data-fin="<%= anuncio.fechaExpiracion ? new Date(anuncio.fechaExpiracion).toISOString() : '' %>"
+       
         >
         <div class="countdown-box">
             <div class="countdown-box-label">DÍAS</div>
@@ -539,10 +539,10 @@
         document.querySelectorAll('.countdown-container').forEach(container => {
             const id = container.id.replace('countdown-', '');
             const fechaInicio = container.getAttribute('data-inicio');
-            const fechaFin = container.getAttribute('data-fin');
 
-            if (fechaInicio && fechaFin) {
-                iniciarCuentaRegresiva(id, fechaInicio, fechaFin);
+            // 🔹 Solo pasamos fechaInicio
+            if (fechaInicio) {
+                iniciarCuentaRegresiva(id, fechaInicio);
             }
         });
 
