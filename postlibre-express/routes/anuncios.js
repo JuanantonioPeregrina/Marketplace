@@ -58,13 +58,21 @@ module.exports = (io) => {
             
 
             // Filtrado por estado
+           
             if (estado === 'activos') {
-    filtro.estadoSubasta = { $in: ['pendiente', 'activa'] };
+                filtro.estadoSubasta = { $in: ['pendiente', 'activa'] };
+                filtro.estado = { $in: ['esperando_inicio', 'en_subasta'] };
+            
+            
 } else if (estado === 'finalizados') {
     filtro.estado = 'finalizado';
 } else if (estado === 'en_produccion') {
     filtro.estado = 'en_produccion';
 }
+
+            
+            
+           
 
             
             // EJECUTAR CONSULTA PAGINADA CON FILTROS

@@ -2,10 +2,9 @@ const Anuncio = require("../database/models/anuncio.model");
 
 async function actualizarEstadosDeAnuncios() {
   const ahora = new Date();
-  const hace30Segundos = new Date(ahora.getTime() - 30 * 1000);
 
-// 🔄 pendiente → activa
-await Anuncio.updateMany(
+  // 🔄 Subastas que deben comenzar ahora → activa / en_subasta
+  await Anuncio.updateMany(
     {
       estadoSubasta: "pendiente",
       fechaInicioSubasta: { $lte: ahora },
@@ -18,8 +17,8 @@ await Anuncio.updateMany(
       }
     }
   );
-  
-  // 🔄 Subastas finalizadas con inscritos → en_produccion
+
+  // 🔄 Subastas finalizadas CON inscritos → finalizada / en_produccion
   await Anuncio.updateMany(
     {
       estadoSubasta: { $in: ["pendiente", "activa"] },
@@ -33,8 +32,8 @@ await Anuncio.updateMany(
       }
     }
   );
-  
-  // 🔄 Subastas finalizadas sin inscritos → finalizado
+
+  // 🔄 Subastas finalizadas SIN inscritos → finalizada / finalizado
   await Anuncio.updateMany(
     {
       estadoSubasta: { $in: ["pendiente", "activa"] },
@@ -54,3 +53,4 @@ await Anuncio.updateMany(
 }
 
 module.exports = actualizarEstadosDeAnuncios;
+

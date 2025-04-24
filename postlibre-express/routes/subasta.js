@@ -58,6 +58,12 @@ async function iniciarProcesoSubasta(anuncioId, io) {
             if (tiempoRestante <= 0 || precioActual <= 0) {
                 console.log(`⏳ Subasta finalizada automáticamente.`);
                 anuncioActualizado.estadoSubasta = "finalizada";
+            
+                
+                anuncioActualizado.estado = (anuncioActualizado.inscritos?.length > 0)
+                    ? "en_produccion"
+                    : "finalizado";
+            
                 await anuncioActualizado.save();
                 io.emit("subasta_finalizada", { anuncioId, precioFinal: precioActual });
                 clearInterval(intervalo);
@@ -138,15 +144,23 @@ async function verificarOfertasAutomaticas(anuncioId, io) {
 function iniciarVerificacionSubastas(io) {
     setInterval(async () => {
         console.log("🔎 Verificando subastas pendientes...");
-        const ahora = new Date();
-        const anunciosPendientes = await Anuncio.find({
-            estadoSubasta: "pendiente",
-            fechaInicioSubasta: { $lte: ahora } // Si la fecha es menor o igual a ahora, la subasta debe activarse
-        });
+    const ahora = new Date();
+
+    const anunciosPendientes = await Anuncio.find({
+        estadoSubasta: { $in: ["pendiente"] },
+        fechaInicioSubasta: { $lte: new Date(ahora.getTime() + 30000) } // le sumas 30s de margen
+
+    });
+
+    console.log(`🟡 Anuncios encontrados para activar: ${anunciosPendientes.length}`);
+    anunciosPendientes.forEach(anuncio => {
+        console.log(`➡️ ${anuncio.titulo} | estadoSubasta: ${anuncio.estadoSubasta} | fechaInicioSubasta: ${anuncio.fechaInicioSubasta}`);
+    });
 
         for (let anuncio of anunciosPendientes) {
             console.log(`⏳ Activando subasta programada: ${anuncio.titulo}`);
             anuncio.estadoSubasta = "activa";
+            anuncio.estado = "en_subasta"; // Asegura que el estado también cambia
             anuncio.precioActual = anuncio.precioInicial;
             await anuncio.save();
             iniciarProcesoSubasta(anuncio._id, io);
