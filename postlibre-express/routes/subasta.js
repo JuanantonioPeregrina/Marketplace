@@ -148,7 +148,7 @@ function iniciarVerificacionSubastas(io) {
 
     const anunciosPendientes = await Anuncio.find({
         estadoSubasta: { $in: ["pendiente"] },
-        fechaInicioSubasta: { $lte: new Date(ahora.getTime() + 30000) } // le sumas 30s de margen
+        fechaInicioSubasta: { $lte: new Date(ahora.getTime() + 5000) } // le sumas 5s de margen
 
     });
 
@@ -165,7 +165,7 @@ function iniciarVerificacionSubastas(io) {
             await anuncio.save();
             iniciarProcesoSubasta(anuncio._id, io);
         }
-    }, 60000); // Se ejecuta cada minuto
+    }, 10000); // Se ejecuta cada 10 s
 }
 
 
