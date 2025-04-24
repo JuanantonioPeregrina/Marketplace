@@ -19,7 +19,7 @@ function iniciarCuentaRegresiva(id, fechaInicio) {
       }
   
       // Si ya empezó, no mostramos countdown
-      container.innerHTML = `<span class="text-green-600 font-bold">✅ Subasta en curso</span>`;
+     
       clearInterval(intervalo);
     }
   

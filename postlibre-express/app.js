@@ -53,6 +53,9 @@ const pagoRouter = require('./routes/pago');
 
 require("./database");
 
+const actualizarEstadosDeAnuncios = require("./utils/estadoAnuncios");
+setInterval(actualizarEstadosDeAnuncios, 10000); // cada 10 segundos
+
 // Crear una instancia de Express
 const app = express();
 

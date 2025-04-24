@@ -81,6 +81,17 @@
         data-inicio="<%= anuncio.fechaInicioSubasta ? new Date(anuncio.fechaInicioSubasta).toISOString() : '' %>"
        
         >
+
+        <% if (anuncio.estadoSubasta === 'finalizada') { %>
+            <p class="text-red-600 font-semibold mt-2">🔚 Subasta finalizada</p>
+        <% } else if (anuncio.estadoSubasta === 'activa') { %>
+            <p class="text-green-600 font-semibold mt-2">✅ Subasta en curso</p>
+        <% } else if (anuncio.estadoSubasta === 'pendiente') { %>
+            <p class="text-blue-500 font-semibold mt-2">🕒 Subasta pendiente</p>
+        <% } %>
+
+        
+        
         <div class="countdown-box">
             <div class="countdown-box-label">DÍAS</div>
             <div class="countdown-box-value" id="days-<%= anuncio._id %>">00</div>

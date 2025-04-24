@@ -5,6 +5,9 @@ const Chat = require('../database/models/chat.model');
 const mongoose = require("mongoose");
 const path = require('path'); // 
 
+const actualizarEstadosDeAnuncios = require("../utils/estadoAnuncios");
+
+
 
 function calcularPromedioReseñas(usuario) {
     if (!usuario.reseñas || usuario.reseñas.length === 0) return 0;
@@ -18,6 +21,7 @@ module.exports = (io) => {
    
     router.get("/", async (req, res) => {
         try {
+            await actualizarEstadosDeAnuncios(); 
             const usuario = req.session.user ? req.session.user.username : null;
             let apiKey = "";
             let userData = null;
@@ -30,20 +34,7 @@ module.exports = (io) => {
 }
 
 // Auto-actualización simple de estados antes de mostrar anuncios
-
-const ahora = new Date();
-
-// Pasar de "pendiente" a "activa"
-await Anuncio.updateMany(
-  { estadoSubasta: "pendiente", fechaInicioSubasta: { $lte: ahora } },
-  { $set: { estadoSubasta: "activa", estado: "en_subasta" } }
-);
-
-// Pasar de "pendiente" o "activa" a "finalizada"
-await Anuncio.updateMany(
-  { estadoSubasta: { $in: ["pendiente", "activa"] }, fechaExpiracion: { $lte: ahora } },
-  { $set: { estadoSubasta: "finalizada", estado: "finalizado" } }
-);        
+    
             console.log("📢 API Key enviada al frontend:", apiKey || "No disponible");
     
             // PAGINACIÓN: Límite de anuncios por página (20 por defecto)
@@ -68,12 +59,13 @@ await Anuncio.updateMany(
 
             // Filtrado por estado
             if (estado === 'activos') {
-                filtro.estado = { $in: ['en_subasta', 'esperando_inicio'] };
-            } else if (estado === 'finalizados') {
-                filtro.estadoSubasta = 'finalizada';
-            } else if (estado === 'en_produccion') {
-                filtro.estadoSubasta = 'en_produccion'; 
-            }
+    filtro.estadoSubasta = { $in: ['pendiente', 'activa'] };
+} else if (estado === 'finalizados') {
+    filtro.estado = 'finalizado';
+} else if (estado === 'en_produccion') {
+    filtro.estado = 'en_produccion';
+}
+
             
             // EJECUTAR CONSULTA PAGINADA CON FILTROS
             const anunciosFiltrados = await Anuncio.find(filtro)

@@ -4,13 +4,12 @@ async function actualizarEstadosDeAnuncios() {
   const ahora = new Date();
   const hace30Segundos = new Date(ahora.getTime() - 30 * 1000);
 
-  // 🔄 pendiente → activa
-  await Anuncio.updateMany(
+// 🔄 pendiente → activa
+await Anuncio.updateMany(
     {
       estadoSubasta: "pendiente",
       fechaInicioSubasta: { $lte: ahora },
-      fechaExpiracion: { $gt: ahora },
-      fechaPublicacion: { $lte: hace30Segundos }
+      fechaExpiracion: { $gt: ahora }
     },
     {
       $set: {
@@ -19,13 +18,13 @@ async function actualizarEstadosDeAnuncios() {
       }
     }
   );
-
-  // 🔄 pendiente o activa → finalizada
+  
+  // 🔄 Subastas finalizadas con inscritos → en_produccion
   await Anuncio.updateMany(
     {
       estadoSubasta: { $in: ["pendiente", "activa"] },
       fechaExpiracion: { $lte: ahora },
-      fechaPublicacion: { $lte: hace30Segundos }
+      inscritos: { $exists: true, $not: { $size: 0 } }
     },
     {
       $set: {
@@ -34,15 +33,22 @@ async function actualizarEstadosDeAnuncios() {
       }
     }
   );
-
-  // 🛠️ Corrección extra por si no se actualizó correctamente
+  
+  // 🔄 Subastas finalizadas sin inscritos → finalizado
   await Anuncio.updateMany(
     {
-      estadoSubasta: "finalizada",
-      estado: { $ne: "en_produccion" }
+      estadoSubasta: { $in: ["pendiente", "activa"] },
+      fechaExpiracion: { $lte: ahora },
+      $or: [
+        { inscritos: { $exists: false } },
+        { inscritos: { $size: 0 } }
+      ]
     },
     {
-      $set: { estado: "en_produccion" }
+      $set: {
+        estadoSubasta: "finalizada",
+        estado: "finalizado"
+      }
     }
   );
 }
