@@ -169,7 +169,8 @@ module.exports = (io) => {
                 anuncios: anunciosConDatos,
                 page,
                 totalPages: Math.ceil(total / limit),
-                estado
+                estado,
+                filtros: req.query
             });
             
     

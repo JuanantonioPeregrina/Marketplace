@@ -55,20 +55,27 @@ async function iniciarProcesoSubasta(anuncioId, io) {
                 return;
             }
 
-            if (tiempoRestante <= 0 || precioActual <= 0) {
+            if (tiempoRestante <= 0 || precioActual >= anuncioActualizado.precioReserva) {
                 console.log(`⏳ Subasta finalizada automáticamente.`);
-                anuncioActualizado.estadoSubasta = "finalizada";
             
-                
-                anuncioActualizado.estado = (anuncioActualizado.inscritos?.length > 0)
+                anuncioActualizado.estadoSubasta = "finalizada";
+                anuncioActualizado.estado =
+                    (anuncioActualizado.inscritos?.length > 0 && precioActual >= anuncioActualizado.precioReserva)
                     ? "en_produccion"
                     : "finalizado";
             
                 await anuncioActualizado.save();
-                io.emit("subasta_finalizada", { anuncioId, precioFinal: precioActual });
+            
+                io.emit("subasta_finalizada", {
+                    anuncioId,
+                    precioFinal: precioActual,
+                    adjudicada: precioActual >= anuncioActualizado.precioReserva
+                });
+            
                 clearInterval(intervalo);
                 return;
             }
+            
 
             // Reducir el precio actual
             if (anuncioActualizado.precioActual > 0) {

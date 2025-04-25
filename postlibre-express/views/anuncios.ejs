@@ -458,24 +458,38 @@
         <% }); %>
     </div>
 
-    <div class="pagination mt-6 flex justify-center">
-        <% if (page > 1) { %>
-            <a href="/anuncios?page=<%= page - 1 %>" class="bg-blue-500 text-white px-4 py-2 rounded mx-2">
-             Anterior
-            </a>
-        <% } %>
-        
-        <span class="px-4 py-2 text-gray-700 font-bold">Página <%= page %> de <%= totalPages %></span>
-    
-        <% if (page < totalPages) { %>
-            <a href="/anuncios?page=<%= page + 1 %>" class="bg-blue-500 text-white px-4 py-2 rounded mx-2">
-                Siguiente 
-            </a>
-        <% } %>
-    </div>
+    <!-- paginación mejorada -->
+    <nav class="mt-8 flex justify-center">
+        <ul class="inline-flex -space-x-px">
+          <% for(let i = 1; i <= totalPages; i++) { %>
+            <li>
+              <a
+                href="/anuncios?<%= buildQuery(i) %>"
+                class="px-3 py-1 border <%= page===i ? 'bg-blue-500 text-white' : 'bg-white text-gray-700' %> hover:bg-blue-100"
+              >
+                <%= i %>
+              </a>
+            </li>
+          <% } %>
+        </ul>
+      </nav>
     
 
 </main>
+
+<%
+// Función que toma un número de página y devuelve
+// "presupuesto=...&ubicacion=...&estado=...&page=X"
+function buildQuery(pageNum) {
+  const qs = [];
+  if (filtros.presupuesto)  qs.push('presupuesto='  + encodeURIComponent(filtros.presupuesto));
+  if (filtros.ubicacion)    qs.push('ubicacion='    + encodeURIComponent(filtros.ubicacion));
+  if (filtros.reputacion)   qs.push('reputacion='   + encodeURIComponent(filtros.reputacion));
+  if (filtros.estado)       qs.push('estado='       + encodeURIComponent(filtros.estado));
+  qs.push('page=' + pageNum);
+  return qs.join('&');
+}
+%>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/countdown.js"></script>

@@ -13,6 +13,7 @@ const AnuncioSchema = new mongoose.Schema({
     inscritos: [{ type: String, required: true }],
     fechaExpiracion: { type: Date, required: true },
     fechaInicioSubasta: { type: Date, required: false },
+    precioReserva: { type: Number, required: true },
     estadoSubasta: { type: String, enum: ["pendiente", "activa", "finalizada"], default: "pendiente" },
     estado: {
         type: String,

@@ -35,6 +35,7 @@ router.post("/", upload.single("imagen"), async (req, res) => {
     if (!titulo || !descripcion || !precio || !categoria || !imagen || !fechaInicioSubasta) {
         return res.status(400).send("Todos los campos son obligatorios.");
     }
+    const { precioReserva } = req.body;
 
     const ahora = new Date();
     const fechaInicio = new Date(fechaInicioSubasta);
@@ -55,6 +56,7 @@ router.post("/", upload.single("imagen"), async (req, res) => {
             descripcion,
             precioInicial: Number(precio),
             precioActual: Number(precio),
+            precioReserva: Number(precioReserva), //El valor oculto
             imagen,
             categoria,
             ubicacion,
