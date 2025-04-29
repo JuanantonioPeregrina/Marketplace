@@ -79,7 +79,7 @@
         class="countdown-container mt-4" 
         id="countdown-<%= anuncio._id %>"
         data-inicio="<%= anuncio.fechaInicioSubasta ? new Date(anuncio.fechaInicioSubasta).toISOString() : '' %>"
-       
+        data-fin   ="<%= anuncio.fechaExpiracion   ?.toISOString() %>"
         >
 
         <% if (anuncio.estadoSubasta === 'finalizada') { %>

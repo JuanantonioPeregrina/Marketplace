@@ -126,6 +126,10 @@ module.exports = (io) => {
                 imagen: anuncio.imagen,
                 precioInicial: anuncio.precioInicial,
                 precioActual: anuncio.precioActual,
+                auctionType: anuncio.auctionType,              //tipo de subasta
+                inglesaIncremento: anuncio.inglesaIncremento,  
+                inglesaIntervalo:  anuncio.inglesaIntervalo,
+                inglesaDuracion:   anuncio.inglesaDuracion,
                 autor: anuncio.autor,
                 ubicacion: anuncio.ubicacion,
                 inscritos: anuncio.inscritos || [],

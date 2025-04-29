@@ -1,35 +1,4 @@
-/*
-document.addEventListener("DOMContentLoaded", function () {
-    const socket = io();
 
-    socket.on("actualizar_subasta", (data) => {
-        const precioElemento = document.getElementById(`precio-${data.anuncioId}`);
-        const tiempoElemento = document.getElementById(`timer-${data.anuncioId}`);
-
-        if (precioElemento && tiempoElemento) {
-            precioElemento.innerText = `€${data.precioActual}`;
-            tiempoElemento.innerText = `${data.tiempoRestante}s`;
-
-            precioElemento.classList.add("bajando");
-            setTimeout(() => precioElemento.classList.remove("bajando"), 500);
-        }
-    });
-
-    socket.on("subasta_finalizada", (data) => {
-        const anuncioElemento = document.getElementById(`anuncio-${data.anuncioId}`);
-        if (anuncioElemento) {
-            anuncioElemento.innerHTML += `<p class='text-green-500 text-lg font-bold'>¡Subasta finalizada! Ganador: ${data.ganador || "Nadie"} por €${data.precioFinal}</p>`;
-        }
-    });
-
-    document.querySelectorAll(".pujar-btn").forEach(button => {
-        button.addEventListener("click", function () {
-            const anuncioId = this.getAttribute("data-anuncio-id");
-            socket.emit("pujar", { anuncioId });
-        });
-    });
-});
-*/
 document.addEventListener("DOMContentLoaded", function () {
     const socket = io();
 

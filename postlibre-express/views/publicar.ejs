@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Publicar Anuncio - LibrePost</title>
-    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 
 <body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
@@ -21,17 +18,15 @@
         <h1 class="text-3xl font-bold text-center mb-6">📢 Publicar Anuncio</h1>
 
         <form action="/publicar" method="POST" enctype="multipart/form-data" class="space-y-4 pb-[260px]">
-            
+
             <label for="titulo">Título:</label>
             <input type="text" name="titulo" id="titulo" required class="border p-2 w-full">
-        
+
             <label for="descripcion">Descripción:</label>
             <textarea name="descripcion" id="descripcion" required class="border p-2 w-full"></textarea>
-        
+
             <label for="precio">Precio (€):</label>
             <input type="number" name="precio" id="precio" required class="border p-2 w-full">
-            <label for="precioReserva">Precio máximo dispuesto a pagar (oculto para compradores):</label>
-<input type="number" name="precioReserva" id="precioReserva" required class="border p-2 w-full">
 
             <label for="categoria">Categoría:</label>
             <select name="categoria" id="categoria" required class="border p-2 w-full">
@@ -44,9 +39,31 @@
                 <option value="lujo-reliquia">Lujo / Reliquia</option>
             </select>
 
-            
+            <label for="fechaInicioSubasta">Fecha de Inicio de Subasta:</label>
+            <input type="datetime-local" name="fechaInicioSubasta" id="fechaInicioSubasta" required class="border p-2 w-full">
+
+
+            <!-- Opciones para subasta holandesa -->
+            <div id="holandesa-options" class="space-y-4">
+               
+                <label for="precioReserva">Precio mínimo (reserva):</label>
+                <input type="number" name="precioReserva" id="precioReserva" required class="border p-2 w-full">
+            </div>
+
+            <!-- Opciones para subasta inglesa -->
+            <div id="inglesa-options" class="space-y-4 hidden">
+                <label for="inglesaIncremento">Incremento (€) por puja:</label>
+                <input type="number" name="inglesaIncremento" id="inglesaIncremento" class="border p-2 w-full">
+
+                <label for="inglesaIntervalo">Intervalo (segundos) entre subidas:</label>
+                <input type="number" name="inglesaIntervalo" id="inglesaIntervalo" class="border p-2 w-full">
+
+                <label for="inglesaDuracion">Duración total (segundos):</label>
+                <input type="number" name="inglesaDuracion" id="inglesaDuracion" class="border p-2 w-full">
+            </div>
+
             <label for="ubicacion">Ubicación:</label>
-                <div class="relative z-50">
+            <div class="relative z-50">
                 <input
                     type="text"
                     id="ubicacion"
@@ -57,88 +74,126 @@
                 />
                 <ul id="sugerencias" class="absolute top-full mt-2 bg-white border border-gray-300 rounded shadow-lg hidden w-full max-h-[300px] overflow-y-auto z-50 text-base leading-relaxed">
                 </ul>
-                </div>
+            </div>
 
-            
-              
-            
-            <label for="fechaInicioSubasta">Fecha de Inicio de Subasta:</label>
-            <input type="datetime-local" name="fechaInicioSubasta" class="form-control">
-
-           
-        
             <label for="imagen">Imagen:</label>
             <input type="file" name="imagen" id="imagen" required class="border p-2 w-full">
-        
+
             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Publicar Anuncio</button>
         </form>
-        
+
     </main>
 
     <!-- Footer -->
     <%- include("partials/footer") %>
-</body><script>
-    const input = document.getElementById('ubicacion');
-    const sugerencias = document.getElementById('sugerencias');
-    const API_KEY = '4f1899c3c7a141a4999f3724d6e11464';
-  
-    input.addEventListener('input', function () {
-      const query = input.value;
-  
-      if (query.length < 2) {
-        sugerencias.classList.add('hidden');
-        sugerencias.style.display = 'none';
-        return;
-      }
-  
-      sugerencias.style.display = 'block'; // vuelve a mostrarse si hay sugerencias
-  
-      fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&type=city&lang=es&limit=10&apiKey=${API_KEY}`)
-        .then(res => res.json())
-        .then(data => {
-          sugerencias.innerHTML = '';
-          if (!data.features || data.features.length === 0) {
-            sugerencias.classList.add('hidden');
-            sugerencias.style.display = 'none';
-            return;
-          }
-  
-          data.features.forEach(feature => {
-            const props = feature.properties;
-            const city = props.city || props.name || props.formatted;
-            const country = props.country || "Europa";
-  
-            if (!city) return;
-  
-            const option = document.createElement('li');
-            option.textContent = `${city}, ${country}`;
-            option.classList.add('p-3', 'text-base', 'hover:bg-blue-100', 'cursor-pointer', 'transition-all');
-  
-            option.addEventListener('click', () => {
-              input.value = `${city}, ${country}`;
-              sugerencias.innerHTML = '';
-              sugerencias.classList.add('hidden');
-              sugerencias.style.display = 'none'; // ocultamos por completo
-            });
-  
-            sugerencias.appendChild(option);
-          });
-  
-          sugerencias.classList.remove('hidden');
-        })
-        .catch(err => {
-          console.error("Error al obtener sugerencias:", err);
-          sugerencias.classList.add('hidden');
-          sugerencias.style.display = 'none';
+
+    <!-- Script de sugerencias de ubicación (sin cambios) -->
+    <script>
+        const input = document.getElementById('ubicacion');
+        const sugerencias = document.getElementById('sugerencias');
+        const API_KEY = '4f1899c3c7a141a4999f3724d6e11464';
+
+        input.addEventListener('input', function () {
+            const query = input.value;
+            if (query.length < 2) {
+                sugerencias.classList.add('hidden');
+                sugerencias.style.display = 'none';
+                return;
+            }
+            sugerencias.style.display = 'block';
+            fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&type=city&lang=es&limit=10&apiKey=${API_KEY}`)
+                .then(res => res.json())
+                .then(data => {
+                    sugerencias.innerHTML = '';
+                    if (!data.features || data.features.length === 0) {
+                        sugerencias.classList.add('hidden');
+                        sugerencias.style.display = 'none';
+                        return;
+                    }
+                    data.features.forEach(feature => {
+                        const props = feature.properties;
+                        const city = props.city || props.name || props.formatted;
+                        const country = props.country || "Europa";
+                        if (!city) return;
+                        const option = document.createElement('li');
+                        option.textContent = `${city}, ${country}`;
+                        option.classList.add('p-3', 'text-base', 'hover:bg-blue-100', 'cursor-pointer', 'transition-all');
+                        option.addEventListener('click', () => {
+                            input.value = `${city}, ${country}`;
+                            sugerencias.innerHTML = '';
+                            sugerencias.classList.add('hidden');
+                            sugerencias.style.display = 'none';
+                        });
+                        sugerencias.appendChild(option);
+                    });
+                    sugerencias.classList.remove('hidden');
+                })
+                .catch(err => {
+                    console.error("Error al obtener sugerencias:", err);
+                    sugerencias.classList.add('hidden');
+                    sugerencias.style.display = 'none';
+                });
         });
-    });
-  
-    document.addEventListener('click', (e) => {
-      if (!sugerencias.contains(e.target) && e.target !== input) {
-        sugerencias.innerHTML = '';
-        sugerencias.classList.add('hidden');
-        sugerencias.style.display = 'none';
-      }
-    });
-  </script>
-  
+        document.addEventListener('click', (e) => {
+            if (!sugerencias.contains(e.target) && e.target !== input) {
+                sugerencias.innerHTML = '';
+                sugerencias.classList.add('hidden');
+                sugerencias.style.display = 'none';
+            }
+        });
+    </script>
+
+    <!-- JS para alternar opciones de subasta -->
+    <!-- …tu HTML hasta el final del form… -->
+
+<!-- JS para alternar opciones de subasta -->
+<script>
+  const sel   = document.getElementById('categoria');
+  const hol   = document.getElementById('holandesa-options');
+  const ing   = document.getElementById('inglesa-options');
+
+  // Todos los inputs de cada sección
+  const holInputs = Array.from(hol.querySelectorAll('input'));
+  const ingInputs = Array.from(ing.querySelectorAll('input'));
+
+  function toggleSubastaFields() {
+    if (sel.value === 'lujo-reliquia') {
+      // Muestro inglesa, oculto holandesa
+      ing.classList.remove('hidden');
+      hol.classList.add('hidden');
+
+      // Holandesa: deshabilito + quito required
+      holInputs.forEach(i => {
+        i.disabled = true;
+        i.removeAttribute('required');
+      });
+      // Inglesa: habilito + marco required
+      ingInputs.forEach(i => {
+        i.disabled = false;
+        i.setAttribute('required', '');
+      });
+    } else {
+      // Muestro holandesa, oculto inglesa
+      hol.classList.remove('hidden');
+      ing.classList.add('hidden');
+
+      // Holandesa: habilito + marco required
+      holInputs.forEach(i => {
+        i.disabled = false;
+        i.setAttribute('required', '');
+      });
+      // Inglesa: deshabilito + quito required
+      ingInputs.forEach(i => {
+        i.disabled = true;
+        i.removeAttribute('required');
+      });
+    }
+  }
+
+  sel.addEventListener('change', toggleSubastaFields);
+  // Llamada inicial para que ya venga bien al cargar la página
+  toggleSubastaFields();
+</script>
+
+</body>
+</html>
