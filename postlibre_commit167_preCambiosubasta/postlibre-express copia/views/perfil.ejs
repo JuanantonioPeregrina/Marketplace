@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de <%= usuario.username %></title>
+   
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <%- include("partials/header") %>
+
+    <main class="max-w-4xl mx-auto pt-24 px-6 bg-white shadow-lg rounded-lg p-8 mt-10">
+        <h1 class="text-3xl font-bold text-center mb-6">👤 Perfil de <%= usuario.username %></h1>
+
+        <!-- Información del usuario -->
+        <div class="flex items-center space-x-4">
+            <img src="<%= user.imagen_perfil || '/images/default-avatar.png' %>" alt="Foto de perfil" class="w-24 h-24 rounded-full shadow">
+            <div>
+                <p class="text-lg"><strong>Nombre:</strong> <%= user.username || "No especificado" %></p>
+                <p class="text-lg"><strong>Ubicación:</strong> <%= user.ubicacion || "No especificada" %></p>
+            </div>
+        </div>
+
+        <div class="password-change bg-white shadow-lg rounded-lg p-6 mt-6">
+            <h3 class="text-lg font-semibold mb-4">Cambiar Contraseña</h3>
+            <form action="/perfil/cambiar-password" method="POST">
+                <label for="oldPassword" class="block text-sm font-medium text-gray-700">Contraseña Actual:</label>
+                <input type="password" name="oldPassword" required class="border p-2 w-full rounded-md shadow-sm">
+        
+                <label for="newPassword" class="block text-sm font-medium text-gray-700 mt-3">Nueva Contraseña:</label>
+                <input type="password" name="newPassword" required class="border p-2 w-full rounded-md shadow-sm">
+        
+                <button type="submit" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700 transition">
+                    Actualizar Contraseña
+                </button>
+            </form>
+        </div>
+
+        <!--Sección para ver la API Key -->
+    <div class="api-key bg-gray-50 shadow-lg rounded-lg p-6 mt-6">
+        <h3 class="text-lg font-semibold mb-4">🔑 Tu API Key</h3>
+
+        <% if (usuario.apiKeys.length > 0) { %>
+            <p class="bg-gray-200 p-2 rounded text-gray-700">
+                <code id="apiKey"><%= usuario.apiKeys[0].key %></code>
+            </p>
+            <button onclick="copyApiKey()" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700 transition">
+                📋 Copiar API Key
+            </button>
+        <% } else { %>
+            <p class="text-gray-500">⚠️ Aún no tienes una API Key.</p>
+            <form action="/perfil/generar-api-key" method="POST">
+                <button type="submit" class="mt-2 bg-green-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-green-600 transition">
+                    🔑 Generar API Key
+                </button>
+            </form>
+        <% } %>
+    </div>
+    <div class="bg-gray-50 shadow-lg rounded-lg p-6 mt-6">
+        <h3 class="text-lg font-semibold mb-4">📬 Sugerencias personalizadas</h3>
+      
+        <form action="/perfil" method="POST" class="space-y-4">
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" name="recibirSugerencias" value="true"
+              <% if (usuario.recibirSugerencias) { %> checked <% } %>
+              class="form-checkbox h-5 w-5 text-blue-600">
+            <span>Quiero recibir sugerencias de anuncios por email</span>
+          </label>
+      
+          <div class="grid md:grid-cols-2 gap-4">
+            <!-- Selección de categoría como dropdown -->
+            <label class="block">
+              <span class="text-sm font-medium text-gray-700">Categoría de interés:</span>
+              <select name="categoria" class="border mt-1 p-2 w-full rounded-md shadow-sm">
+                <option value="">-- Selecciona una categoría --</option>
+                <% for (const key in categorias) { %>
+                  <option value="<%= key %>" <%= usuario.preferencias?.categoria === key ? "selected" : "" %>>
+                    <%= categorias[key].nombre %>
+                  </option>
+                <% } %>
+              </select>
+            </label>
+          
+            <!-- Ubicación como input libre -->
+            <label class="block">
+              <span class="text-sm font-medium text-gray-700">Ubicación deseada:</span>
+              <input type="text" name="ubicacion" placeholder="Ej. Madrid, Sevilla..."
+                value="<%= usuario.preferencias?.ubicacion || '' %>"
+                class="border mt-1 p-2 w-full rounded-md shadow-sm">
+            </label>
+          </div>
+          
+      
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700 transition">
+            Guardar preferencias
+          </button>
+        </form>
+      </div>
+      
+
+      
+
+        <!-- 📝 Reseñas recibidas -->
+        <!-- ⭐ Reseñas como Acompañante/Inscrito -->
+<div class="mt-6 bg-gray-50 p-4 rounded-lg shadow">
+    <h2 class="text-lg font-semibold mb-3">🧳 Reseñas como Proveedor (Inscrito)</h2>
+    <% if (reseñasComoInscrito.length > 0) { %>
+        <ul class="space-y-3">
+            <% reseñasComoInscrito.forEach(reseña => { %>
+                <li class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-600">👤 Valorado por: <span class="font-semibold"><%= reseña.autor %></span></span>
+                        <span class="text-sm text-gray-500"><%= new Date(reseña.fecha).toLocaleDateString() %></span>
+                    </div>
+                    <div class="flex items-center mb-2">
+                        <% for (let i = 1; i <= 5; i++) { %>
+                            <% if (i <= reseña.puntuacion) { %>
+                                <span class="text-yellow-400 text-lg">★</span>
+                            <% } else { %>
+                                <span class="text-gray-300 text-lg">★</span>
+                            <% } %>
+                        <% } %>
+                    </div>
+                    <p class="text-gray-800 italic">"<%= reseña.comentario %>"</p>
+                </li>
+            <% }); %>
+        </ul>
+    <% } else { %>
+        <p class="text-gray-500">No tienes reseñas como inscrito aún.</p>
+    <% } %>
+</div>
+
+<!-- ⭐ Reseñas como Anunciante -->
+<div class="mt-6 bg-gray-50 p-4 rounded-lg shadow">
+    <h2 class="text-lg font-semibold mb-3">📢 Reseñas como Anunciante</h2>
+    <% if (reseñasComoAnunciante.length > 0) { %>
+        <ul class="space-y-3">
+            <% reseñasComoAnunciante.forEach(reseña => { %>
+                <li class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-600">👤 Valorado por: <span class="font-semibold"><%= reseña.autor %></span></span>
+                        <span class="text-sm text-gray-500"><%= new Date(reseña.fecha).toLocaleDateString() %></span>
+                    </div>
+                    <div class="flex items-center mb-2">
+                        <% for (let i = 1; i <= 5; i++) { %>
+                            <% if (i <= reseña.puntuacion) { %>
+                                <span class="text-yellow-400 text-lg">★</span>
+                            <% } else { %>
+                                <span class="text-gray-300 text-lg">★</span>
+                            <% } %>
+                        <% } %>
+                    </div>
+                    <p class="text-gray-800 italic">"<%= reseña.comentario %>"</p>
+                </li>
+            <% }); %>
+        </ul>
+    <% } else { %>
+        <p class="text-gray-500">No tienes reseñas como anunciante aún.</p>
+    <% } %>
+</div>
+
+    </main>
+
+    <!-- Script para copiar API Key -->
+    <script>
+        function copyApiKey() {
+            const apiKeyElement = document.getElementById("apiKey");
+            navigator.clipboard.writeText(apiKeyElement.innerText).then(() => {
+                alert("API Key copiada al portapapeles.");
+            }).catch(err => {
+                console.error("Error al copiar API Key:", err);
+            });
+        }
+    </script>
+
+    <!-- Footer -->
+    <%- include("partials/footer") %>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicar Anuncio - LibrePost</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+    <!-- Header -->
+    <%- include("partials/header") %>
+
+    <main class="max-w-4xl mx-auto pt-24 px-6 bg-white shadow-lg rounded-lg p-8 mt-10">
+        <h1 class="text-3xl font-bold text-center mb-6">📢 Publicar Anuncio</h1>
+
+        <form action="/publicar" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <label for="titulo">Título:</label>
+            <input type="text" name="titulo" id="titulo" required class="border p-2 w-full">
+        
+            <label for="descripcion">Descripción:</label>
+            <textarea name="descripcion" id="descripcion" required class="border p-2 w-full"></textarea>
+        
+            <label for="precio">Precio (€):</label>
+            <input type="number" name="precio" id="precio" required class="border p-2 w-full">
+        
+            <label for="categoria">Categoría:</label>
+            <select name="categoria" id="categoria" required class="border p-2 w-full">
+                <option value="diseño-grafico">Diseño Gráfico</option>
+                <option value="desarrollo-web">Desarrollo Web</option>
+                <option value="redaccion-traduccion">Redacción y Traducción</option>
+                <option value="marketing-digital">Marketing Digital</option>
+                <option value="servicios-locales">Servicios Locales</option>
+                <option value="fotografia-video">Fotografía y Video</option>
+            </select>
+
+            <label for="ubicacion">Ubicación:</label>
+<input type="text" name="ubicacion" id="ubicacion" required class="border p-2 w-full" placeholder="Ejemplo: Madrid, España">
+
+            <label for="fechaInicioSubasta">Fecha de Inicio de Subasta:</label>
+            <input type="datetime-local" name="fechaInicioSubasta" class="form-control">
+
+            <label for="fechaExpiracion">Fecha de Expiración:</label>
+            <input type="date" name="fechaExpiracion" id="fechaExpiracion" required class="border p-2 w-full">
+        
+            <label for="imagen">Imagen:</label>
+            <input type="file" name="imagen" id="imagen" required class="border p-2 w-full">
+        
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Publicar Anuncio</button>
+        </form>
+        
+    </main>
+
+    <!-- Footer -->
+    <%- include("partials/footer") %>
+</body>
+</html>

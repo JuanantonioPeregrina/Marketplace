@@ -1,0 +1,37 @@
+<%- include("partials/header") %>
+
+<main class="max-w-4xl mx-auto py-8 px-4">
+    <h1 class="text-2xl font-bold mb-4">🔍 Resultados para "<%= query %>"</h1>
+
+    <% if (resultados.anuncios.length === 0 && resultados.usuarios.length === 0) { %>
+        <p class="text-gray-500">No se encontraron coincidencias.</p>
+    <% } %>
+
+    <% if (resultados.anuncios.length > 0) { %>
+        <h2 class="text-xl mt-6 mb-2 font-semibold">Anuncios</h2>
+        <ul>
+            <% resultados.anuncios.forEach(anuncio => { %>
+                <li>
+                    <a href="/anuncios/<%= anuncio._id %>" class="text-blue-600 underline">
+                        <%= anuncio.titulo %>
+                    </a>
+                </li>
+            <% }) %>
+        </ul>
+    <% } %>
+
+    <% if (resultados.usuarios.length > 0) { %>
+        <h2 class="text-xl mt-6 mb-2 font-semibold">👤 Usuarios</h2>
+        <ul>
+            <% resultados.usuarios.forEach(usuario => { %>
+                <li>
+                    <a href="/perfil-usuario/<%= usuario.username %>" class="text-blue-600 underline">
+                        <%= usuario.username %>
+                    </a>
+                </li>
+            <% }) %>
+        </ul>
+    <% } %>
+</main>
+
+<%- include("partials/footer") %>

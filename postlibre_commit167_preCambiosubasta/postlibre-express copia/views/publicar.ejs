@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicar Anuncio - LibrePost</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+</head>
+
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+    <!-- Header -->
+    <%- include("partials/header") %>
+    <main class="max-w-4xl mx-auto pt-24 px-6 bg-white shadow-lg rounded-lg p-8 mt-10 relative overflow-visible">
+
+        <h1 class="text-3xl font-bold text-center mb-6">📢 Publicar Anuncio</h1>
+
+        <form action="/publicar" method="POST" enctype="multipart/form-data" class="space-y-4 pb-[260px]">
+            
+            <label for="titulo">Título:</label>
+            <input type="text" name="titulo" id="titulo" required class="border p-2 w-full">
+        
+            <label for="descripcion">Descripción:</label>
+            <textarea name="descripcion" id="descripcion" required class="border p-2 w-full"></textarea>
+        
+            <label for="precio">Precio (€):</label>
+            <input type="number" name="precio" id="precio" required class="border p-2 w-full">
+            <label for="precioReserva">Precio máximo dispuesto a pagar (oculto para compradores):</label>
+<input type="number" name="precioReserva" id="precioReserva" required class="border p-2 w-full">
+
+            <label for="categoria">Categoría:</label>
+            <select name="categoria" id="categoria" required class="border p-2 w-full">
+                <option value="diseño-grafico">Diseño Gráfico</option>
+                <option value="desarrollo-web">Desarrollo Web</option>
+                <option value="redaccion-traduccion">Redacción y Traducción</option>
+                <option value="marketing-digital">Marketing Digital</option>
+                <option value="servicios-locales">Servicios Locales</option>
+                <option value="fotografia-video">Fotografía y Video</option>
+            </select>
+
+            
+            <label for="ubicacion">Ubicación:</label>
+                <div class="relative z-50">
+                <input
+                    type="text"
+                    id="ubicacion"
+                    name="ubicacion"
+                    class="border p-2 w-full text-base"
+                    placeholder="Escribe una ciudad..."
+                    autocomplete="off"
+                />
+                <ul id="sugerencias" class="absolute top-full mt-2 bg-white border border-gray-300 rounded shadow-lg hidden w-full max-h-[300px] overflow-y-auto z-50 text-base leading-relaxed">
+                </ul>
+                </div>
+
+            
+              
+            
+            <label for="fechaInicioSubasta">Fecha de Inicio de Subasta:</label>
+            <input type="datetime-local" name="fechaInicioSubasta" class="form-control">
+
+           
+        
+            <label for="imagen">Imagen:</label>
+            <input type="file" name="imagen" id="imagen" required class="border p-2 w-full">
+        
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Publicar Anuncio</button>
+        </form>
+        
+    </main>
+
+    <!-- Footer -->
+    <%- include("partials/footer") %>
+</body><script>
+    const input = document.getElementById('ubicacion');
+    const sugerencias = document.getElementById('sugerencias');
+    const API_KEY = '4f1899c3c7a141a4999f3724d6e11464';
+  
+    input.addEventListener('input', function () {
+      const query = input.value;
+  
+      if (query.length < 2) {
+        sugerencias.classList.add('hidden');
+        sugerencias.style.display = 'none';
+        return;
+      }
+  
+      sugerencias.style.display = 'block'; // vuelve a mostrarse si hay sugerencias
+  
+      fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&type=city&lang=es&limit=10&apiKey=${API_KEY}`)
+        .then(res => res.json())
+        .then(data => {
+          sugerencias.innerHTML = '';
+          if (!data.features || data.features.length === 0) {
+            sugerencias.classList.add('hidden');
+            sugerencias.style.display = 'none';
+            return;
+          }
+  
+          data.features.forEach(feature => {
+            const props = feature.properties;
+            const city = props.city || props.name || props.formatted;
+            const country = props.country || "Europa";
+  
+            if (!city) return;
+  
+            const option = document.createElement('li');
+            option.textContent = `${city}, ${country}`;
+            option.classList.add('p-3', 'text-base', 'hover:bg-blue-100', 'cursor-pointer', 'transition-all');
+  
+            option.addEventListener('click', () => {
+              input.value = `${city}, ${country}`;
+              sugerencias.innerHTML = '';
+              sugerencias.classList.add('hidden');
+              sugerencias.style.display = 'none'; // ocultamos por completo
+            });
+  
+            sugerencias.appendChild(option);
+          });
+  
+          sugerencias.classList.remove('hidden');
+        })
+        .catch(err => {
+          console.error("Error al obtener sugerencias:", err);
+          sugerencias.classList.add('hidden');
+          sugerencias.style.display = 'none';
+        });
+    });
+  
+    document.addEventListener('click', (e) => {
+      if (!sugerencias.contains(e.target) && e.target !== input) {
+        sugerencias.innerHTML = '';
+        sugerencias.classList.add('hidden');
+        sugerencias.style.display = 'none';
+      }
+    });
+  </script>
+  
