@@ -25,9 +25,7 @@
             <label for="descripcion">Descripción:</label>
             <textarea name="descripcion" id="descripcion" required class="border p-2 w-full"></textarea>
 
-            <label for="precio">Precio (€):</label>
-            <input type="number" name="precio" id="precio" required class="border p-2 w-full">
-
+           
             <label for="categoria">Categoría:</label>
             <select name="categoria" id="categoria" required class="border p-2 w-full">
                 <option value="diseño-grafico">Diseño Gráfico</option>
@@ -45,7 +43,10 @@
 
             <!-- Opciones para subasta holandesa -->
             <div id="holandesa-options" class="space-y-4">
-               
+
+              <label for="precio">Precio (€):</label>
+              <input type="number" name="precio" id="precio" required class="border p-2 w-full">
+  
                 <label for="precioReserva">Precio mínimo (reserva):</label>
                 <input type="number" name="precioReserva" id="precioReserva" required class="border p-2 w-full">
             </div>
