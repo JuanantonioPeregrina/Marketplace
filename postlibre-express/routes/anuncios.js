@@ -64,11 +64,11 @@ module.exports = (io) => {
                 filtro.estado = { $in: ['esperando_inicio', 'en_subasta'] };
             
             
-} else if (estado === 'finalizados') {
-    filtro.estado = 'finalizado';
-} else if (estado === 'en_produccion') {
-    filtro.estado = 'en_produccion';
-}
+            } else if (estado === 'finalizados') {
+                filtro.estado = 'finalizado';
+            } else if (estado === 'en_produccion') {
+                filtro.estado = 'en_produccion';
+            }
 
             
             

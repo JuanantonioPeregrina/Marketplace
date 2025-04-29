@@ -138,11 +138,14 @@
           Explora Nuestras Categorías
         </h1>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          <% for (let key in categorias) { %>
+          <% for (let key in categorias) {
+                  
+                    const span = key === 'lujo-reliquia' ? 'lg:col-span-3' : '';
+              %>
             <a 
               href="/categorias/<%= key %>" 
               class="group block relative overflow-hidden rounded-lg shadow-lg 
-                     transition-transform duration-300 hover:scale-105"
+                     transition-transform duration-300 hover:scale-105 <%= span %>"
             >
               <img 
                 src="<%= categorias[key].imagen %>" 
