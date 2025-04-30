@@ -312,7 +312,17 @@
                     <% } %>
 
                     <p class="precio-actual">Precio actual: €<span id="precio-<%= anuncio._id %>"><%= anuncio.precioActual %></span></p>
-                    <p class="temporizador">⏳ Tiempo restante: <span id="timer-<%= anuncio._id %>">5:00</span></p>
+                    <p class="temporizador">
+                        ⏳ Tiempo restante:
+                        <span id="timer-<%= anuncio._id %>">
+                          <% if (anuncio.estadoSubasta === 'finalizada') { %>
+                            00:00
+                          <% } else { %>
+                            5:00
+                          <% } %>
+                        </span>
+                      </p>
+                      
                     
 <!-- Sección para mostrar TODAS las pujas en tiempo real -->
 <div id="pujas-<%= anuncio._id %>" class="mt-4 p-2 border border-gray-300 rounded-lg bg-gray-50">
