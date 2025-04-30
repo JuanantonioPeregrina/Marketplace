@@ -122,7 +122,15 @@ socket.on("actualizar_pujas", (data) => {
     });
 
     // 📢 Evento cuando la subasta finaliza
-    socket.on("subasta_finalizada", (data) => {
-        alert(`⏳ La subasta ha finalizado con un precio final de €${data.precioFinal}`);
-    });
+socket.on("subasta_finalizada", (data) => {
+    const { anuncioId, precioFinal } = data;
+  
+    // 1) Mostrar alerta
+    alert(`⏳ La subasta del anuncio ${anuncioId} ha finalizado con un precio de €${precioFinal}`);
+  
+    // 2) Forzar "00:00" en el temporizador pequeño
+    const timerEl = document.getElementById(`timer-${anuncioId}`);
+    if (timerEl) timerEl.innerText = "00:00";
+  });
+  
 });
