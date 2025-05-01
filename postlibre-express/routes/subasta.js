@@ -42,26 +42,19 @@ async function iniciarHolandesa(anuncioDoc, io) {
         return;
       }
 
-      // Fin si tiempo o llega a reserva
-      if (tiempoRestante <= 0 || a.precioActual <= a.precioReserva) {
-        a.estadoSubasta = "finalizada";
-        a.estado = (a.inscritos.length > 0 && a.precioActual <= a.precioReserva)
-          ? "en_produccion"
-          : "finalizado";
-        await a.save();
-
-        io.emit("subasta_finalizada", {
-          anuncioId,
-          precioFinal: a.precioActual,
-          adjudicada: a.precioActual <= a.precioReserva
-        });
-
-        clearInterval(interval);
-        return;
-      }
-
-      // Bajar precio
-      a.precioActual = Math.max(a.precioReserva, a.precioActual - decremento);
+      // Fin si tiempo o llega a 0
+if (tiempoRestante <= 0 || a.precioActual <= 0) {
+    a.estadoSubasta = "finalizada";
+    a.estado = a.inscritos.length>0 ? "en_produccion" : "finalizado";
+    await a.save();
+    io.emit("subasta_finalizada", { anuncioId, precioFinal: a.precioActual });
+    clearInterval(interval);
+    return;
+  }
+  
+  // Bajar precio: nunca por debajo de 0
+  a.precioActual = Math.max(0, a.precioActual - decremento);
+  
 
       // Procesar ofertas automáticas
       await procesarOfertasAutomaticas(a, io);

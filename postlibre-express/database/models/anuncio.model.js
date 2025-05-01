@@ -22,7 +22,6 @@ const AnuncioSchema = new mongoose.Schema({
   fechaExpiracion: { type: Date, required: true },
 
   // Parámetros para subasta holandesa
-  precioReserva: { type: Number, required: function() { return this.auctionType === 'holandesa'; } },
 
   // Parámetros para subasta inglesa
   inglesaIncremento: {
@@ -34,6 +33,11 @@ const AnuncioSchema = new mongoose.Schema({
     required: function() { return this.auctionType === 'inglesa'; }
   },
   inglesaDuracion: {
+    type: Number,
+    required: function() { return this.auctionType === 'inglesa'; }
+  },
+  // Usamos el mismo campo “precioReserva” para la inglesa
+    precioReserva: {
     type: Number,
     required: function() { return this.auctionType === 'inglesa'; }
   },

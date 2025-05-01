@@ -1,8 +1,8 @@
 function iniciarCuentaRegresiva(id) {
-  const cont       = document.getElementById(`countdown-${id}`);
-  const boxes      = document.getElementById(`boxes-${id}`);
-  const tInicio    = new Date(cont.dataset.inicio).getTime();
-  const tFin       = new Date(cont.dataset.fin).getTime();
+  const cont   = document.getElementById(`countdown-${id}`);
+  const boxes  = cont.querySelector(".boxes") || cont; // según tu markup
+  const tInicio = new Date(cont.dataset.inicio).getTime();
+  const tFin    = new Date(cont.dataset.fin).getTime();
   let intervalo;
 
   function dibujar(diffMs) {
@@ -38,11 +38,9 @@ function iniciarCuentaRegresiva(id) {
 
   function tick() {
     const ahora = Date.now();
-    if (ahora < tInicio) {
-      dibujar(tInicio - ahora);
-    } else if (ahora < tFin) {
-      dibujar(tFin - ahora);
-    } else {
+    if (ahora < tInicio)           dibujar(tInicio - ahora);
+    else if (ahora < tFin)         dibujar(tFin - ahora);
+    else {
       dibujar(0);
       clearInterval(intervalo);
     }
@@ -54,7 +52,8 @@ function iniciarCuentaRegresiva(id) {
 
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".countdown-container").forEach(el => {
-    const id  = el.id.replace("countdown-","");
-    if (el.dataset.inicio && el.dataset.fin) iniciarCuentaRegresiva(id);
+    if (el.dataset.inicio && el.dataset.fin) {
+      iniciarCuentaRegresiva(el.id.replace("countdown-", ""));
+    }
   });
 });

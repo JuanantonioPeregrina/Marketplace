@@ -9,6 +9,8 @@ const enviarCorreo  = require("../utils/email");
 
 const router = express.Router();
 
+const { iniciarProcesoSubasta } = require("../routes/subasta");
+
 // ‣ Multer: configurar subida de imágenes
 const storage = multer.diskStorage({
   destination: "./public/uploads",
@@ -43,7 +45,7 @@ router.post("/", upload.single("imagen"), async (req, res) => {
     categoria,
     ubicacion,
     fechaInicioSubasta,    // obligatorio siempre
-    precioReserva,         // solo holandesa
+    precioReservaInglesa,  // solo inglesa
     inglesaIncremento,     // solo inglesa
     inglesaIntervalo,      // solo inglesa
     inglesaDuracion        // solo inglesa (en segundos)
@@ -73,15 +75,22 @@ router.post("/", upload.single("imagen"), async (req, res) => {
 
   // Validaciones específicas
   if (auctionType === "holandesa") {
-    if (!precio || !precioReserva) {
+    // Ya no validamos precioReserva aquí, sólo el precio inicial
+    if (!precio) {
       return res.status(400).send(
-        "Para subasta holandesa necesitas precio inicial y precio mínimo (reserva)."
+        "Para subasta holandesa necesitas precio inicial."
       );
     }
   } else {
-    if (!inglesaIncremento || !inglesaIntervalo || !inglesaDuracion) {
+    // Para inglesa seguimos validando todos sus campos, incluido el nuevo precioReservaInglesa
+    if (
+      !inglesaIncremento ||
+      !inglesaIntervalo ||
+      !inglesaDuracion ||
+      !precioReservaInglesa
+    ) {
       return res.status(400).send(
-        "Para subasta inglesa necesitas incremento, intervalo y duración."
+        "Para subasta inglesa necesitas incremento, intervalo, duración y precio mínimo."
       );
     }
   }
@@ -133,20 +142,24 @@ router.post("/", upload.single("imagen"), async (req, res) => {
       precioInicial,
       precioActual,
 
-      // Campos de subasta holandesa
-      ...(auctionType === "holandesa" && {
-        precioReserva: Number(precioReserva)
-      }),
 
       // Campos de subasta inglesa
       ...(auctionType === "inglesa" && {
         inglesaIncremento: Number(inglesaIncremento),
         inglesaIntervalo:  Number(inglesaIntervalo),
-        inglesaDuracion:   Number(inglesaDuracion)
+        inglesaDuracion:   Number(inglesaDuracion),
+        precioReserva:     Number(precioReservaInglesa)
       })
     });
 
     await nuevoAnuncio.save();
+
+    // — Si al publicar ya estamos dentro de la ventana de inicio…
+    if (nuevoAnuncio.estadoSubasta === "activa") {
+    // recupero io que guardé en app.js
+    const io = req.app.get("io");
+    iniciarProcesoSubasta(nuevoAnuncio._id, io);
+  }
 
     // — Envío de correos a interesados —
     const interesados = await Usuario.find({

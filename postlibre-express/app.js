@@ -62,6 +62,7 @@ const app = express();
 // Crear el servidor HTTP
 const server = http.createServer(app); // Usa tu app Express
 const io = socketIo(server); // Configurar Socket.IO con el servidor
+app.set("io", io);
 
 // Iniciar la verificación de subastas pendientes en el servidor
 iniciarVerificacionSubastas(io);  //Ahora sí existe
