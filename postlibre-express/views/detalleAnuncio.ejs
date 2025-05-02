@@ -1,6 +1,7 @@
-<%- include("partials/header") -%>
+<%- include("partials/header", { title: anuncio.titulo }) -%>
 
-<!-- Incluir los scripts de subasta y countdown -->
+<!-- scripts y estilos -->
+<script src="/socket.io/socket.io.js"></script>
 <script src="/js/subasta.js"></script>
 <script src="/js/countdown.js"></script>
 <link rel="stylesheet" href="/css/styleA.css">
@@ -10,7 +11,9 @@
 
     <!-- Imagen principal -->
     <div class="h-64 w-full bg-gray-200 overflow-hidden">
-      <img src="<%= anuncio.imagen %>" alt="Imagen de <%= anuncio.titulo %>" class="w-full h-full object-cover">
+      <img src="<%= anuncio.imagen %>" 
+           alt="Imagen de <%= anuncio.titulo %>" 
+           class="w-full h-full object-cover">
     </div>
 
     <div class="p-6 flex flex-col">
@@ -20,156 +23,179 @@
       <p class="text-gray-600 mb-4"><%= anuncio.descripcion %></p>
 
       <!-- Estado + Countdown grande -->
-      <div class="flex items-center mb-4">
-        <% const ahora = new Date(); 
-           const expir = new Date(anuncio.fechaExpiracion);
-           const estaActiva = anuncio.estadoSubasta === 'activa' && ahora < expir;
-           const estaPend = anuncio.estadoSubasta === 'pendiente' && ahora < expir;
-           const fin = ahora >= expir;
-        %>
-        <% if (fin) { %>
-          <span class="text-red-600 font-semibold mr-2">🔚 Subasta finalizada</span>
-        <% } else if (estaActiva) { %>
-          <span class="text-green-600 font-semibold mr-2">✅ Subasta en curso</span>
-        <% } else if (estaPend) { %>
-          <span class="text-blue-500 font-semibold mr-2">🕒 Subasta pendiente</span>
-        <% } %>
-
-        <div 
-          class="countdown-container" 
-          id="countdown-<%= anuncio._id %>"
-          data-inicio="<%= anuncio.fechaInicioSubasta.toISOString() %>"
-          data-fin="<%= anuncio.fechaExpiracion.toISOString() %>"
-        >
-          <!-- countdown.js rellenará aquí -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div class="mb-4 sm:mb-0">
+          <% 
+            const ahora = new Date(), 
+                  expir = new Date(anuncio.fechaExpiracion),
+                  fin    = ahora >= expir,
+                  activa = anuncio.estadoSubasta==='activa' && ahora<expir,
+                  pend   = anuncio.estadoSubasta==='pendiente' && ahora<expir;
+          %>
+          <% if (fin) { %>
+            <span class="text-red-600 font-semibold">🔚 Finalizada</span>
+          <% } else if (activa) { %>
+            <span class="text-green-600 font-semibold">✅ En curso</span>
+          <% } else if (pend) { %>
+            <span class="text-blue-500 font-semibold">🕒 Pendiente</span>
+          <% } %>
+        </div>
+        <div class="countdown-container" 
+             id="countdown-<%= anuncio._id %>"
+             data-inicio="<%= anuncio.fechaInicioSubasta.toISOString() %>"
+             data-fin="<%= anuncio.fechaExpiracion.toISOString() %>">
           <div class="flex space-x-2 text-center">
-            <div class="countdown-box">
-              <div class="countdown-box-value">00</div>
-              <div class="countdown-box-label">DÍAS</div>
-            </div>
-            <span class="countdown-separator">:</span>
-            <div class="countdown-box">
-              <div class="countdown-box-value">00</div>
-              <div class="countdown-box-label">HORAS</div>
-            </div>
-            <span class="countdown-separator">:</span>
-            <div class="countdown-box">
-              <div class="countdown-box-value">00</div>
-              <div class="countdown-box-label">MINUTOS</div>
-            </div>
-            <span class="countdown-separator">:</span>
-            <div class="countdown-box">
-              <div class="countdown-box-value">00</div>
-              <div class="countdown-box-label">SEGUNDOS</div>
-            </div>
+            <% ['DÍAS','HORAS','MINUTOS','SEGUNDOS'].forEach((lbl,i) => { %>
+              <div class="countdown-box">
+                <div class="countdown-box-value">00</div>
+                <div class="countdown-box-label"><%= lbl %></div>
+              </div>
+              <% if (i<3) { %><span class="countdown-separator">:</span><% } %>
+            <% }) %>
           </div>
         </div>
       </div>
 
-      <!-- Precio actual y temporizador pequeño -->
-      <div class="flex justify-between items-center mb-4">
+      <!-- Precio + temporizador pequeño -->
+      <div class="flex items-center justify-between mb-6">
         <p class="text-red-600 text-2xl font-bold">€<span id="precio-<%= anuncio._id %>"><%= anuncio.precioActual %></span></p>
         <div class="bg-black text-white px-3 py-1 rounded">
-          ⏳ Tiempo restante: 
-          <span id="timer-<%= anuncio._id %>">
+          ⏳ <span id="timer-<%= anuncio._id %>">
             <% if (anuncio.estadoSubasta==='finalizada') { %>00:00<% } else { %>5:00<% } %>
           </span>
         </div>
       </div>
 
-      <!-- Detalles extras -->
-      <div class="grid grid-cols-2 gap-4 text-gray-600 text-sm mb-6">
-        <div>📌 Publicado por: <strong><%= anuncio.autor %></strong></div>
-        <div>📌 Ubicación: <strong><%= anuncio.ubicacion %></strong></div>
-        <div class="col-span-2">
-          📌 Usuarios inscritos: 
-          <% if (anuncio.inscritos.length>0) { %>
+      <!-- Detalles -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-600 text-sm mb-6">
+        <div>📌 Publicó: <strong><%= anuncio.autor %></strong></div>
+        <div>📌 Ubicación: <strong><%= anuncio.ubicacion || 'No especificada' %></strong></div>
+        <div class="sm:col-span-2">
+          📌 Inscritos: 
+          <% if (anuncio.inscritos.length) { %>
             <%= anuncio.inscritos.join(', ') %>
           <% } else { %>
-            <span class="text-gray-400">No hay inscritos todavía.</span>
+            <span class="text-gray-400">Ninguno aún</span>
           <% } %>
         </div>
       </div>
 
       <!-- Pujas realizadas -->
       <div id="pujas-<%= anuncio._id %>" class="mb-6">
-        <h3 class="font-semibold text-gray-800 mb-2">📢 Pujas realizadas</h3>
-        <% if (anuncio.pujas.length>0) { %>
+        <h3 class="font-semibold text-gray-800 mb-2">📢 Pujas</h3>
+        <% if (anuncio.pujas.length) { %>
           <% anuncio.pujas.forEach(p => { %>
-            <p class="flex justify-between bg-gray-50 p-2 rounded mb-1">
-              <strong><%= p.usuario %></strong>
+            <div class="flex justify-between bg-gray-50 p-2 rounded mb-1">
+              <span><%= p.usuario %></span>
               <span class="<%= p.automatica ? 'text-green-500' : '' %>">€<%= p.cantidad %></span>
-            </p>
+            </div>
           <% }) %>
         <% } else { %>
           <p class="text-gray-500">Aún no hay pujas.</p>
         <% } %>
       </div>
 
-      <!-- Favoritos / Inscripción / Chat -->
-      <div class="flex gap-2 mb-4">
-        <% if (user && user.username !== anuncio.autor) { %>
+      <!-- ACCIONES DEL USUARIO -->
+      <% if (user && user.username !== anuncio.autor) { %>
+        <!-- 1) PUJA MANUAL (botón, manejado por subasta.js) -->
+        <button 
+            class="pujar-btn w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded mb-6 transition"
+            data-anuncio-id="<%= anuncio._id %>">
+          🔥 Pujar
+        </button>
+
+        <!-- 2) Favorito / Inscripción / Chat -->
+        <div class="grid grid-cols-3 gap-2 mb-6">
           <!-- Favorito -->
           <form action="/favoritos/<%= anuncio._id %>" method="POST">
-            <button type="submit" class="favorite-btn <%= anuncio.esFavorito ? 'favorito' : '' %>">
-              ❤️
+            <button type="submit"
+                    class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 rounded transition">
+              ❤️ Favorito
             </button>
           </form>
 
-          <!-- Inscribirse -->
+          <!-- Inscribirse / Inscrito -->
           <% if (!anuncio.inscritos.includes(user.username)) { %>
-            <button onclick="inscribirse('<%= anuncio._id %>')" class="px-4 py-2 bg-green-500 text-white rounded">
+            <button type="button" onclick="inscribirse('<%= anuncio._id %>')"
+                    class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded transition">
               Inscribirme
             </button>
           <% } else { %>
-            <button disabled class="px-4 py-2 bg-gray-400 text-white rounded">
+            <button disabled
+                    class="w-full bg-gray-400 text-white font-semibold py-2 rounded">
               Inscrito
             </button>
           <% } %>
 
-          <!-- Ir a chat -->
+          <!-- Chat -->
           <% if (anuncio.inscritos.includes(user.username)) { %>
-            <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= anuncio.autor %>" 
-               class="px-4 py-2 bg-blue-600 text-white rounded">
+            <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= anuncio.autor %>"
+               class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded text-center transition">
               💬 Chat
             </a>
+          <% } else { %>
+            <div></div>
           <% } %>
-        <% } %>
-      </div>
+        </div>
+      <% } %>
 
-      <!-- Oferta automática -->
+      <!-- Oferta automática (solo si está pendiente) -->
       <% if (user && anuncio.estadoSubasta==='pendiente') { %>
-        <form id="oferta-automatica-form-<%= anuncio._id %>" method="POST" 
-              action="/anuncios/oferta-automatica/<%= anuncio._id %>" 
-              class="mb-6">
-          <label>Oferta automática (máx €<%= anuncio.precioActual %>):</label>
-          <input type="number" name="precioMaximo" required min="0" max="<%= anuncio.precioActual %>" 
-                 class="border p-2 rounded w-full my-2" />
-          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">
-            🤖 Programar Oferta
+        <form id="oferta-automatica-form-<%= anuncio._id %>" method="POST" action="/anuncios/oferta-automatica/<%= anuncio._id %>" class="flex gap-2 mb-6">
+          <input type="number" name="precioMaximo" min="0" max="<%= anuncio.precioActual %>" required
+                 class="flex-1 border rounded p-2 focus:ring-2 focus:ring-green-300"
+                 placeholder="Oferta auto (€)">
+          <button type="submit"
+                  class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded transition">
+            🤖 Programar
           </button>
         </form>
       <% } %>
 
-      <!-- Botones de edición/eliminación (autor) -->
+      <!-- EDITAR / ELIMINAR (solo autor) -->
       <% if (user && user.username===anuncio.autor) { %>
-        <div class="flex gap-2">
-          <a href="/anuncios/editar/<%= anuncio._id %>" 
-             class="flex-1 bg-yellow-500 text-white px-4 py-2 rounded text-center">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <button 
+            class="edit-btn inline-flex justify-center items-center bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 rounded transition"
+            data-id="<%= anuncio._id %>"
+            data-titulo="<%= anuncio.titulo %>"
+            data-descripcion="<%= anuncio.descripcion %>"
+            data-precio="<%= anuncio.precioActual %>">
             ✏️ Editar
-          </a>
-          <form action="/anuncios/eliminar/<%= anuncio._id %>" method="POST" class="flex-1">
-            <button type="submit" 
-                    class="w-full bg-red-500 text-white px-4 py-2 rounded">
-              🗑️ Eliminar
-            </button>
-          </form>
+          </button>
+          <button 
+            class="delete-btn w-full inline-flex justify-center items-center bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded transition"
+            data-id="<%= anuncio._id %>">
+            🗑️ Eliminar
+          </button>
+        </div>
+
+        <!-- Modal de Edición (idéntico al de listado) -->
+        <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+          <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 class="text-lg font-bold mb-4">Editar Anuncio</h2>
+            <form id="editForm">
+              <input type="hidden" id="editAnuncioId">
+              <label class="block mb-2">Título:</label>
+              <input type="text" id="editTitulo" class="w-full border p-2 rounded mb-3" required>
+              <label class="block mb-2">Descripción:</label>
+              <textarea id="editDescripcion" class="w-full border p-2 rounded mb-3" required></textarea>
+              <label class="block mb-2">Precio:</label>
+              <input type="number" id="editPrecio" class="w-full border p-2 rounded mb-3" required>
+              <div class="flex justify-end gap-2">
+                <button type="button" id="cancelEdit" class="bg-gray-400 px-4 py-2 rounded text-white">Cancelar</button>
+                <button type="submit" class="bg-blue-500 px-4 py-2 rounded text-white">Guardar</button>
+              </div>
+            </form>
+          </div>
         </div>
       <% } %>
 
-      <!-- Botón volver -->
-      <div class="text-center mt-6">
-        <a href="/anuncios" class="text-blue-500 hover:underline">🔙 Volver a la lista</a>
+      <!-- Volver -->
+      <div class="text-center">
+        <a href="/anuncios" class="text-blue-500 hover:underline font-medium">
+          🔙 Volver a la lista
+        </a>
       </div>
 
     </div>
@@ -177,14 +203,141 @@
 </main>
 
 <script>
-  // Inicializa los countdowns pequeños y grandes
-  document.addEventListener("DOMContentLoaded", () => {
-    // Grande:
+  // Correcciones de rutas y lógica idéntica a anuncios.ejs
+
+  // Inscribirse
+  function inscribirse(anuncioId) {
+    fetch(`/inscribirse/${anuncioId}`, {
+      method: "POST",
+      credentials: "same-origin"
+    })
+    .then(res => res.json())
+    .then(json => {
+      if (json.message === "Inscripción exitosa") {
+        return location.reload();
+      }
+      alert(json.message || "Error al inscribirse");
+    })
+    .catch(() => alert("Error en la petición de inscripción"));
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var user = JSON.parse('<%- JSON.stringify(user || {}) %>');
+    
+    const socket = io();
+
+    // Countdown grandes
     document.querySelectorAll(".countdown-container").forEach(el => {
       iniciarCuentaRegresiva(el.id.replace("countdown-",""));
     });
+
+    // Oferta automática
+    document.querySelectorAll('[id^="oferta-automatica-form-"]').forEach(form => {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const id = form.id.replace("oferta-automatica-form-","");
+        fetch(`/anuncios/oferta-automatica/${id}`, {
+          method: "POST",
+          body: new URLSearchParams(formData),
+          headers: { "Content-Type":"application/x-www-form-urlencoded" }
+        })
+        .then(r=>r.json())
+        .then(d=>{
+          if(d.mensaje){
+            alert("✅ "+d.mensaje);
+          }
+        });
+      });
+    });
+
+    // Actualizaciones via socket
+    socket.on("actualizar_subasta", data => {
+      const { anuncioId, precioActual, tiempoRestante } = data;
+      const pe = document.getElementById(`precio-${anuncioId}`);
+      const te = document.getElementById(`timer-${anuncioId}`);
+      if (pe) pe.innerText = `€${precioActual}`;
+      if (te) {
+        if (tiempoRestante>=0) {
+          const m = Math.floor(tiempoRestante/60),
+                s = tiempoRestante%60;
+          te.innerText = `${m}:${s<10?'0':''}${s}`;
+        } else te.innerText = "00:00";
+      }
+    });
+    socket.on("subasta_finalizada", data=>{
+      alert(`La subasta ${data.anuncioId} ha finalizado en €${data.precioFinal}`);
+    });
+
+    // Editar
+    const editModal = document.getElementById("editModal"),
+          editForm  = document.getElementById("editForm");
+    document.querySelectorAll(".edit-btn").forEach(btn=>{
+      btn.addEventListener("click",()=> {
+        document.getElementById("editAnuncioId").value = btn.dataset.id;
+        document.getElementById("editTitulo").value    = btn.dataset.titulo;
+        document.getElementById("editDescripcion").value = btn.dataset.descripcion;
+        document.getElementById("editPrecio").value    = btn.dataset.precio;
+        editModal.classList.remove("hidden");
+      });
+    });
+    document.getElementById("cancelEdit").addEventListener("click", ()=> {
+      editModal.classList.add("hidden");
+    });
+    editForm.addEventListener("submit", async e => {
+      e.preventDefault();
+      const id = document.getElementById("editAnuncioId").value;
+      const updatedData = {
+        titulo: document.getElementById("editTitulo").value,
+        descripcion: document.getElementById("editDescripcion").value,
+        precioActual: Number(document.getElementById("editPrecio").value)
+      };
+      try {
+        const res = await fetch(`/api/anuncios/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type":"application/json",
+            "x-api-key": localStorage.getItem("apiKey")
+          },
+          body: JSON.stringify(updatedData)
+        });
+        const json = await res.json();
+        if (json.success) {
+          alert("✅ Anuncio actualizado");
+          location.reload();
+        } else alert("❌ "+json.error);
+      } catch(err) {
+        alert("❌ Error al actualizar");
+      }
+    });
+
+    // Eliminar
+    function attachDelete() {
+      document.querySelectorAll(".delete-btn").forEach(btn=>{
+        btn.addEventListener("click", async ()=> {
+          if (!confirm("¿Eliminar anuncio?")) return;
+          const id = btn.dataset.id;
+          try {
+            const res = await fetch(`/api/anuncios/${id}`, {
+              method: "DELETE",
+              headers: {
+                "Content-Type":"application/json",
+                "x-api-key": localStorage.getItem("apiKey")
+              }
+            });
+            const json = await res.json();
+            if (json.success) {
+              alert("✅ Eliminado");
+              location.href = "/anuncios";
+            } else alert("❌ "+json.error);
+          } catch(e) {
+            alert("❌ Error al eliminar");
+          }
+        });
+      });
+    }
+    setTimeout(attachDelete, 500);
   });
 </script>
 
 <%- include("partials/footer") -%>
-
