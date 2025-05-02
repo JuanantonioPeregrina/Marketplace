@@ -1,82 +1,190 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= anuncio.titulo %></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100">
+<%- include("partials/header") -%>
 
-    <div class="max-w-3xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-6">
-        
-        <!-- Imagen del anuncio -->
-        <div class="w-full flex justify-center">
-            <img src="<%= anuncio.imagen %>" alt="Imagen del anuncio" class="rounded-lg w-full max-h-80 object-cover">
-        </div>
+<!-- Incluir los scripts de subasta y countdown -->
+<script src="/js/subasta.js"></script>
+<script src="/js/countdown.js"></script>
+<link rel="stylesheet" href="/css/styleA.css">
 
-        <!-- Título del anuncio -->
-        <h1 class="text-3xl font-bold text-gray-800 mt-4 text-center">
-            <%= anuncio.titulo %>
-        </h1>
+<main class="container mx-auto px-6 py-6">
+  <div class="max-w-xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
 
-        <!-- Descripción -->
-        <p class="text-gray-600 text-lg text-center mt-2">
-            <%= anuncio.descripcion %>
-        </p>
-
-        <!-- Información del anuncio -->
-        <div class="mt-4 text-gray-700">
-            <p class="flex items-center">
-                📍 <span class="ml-2">Ubicación: <strong><%= anuncio.ubicacion %></strong></span>
-            </p>
-            <p class="flex items-center mt-2">
-                💰 <span class="ml-2 text-lg font-semibold">Precio Actual: <%= anuncio.precioActual %>€</span>
-            </p>
-            <p class="flex items-center mt-2">
-                🕒 <span class="ml-2">Publicado por: <strong><%= anuncio.autor %></strong></span>
-            </p>
-        </div>
-
-        <!-- Pujas realizadas -->
-        <div class="mt-6">
-            <h3 class="text-xl font-semibold text-gray-800">📢 Pujas realizadas</h3>
-            <ul class="bg-gray-50 p-4 rounded-lg shadow-sm mt-3">
-                <% if (anuncio.pujas.length > 0) { %>
-                    <% anuncio.pujas.forEach(puja => { %>
-                        <li class="flex justify-between border-b py-2">
-                            <span class="text-gray-800 font-medium"><%= puja.usuario %>:</span>
-                            <span class="text-green-600 font-semibold">€<%= puja.cantidad %></span>
-                        </li>
-                    <% }) %>
-                <% } else { %>
-                    <p class="text-gray-500">Aún no hay pujas.</p>
-                <% } %>
-            </ul>
-        </div>
-
-        <!-- Formulario para hacer una puja -->
-        <div class="mt-6">
-            <h3 class="text-xl font-semibold text-gray-800">⚡ Hacer una puja</h3>
-            <% if (user) { %>
-                <form action="/api/anuncios/<%= anuncio._id %>/pujar" method="POST" class="mt-3 flex items-center">
-                    <input type="number" name="cantidad" placeholder="Introduce tu puja" required class="border p-2 rounded-md w-full mr-2">
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition">
-                        💰 Pujar
-                    </button>
-                </form>
-            <% } else { %>
-                <p class="text-red-500 font-medium mt-3">Debes iniciar sesión para pujar.</p>
-            <% } %>
-        </div>
-
-        <!-- Botón para regresar -->
-        <div class="mt-6 text-center">
-            <a href="/anuncios" class="text-blue-500 hover:underline font-medium">
-                🔙 Volver a la lista de anuncios
-            </a>
-        </div>
+    <!-- Imagen principal -->
+    <div class="h-64 w-full bg-gray-200 overflow-hidden">
+      <img src="<%= anuncio.imagen %>" alt="Imagen de <%= anuncio.titulo %>" class="w-full h-full object-cover">
     </div>
 
-</body>
-</html>
+    <div class="p-6 flex flex-col">
+
+      <!-- Título y descripción -->
+      <h1 class="text-3xl font-bold text-gray-900 mb-2"><%= anuncio.titulo %></h1>
+      <p class="text-gray-600 mb-4"><%= anuncio.descripcion %></p>
+
+      <!-- Estado + Countdown grande -->
+      <div class="flex items-center mb-4">
+        <% const ahora = new Date(); 
+           const expir = new Date(anuncio.fechaExpiracion);
+           const estaActiva = anuncio.estadoSubasta === 'activa' && ahora < expir;
+           const estaPend = anuncio.estadoSubasta === 'pendiente' && ahora < expir;
+           const fin = ahora >= expir;
+        %>
+        <% if (fin) { %>
+          <span class="text-red-600 font-semibold mr-2">🔚 Subasta finalizada</span>
+        <% } else if (estaActiva) { %>
+          <span class="text-green-600 font-semibold mr-2">✅ Subasta en curso</span>
+        <% } else if (estaPend) { %>
+          <span class="text-blue-500 font-semibold mr-2">🕒 Subasta pendiente</span>
+        <% } %>
+
+        <div 
+          class="countdown-container" 
+          id="countdown-<%= anuncio._id %>"
+          data-inicio="<%= anuncio.fechaInicioSubasta.toISOString() %>"
+          data-fin="<%= anuncio.fechaExpiracion.toISOString() %>"
+        >
+          <!-- countdown.js rellenará aquí -->
+          <div class="flex space-x-2 text-center">
+            <div class="countdown-box">
+              <div class="countdown-box-value">00</div>
+              <div class="countdown-box-label">DÍAS</div>
+            </div>
+            <span class="countdown-separator">:</span>
+            <div class="countdown-box">
+              <div class="countdown-box-value">00</div>
+              <div class="countdown-box-label">HORAS</div>
+            </div>
+            <span class="countdown-separator">:</span>
+            <div class="countdown-box">
+              <div class="countdown-box-value">00</div>
+              <div class="countdown-box-label">MINUTOS</div>
+            </div>
+            <span class="countdown-separator">:</span>
+            <div class="countdown-box">
+              <div class="countdown-box-value">00</div>
+              <div class="countdown-box-label">SEGUNDOS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Precio actual y temporizador pequeño -->
+      <div class="flex justify-between items-center mb-4">
+        <p class="text-red-600 text-2xl font-bold">€<span id="precio-<%= anuncio._id %>"><%= anuncio.precioActual %></span></p>
+        <div class="bg-black text-white px-3 py-1 rounded">
+          ⏳ Tiempo restante: 
+          <span id="timer-<%= anuncio._id %>">
+            <% if (anuncio.estadoSubasta==='finalizada') { %>00:00<% } else { %>5:00<% } %>
+          </span>
+        </div>
+      </div>
+
+      <!-- Detalles extras -->
+      <div class="grid grid-cols-2 gap-4 text-gray-600 text-sm mb-6">
+        <div>📌 Publicado por: <strong><%= anuncio.autor %></strong></div>
+        <div>📌 Ubicación: <strong><%= anuncio.ubicacion %></strong></div>
+        <div class="col-span-2">
+          📌 Usuarios inscritos: 
+          <% if (anuncio.inscritos.length>0) { %>
+            <%= anuncio.inscritos.join(', ') %>
+          <% } else { %>
+            <span class="text-gray-400">No hay inscritos todavía.</span>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Pujas realizadas -->
+      <div id="pujas-<%= anuncio._id %>" class="mb-6">
+        <h3 class="font-semibold text-gray-800 mb-2">📢 Pujas realizadas</h3>
+        <% if (anuncio.pujas.length>0) { %>
+          <% anuncio.pujas.forEach(p => { %>
+            <p class="flex justify-between bg-gray-50 p-2 rounded mb-1">
+              <strong><%= p.usuario %></strong>
+              <span class="<%= p.automatica ? 'text-green-500' : '' %>">€<%= p.cantidad %></span>
+            </p>
+          <% }) %>
+        <% } else { %>
+          <p class="text-gray-500">Aún no hay pujas.</p>
+        <% } %>
+      </div>
+
+      <!-- Favoritos / Inscripción / Chat -->
+      <div class="flex gap-2 mb-4">
+        <% if (user && user.username !== anuncio.autor) { %>
+          <!-- Favorito -->
+          <form action="/favoritos/<%= anuncio._id %>" method="POST">
+            <button type="submit" class="favorite-btn <%= anuncio.esFavorito ? 'favorito' : '' %>">
+              ❤️
+            </button>
+          </form>
+
+          <!-- Inscribirse -->
+          <% if (!anuncio.inscritos.includes(user.username)) { %>
+            <button onclick="inscribirse('<%= anuncio._id %>')" class="px-4 py-2 bg-green-500 text-white rounded">
+              Inscribirme
+            </button>
+          <% } else { %>
+            <button disabled class="px-4 py-2 bg-gray-400 text-white rounded">
+              Inscrito
+            </button>
+          <% } %>
+
+          <!-- Ir a chat -->
+          <% if (anuncio.inscritos.includes(user.username)) { %>
+            <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= anuncio.autor %>" 
+               class="px-4 py-2 bg-blue-600 text-white rounded">
+              💬 Chat
+            </a>
+          <% } %>
+        <% } %>
+      </div>
+
+      <!-- Oferta automática -->
+      <% if (user && anuncio.estadoSubasta==='pendiente') { %>
+        <form id="oferta-automatica-form-<%= anuncio._id %>" method="POST" 
+              action="/anuncios/oferta-automatica/<%= anuncio._id %>" 
+              class="mb-6">
+          <label>Oferta automática (máx €<%= anuncio.precioActual %>):</label>
+          <input type="number" name="precioMaximo" required min="0" max="<%= anuncio.precioActual %>" 
+                 class="border p-2 rounded w-full my-2" />
+          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">
+            🤖 Programar Oferta
+          </button>
+        </form>
+      <% } %>
+
+      <!-- Botones de edición/eliminación (autor) -->
+      <% if (user && user.username===anuncio.autor) { %>
+        <div class="flex gap-2">
+          <a href="/anuncios/editar/<%= anuncio._id %>" 
+             class="flex-1 bg-yellow-500 text-white px-4 py-2 rounded text-center">
+            ✏️ Editar
+          </a>
+          <form action="/anuncios/eliminar/<%= anuncio._id %>" method="POST" class="flex-1">
+            <button type="submit" 
+                    class="w-full bg-red-500 text-white px-4 py-2 rounded">
+              🗑️ Eliminar
+            </button>
+          </form>
+        </div>
+      <% } %>
+
+      <!-- Botón volver -->
+      <div class="text-center mt-6">
+        <a href="/anuncios" class="text-blue-500 hover:underline">🔙 Volver a la lista</a>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+  // Inicializa los countdowns pequeños y grandes
+  document.addEventListener("DOMContentLoaded", () => {
+    // Grande:
+    document.querySelectorAll(".countdown-container").forEach(el => {
+      iniciarCuentaRegresiva(el.id.replace("countdown-",""));
+    });
+  });
+</script>
+
+<%- include("partials/footer") -%>
+

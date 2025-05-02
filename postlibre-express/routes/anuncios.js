@@ -331,7 +331,7 @@ router.post("/oferta-automatica/:id", async (req, res) => {
                 return res.status(404).render("error", { mensaje: "Anuncio no encontrado" });
             }
     
-            res.render("detalleAnuncio", { anuncio, user: req.session.user });
+            res.render("detalleAnuncio", { anuncio, user: req.session.user, title: anuncio.titulo, });
         } catch (error) {
             console.error("Error al obtener el anuncio:", error);
             res.status(500).render("error", { mensaje: "Error al cargar el anuncio" });
