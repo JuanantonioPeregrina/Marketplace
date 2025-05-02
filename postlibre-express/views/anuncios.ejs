@@ -321,35 +321,9 @@
                         
                     <% } %>
 
-                    <p class="precio-actual">Precio actual: €<span id="precio-<%= anuncio._id %>"><%= anuncio.precioActual %></span></p>
-                    <p class="temporizador">
-                        ⏳ Tiempo restante:
-                        <span id="timer-<%= anuncio._id %>">
-                          <% if (anuncio.estadoSubasta === 'finalizada') { %>
-                            00:00
-                          <% } else { %>
-                            5:00
-                          <% } %>
-                        </span>
-                      </p>
+                   
                       
-                    
-<!-- Sección para mostrar TODAS las pujas en tiempo real -->
-<div id="pujas-<%= anuncio._id %>" class="mt-4 p-2 border border-gray-300 rounded-lg bg-gray-50">
-    <h4 class="text-md font-semibold text-gray-700">📢 Pujas realizadas:</h4>
-    <% if (anuncio.pujas && anuncio.pujas.length > 0) { %>
-        <% anuncio.pujas.forEach(puja => { %>
-            <p class="text-gray-800">
-                <strong><%= puja.usuario %></strong> ha pujado €<%= puja.cantidad %>
-                <% if (puja.automatica) { %>
-                    <span class="text-green-500">🤖 (Automática)</span>
-                <% } %>
-            </p>
-        <% }); %>
-    <% } else { %>
-        <p class="text-gray-500">Aún no hay pujas.</p>
-    <% } %>
-</div>
+ 
 
 
 
@@ -378,16 +352,8 @@
                             </button>
                           </form>
                           
-                        <button class="pujar-btn mt-4" data-anuncio-id="<%= anuncio._id %>">🔥 Pujar</button>
-                         
-                        <!-- Oferta automática -->
-                    <form id="oferta-automatica-form-<%= anuncio._id %>" method="POST" action="/anuncios/oferta-automatica/<%= anuncio._id %>">
-                        <label for="precioMaximo">Introduce tu oferta programada:</label>
-                        <input type="number" name="precioMaximo" id="precioMaximo-<%= anuncio._id %>" min="0" max="<%= anuncio.precioActual %>" required class="border p-2 w-full">
-                        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold">
-                            🤖 Programar Oferta Automática
-                        </button>
-                    </form>
+                    
+        
                     
                 
                     <% } else { %>
