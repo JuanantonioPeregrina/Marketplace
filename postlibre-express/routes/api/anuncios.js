@@ -100,11 +100,11 @@ router.get("/nuevo", (req, res) => {
  */
 router.post("/nuevo", upload.single("imagen"), async (req, res) => {
     try {
-        const { titulo, descripcion, precio, categoria, fechaExpiracion, ubicacion, fechaInicioSubasta } = req.body;
+        const { titulo, descripcion, precio, categoria, ubicacion, fechaInicioSubasta } = req.body;
         const imagen = req.file ? `/uploads/${req.file.filename}` : null;
 
  //Permitir que `imagen` sea opcional
-if (!titulo || !descripcion || !precio || !categoria || !fechaExpiracion || !fechaInicioSubasta) {
+if (!titulo || !descripcion || !precio || !categoria || !fechaInicioSubasta) {
   return res.status(400).json({ error: "Todos los campos son obligatorios, excepto la imagen." });
 }
 
@@ -116,7 +116,6 @@ if (!titulo || !descripcion || !precio || !categoria || !fechaExpiracion || !fec
             imagen,
             categoria,
             ubicacion,
-            fechaExpiracion: new Date(fechaExpiracion),
             fechaInicioSubasta: new Date(fechaInicioSubasta),
             autor: req.user.username, // Obtener usuario autenticado
             inscritos: [],

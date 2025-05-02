@@ -7,6 +7,18 @@ const path = require('path'); //
 
 const actualizarEstadosDeAnuncios = require("../utils/estadoAnuncios");
 
+async function obtenerSugerencias(inscritos) {
+    if (!inscritos?.length) return [];
+    const usuarios = await Usuario.find({ username: { $in: inscritos } });
+    return usuarios
+        .map(u => ({
+        username:     u.username,
+        reputacion:   calcularPromedioReseñas(u),
+        totalResenas: u.reseñas.length
+        }))
+        .sort((a,b) => b.reputacion - a.reputacion)
+        .slice(0,3);
+}
 
 
 function calcularPromedioReseñas(usuario) {
@@ -147,19 +159,6 @@ module.exports = (io) => {
             
         }));
 
-        async function obtenerSugerencias(inscritos) {
-            const usuarios = await Usuario.find({ username: { $in: inscritos } });
-        
-            const evaluados = usuarios.map(usuario => ({
-                username: usuario.username,
-                reputacion: calcularPromedioReseñas(usuario),
-                totalResenas: usuario.reseñas.length
-            }));
-        
-            return evaluados
-                .sort((a, b) => b.reputacion - a.reputacion)
-                .slice(0, 3); // Solo top 3 sugeridos
-        }
         
         
     
@@ -324,22 +323,90 @@ router.post("/oferta-automatica/:id", async (req, res) => {
         }
     });
     
-    router.get("/:id", async (req, res) => {
-        try {
-            const anuncio = await Anuncio.findById(req.params.id);
-            if (!anuncio) {
-                return res.status(404).render("error", { mensaje: "Anuncio no encontrado" });
-            }
-    
-            res.render("detalleAnuncio", { anuncio, user: req.session.user, title: anuncio.titulo, });
-        } catch (error) {
-            console.error("Error al obtener el anuncio:", error);
-            res.status(500).render("error", { mensaje: "Error al cargar el anuncio" });
+    // DETALLE CON TODOS los datos auxiliares
+  router.get("/:id", async (req, res) => {
+    try {
+      const a = await Anuncio.findById(req.params.id);
+      if (!a) {
+        return res.status(404).render("error",{ mensaje:"Anuncio no encontrado" });
+      }
+      const usuario = req.session.user?.username;
+
+      // 1) chatIniciado
+      let chatIniciado = false;
+      if (usuario && a.inscritos.includes(usuario)) {
+        chatIniciado = await Chat.exists({
+          anuncioId: a._id,
+          $or: [
+            { remitente: a.autor, destinatario: usuario },
+            { remitente: usuario, destinatario: a.autor }
+          ]
+        });
+      }
+
+      // 2) reseña al autor
+      let resenaEnviadaAlAutor = false;
+      if (usuario && a.autor!==usuario) {
+        const autor = await Usuario.findOne({ username: a.autor });
+        resenaEnviadaAlAutor = autor?.reseñas?.some(r => r.autor===usuario);
+      }
+
+      // 3) inscritosConResena
+      const inscritosConResenaPorAnuncio = {};
+      if (usuario===a.autor) {
+        for (const u of a.inscritos) {
+          const usr = await Usuario.findOne({ username:u });
+          inscritosConResenaPorAnuncio[u] =
+            usr?.reseñas?.some(r =>
+              r.autor===usuario &&
+              r.anuncioId?.toString()===a._id.toString()
+            );
         }
-    });
-    
+      }
+
+      // 4) sugerencias
+      const sugerencias = await obtenerSugerencias(a.inscritos);
+      // ** CÁLCULO DE esFavorito **
+    let esFavorito = false;
+    if (usuario) {
+      const u = await Usuario.findOne({ username: usuario });
+      esFavorito = u?.favoritos?.some(fav => fav.toString() === a._id.toString());
+    }   
+      // Montamos el objeto que tu EJS espera
+      const anuncio = {
+        _id:                        a._id.toString(),
+        titulo:                     a.titulo,
+        descripcion:                a.descripcion,
+        imagen:                     a.imagen,
+        precioInicial:              a.precioInicial,
+        precioActual:               a.precioActual,
+        autor:                      a.autor,
+        ubicacion:                  a.ubicacion,
+        inscritos:                  a.inscritos||[],
+        estadoSubasta:              a.estadoSubasta,
+        fechaInicioSubasta:         a.fechaInicioSubasta,
+        fechaExpiracion:            a.fechaExpiracion,
+        pujas:                      a.pujas||[],
+        ofertasAutomaticas:         a.ofertasAutomaticas||[],
+        chatIniciado,
+        resenaEnviadaAlAutor,
+        inscritosConResenaPorAnuncio,
+        sugerencias,
+        esFavorito
+      };
+
+      res.render("detalleAnuncio", {
+        anuncio,
+        user: req.session.user,
+        title: anuncio.titulo
+      });
+    } catch(err) {
+      console.error("Error al obtener el anuncio:",err);
+      res.status(500).render("error",{ mensaje:"Error al cargar el anuncio" });
+    }
+  });
 
 
-
-    return router;
+  return router;
 };
+

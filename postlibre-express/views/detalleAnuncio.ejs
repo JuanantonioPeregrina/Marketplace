@@ -41,9 +41,14 @@
           <% } %>
         </div>
         <div class="countdown-container" 
-             id="countdown-<%= anuncio._id %>"
-             data-inicio="<%= anuncio.fechaInicioSubasta.toISOString() %>"
-             data-fin="<%= anuncio.fechaExpiracion.toISOString() %>">
+     id="countdown-<%= anuncio._id %>"
+     data-inicio="<%= anuncio.fechaInicioSubasta 
+                      ? new Date(anuncio.fechaInicioSubasta).toISOString() 
+                      : '' %>"
+     data-fin="<%= anuncio.fechaExpiracion 
+                    ? new Date(anuncio.fechaExpiracion).toISOString() 
+                    : '' %>">
+
           <div class="flex space-x-2 text-center">
             <% ['DÍAS','HORAS','MINUTOS','SEGUNDOS'].forEach((lbl,i) => { %>
               <div class="countdown-box">
@@ -108,9 +113,25 @@
         <div class="grid grid-cols-3 gap-2 mb-6">
           <!-- Favorito -->
           <form action="/favoritos/<%= anuncio._id %>" method="POST">
-            <button type="submit"
-                    class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 rounded transition">
-              ❤️ Favorito
+            <button type="submit" class="favorite-btn <%= anuncio.esFavorito ? 'favorito' : '' %>">
+              <!-- Corazón vacío -->
+              <svg class="empty" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path fill="none" d="M0 0H24V24H0z"></path>
+                <path d="M16.5 3C19.538 3 22 5.5 22 9c0 7-7.5 11-10 12.5C9.5 20 2 16 2 9c0-3.5 
+                                          2.5-6 5.5-6C9.36 3 11 4 12 5c1-1 2.64-2 4.5-2zm-3.566 15.604c.881-.556 
+                                          1.676-1.109 2.42-1.701C18.335 14.533 20 11.943 20 9c0-2.36-1.537-4-3.5-4-1.076 
+                                          0-2.24.57-3.086 1.414L12 7.828l-1.414-1.414C9.74 5.57 8.576 5 7.5 5 5.56 5 
+                                          4 6.656 4 9c0 2.944 1.666 5.533 4.645 7.903.745.592 1.54 1.145 2.421 
+                                          1.7.299.189.595.37.934.572.339-.202.635-.383.934-.571z"></path>
+              </svg>
+          
+              <!-- Corazón lleno -->
+              <svg class="filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path fill="none" d="M0 0H24V24H0z"></path>
+                <path fill="#ff4b4b" d="M16.5 3C19.538 3 22 5.5 22 9c0 7-7.5 11-10 
+                                          12.5C9.5 20 2 16 2 9c0-3.5 2.5-6 5.5-6C9.36 3 11 4 
+                                          12 5c1-1 2.64-2 4.5-2z"></path>
+              </svg>
             </button>
           </form>
 
@@ -129,15 +150,84 @@
 
           <!-- Chat -->
           <% if (anuncio.inscritos.includes(user.username)) { %>
-            <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= anuncio.autor %>"
-               class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded text-center transition">
-              💬 Chat
-            </a>
-          <% } else { %>
-            <div></div>
+            <% if (anuncio.chatIniciado) { %>
+              <a href="/chat?anuncioId=<%= anuncio._id %>&usuario=<%= anuncio.autor %>"
+                 class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded text-center transition">
+                💬 Chat
+              </a>
+            <% } else { %>
+              <button disabled
+                      class="w-full bg-gray-400 text-white font-semibold py-2 rounded opacity-70 cursor-not-allowed">
+                ⏳ Esperando conversación
+              </button>
+            <% } %>
           <% } %>
         </div>
       <% } %>
+        <!-- Reseñar al autor si eres inscrito -->
+<% if (
+    user &&
+    user.username !== anuncio.autor &&
+    Array.isArray(anuncio.inscritos) &&
+    anuncio.inscritos.includes(user.username) &&
+    !anuncio.resenaEnviadaAlAutor
+ ) { %>
+<div class="mt-6 bg-gray-100 p-4 rounded-lg">
+  <h4 class="text-lg font-semibold mb-3">📢 Valorar al autor del anuncio</h4>
+  <form action="/resenas/<%= anuncio.autor %>/<%= anuncio._id %>" method="POST" class="space-y-3">
+    <div class="rating">
+        <input type="radio" name="puntuacion" id="star5-autor-<%= anuncio._id %>" value="5">
+        <label for="star5-autor-<%= anuncio._id %>" title="5 estrellas"></label>
+        <input type="radio" name="puntuacion" id="star4-autor-<%= anuncio._id %>" value="4">
+        <label for="star4-autor-<%= anuncio._id %>" title="4 estrellas"></label>
+        <input type="radio" name="puntuacion" id="star3-autor-<%= anuncio._id %>" value="3">
+        <label for="star3-autor-<%= anuncio._id %>" title="3 estrellas"></label>
+        <input type="radio" name="puntuacion" id="star2-autor-<%= anuncio._id %>" value="2">
+        <label for="star2-autor-<%= anuncio._id %>" title="2 estrellas"></label>
+        <input type="radio" name="puntuacion" id="star1-autor-<%= anuncio._id %>" value="1">
+        <label for="star1-autor-<%= anuncio._id %>" title="1 estrella"></label>
+    </div>
+    <textarea name="comentario" required class="border p-2 w-full" placeholder="Escribe tu opinión aquí…"></textarea>
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Enviar Reseña</button>
+  </form>
+</div>
+<% } else if (
+    user &&
+    user.username !== anuncio.autor &&
+    anuncio.inscritos.includes(user.username) &&
+    anuncio.resenaEnviadaAlAutor
+ ) { %>
+<p class="text-sm text-gray-500 mt-2">✅ Ya has enviado una reseña al autor.</p>
+<% } %>
+
+<!-- Lista de inscritos con botón de chat -->
+…
+<!-- Ahora, valorar a los inscritos (sólo autor) -->
+<% if (user && user.username === anuncio.autor && anuncio.inscritos.length > 0) { %>
+<h5 class="text-md font-semibold mt-4">Valorar a los inscritos</h5>
+<% anuncio.inscritos.forEach(inscrito => { %>
+  <% if (!anuncio.inscritosConResenaPorAnuncio[inscrito]) { %>
+    <form action="/resenas/<%= inscrito %>/<%= anuncio._id %>" method="POST" class="space-y-3 mb-4">
+        <div class="rating">
+            <input type="radio" id="star5-<%= inscrito %>-<%= anuncio._id %>" name="puntuacion" value="5" required>
+            <label for="star5-<%= inscrito %>-<%= anuncio._id %>" title="5 estrellas"></label>
+            <input type="radio" id="star4-<%= inscrito %>-<%= anuncio._id %>" name="puntuacion" value="4">
+            <label for="star4-<%= inscrito %>-<%= anuncio._id %>" title="4 estrellas"></label>
+            <input type="radio" id="star3-<%= inscrito %>-<%= anuncio._id %>" name="puntuacion" value="3">
+            <label for="star3-<%= inscrito %>-<%= anuncio._id %>" title="3 estrellas"></label>
+            <input type="radio" id="star2-<%= inscrito %>-<%= anuncio._id %>" name="puntuacion" value="2">
+            <label for="star2-<%= inscrito %>-<%= anuncio._id %>" title="2 estrellas"></label>
+            <input type="radio" id="star1-<%= inscrito %>-<%= anuncio._id %>" name="puntuacion" value="1">
+            <label for="star1-<%= inscrito %>-<%= anuncio._id %>" title="1 estrella"></label>
+        </div>
+      <textarea name="comentario" required class="border p-2 w-full" placeholder="Deja un comentario…"></textarea>
+      <button class="bg-blue-500 text-white px-4 py-2 rounded">Enviar Reseña</button>
+    </form>
+  <% } else { %>
+    <p class="text-green-600 mb-2">✅ Ya has enviado reseña a <%= inscrito %>.</p>
+  <% } %>
+<% }) %>
+<% } %>
 
       <!-- Oferta automática (solo si está pendiente) -->
       <% if (user && anuncio.estadoSubasta==='pendiente') { %>

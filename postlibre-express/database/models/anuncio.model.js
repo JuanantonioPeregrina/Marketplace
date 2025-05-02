@@ -18,8 +18,8 @@ const AnuncioSchema = new mongoose.Schema({
   },
   fechaPublicacion: { type: Date, default: Date.now },
   inscritos: [{ type: String, required: true }],
-  fechaInicioSubasta: { type: Date },
-  fechaExpiracion: { type: Date, required: true },
+  fechaInicioSubasta: { type: Date, required:true },
+  fechaExpiracion: { type: Date, required: false },
 
   // Parámetros para subasta holandesa
 
