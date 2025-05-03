@@ -377,79 +377,107 @@
 </main>
 
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const TOTAL = 5 * 60;
-      const cont = document.querySelector(".countdown-container");
-      const inicioISO = cont?.dataset.inicio;
-      const startTime = inicioISO ? new Date(inicioISO) : null;
-      const now = new Date();
-      let remaining = TOTAL;
-      let gaugeIv;    // ← guardaremos aquí el setInterval
-      let bar = new ProgressBar.Circle('#startTimer', {
-        strokeWidth: 8,
-        trailWidth: 8,
-        trailColor: '#eee',
-        easing: 'linear',
-        duration: 1000,
-        svgStyle: { width: '100%', height: '100%' },
-        text: { value: formatTime(remaining) },
-        from: { color: '#1dd1a1' },
-        to:   { color: '#ff4757' },
-        step: (state, circle) => {
-          circle.path.setAttribute('stroke', state.color);
-          circle.setText(formatTime(remaining));
-        }
-      });
-      // Centrar el texto:
-      Object.assign(bar.text.style, {
-        position:'absolute', top:'50%', left:'50%',
-        transform:'translate(-50%,-50%)',
-        margin:0, fontSize:'1.25rem', fontFamily:'Helvetica, sans-serif'
-      });
-    
-      function formatTime(sec) {
-        const m = Math.floor(sec/60), s = sec%60;
-        return `${m}:${s<10?'0':''}${s}`;
-      }
-    
-      function beginGauge(elapsed=0) {
-        remaining = TOTAL - elapsed;
-        bar.set(elapsed/TOTAL);
-        bar.animate(1, { duration: remaining*1000 });
-        gaugeIv = setInterval(() => {
-          remaining--;
-          if (remaining < 0) {
-            clearInterval(gaugeIv);
-            return;
-          }
-          bar.setText(formatTime(remaining));
-        }, 1000);
-      }
-    
-      if (startTime && now < startTime) {
-        setTimeout(()=> beginGauge(0), startTime - now);
-      } else if (startTime && now < startTime.getTime() + TOTAL*1000) {
-        const elapsed = Math.floor((now - startTime)/1000);
-        beginGauge(elapsed);
-      } else {
-        // si ya pasó, opcionalmente arrancas gauge a 0
-        beginGauge(TOTAL);
-      }
-    
-      // SOCKET.IO
-      const socket = io();
-      socket.on("subasta_finalizada", data => {
-        // 1) mata el interval del gauge
+document.addEventListener("DOMContentLoaded", () => {
+  const TOTAL     = 5 * 60 * 1000;        // 5 minutos en milisegundos
+  const MAX_DELAY = 0x7fffffff;           // ~24.8 días en ms
+  const cont      = document.querySelector(".countdown-container");
+  const inicioISO = cont?.dataset.inicio;
+  const startTime = inicioISO ? new Date(inicioISO).getTime() : null;
+
+  let remainingMs = TOTAL;
+  let gaugeIv;
+
+  // 1) Creamos el gauge (siempre en el DOM) pero sin animar
+  const bar = new ProgressBar.Circle('#startTimer', {
+    strokeWidth: 8,
+    trailWidth:  8,
+    trailColor: '#eee',
+    easing:      'linear',
+    duration:    1000,
+    svgStyle:    { width: '100%', height: '100%' },
+    from:        { color: '#1dd1a1' },
+    to:          { color: '#ff4757' },
+    text:        { value: formatTime(TOTAL), alignToBottom: false },
+    step(state, circle) {
+      circle.path.setAttribute('stroke', state.color);
+      circle.setText(formatTime(remainingMs));
+    }
+  });
+
+  // centrar el texto
+  Object.assign(bar.text.style, {
+    position: 'absolute',
+    top:      '50%',
+    left:     '50%',
+    transform:'translate(-50%,-50%)',
+    margin:   0,
+    fontSize: '1.25rem',
+    fontFamily: 'Helvetica, sans-serif'
+  });
+
+  function formatTime(ms) {
+    const totalSec = Math.max(0, Math.ceil(ms / 1000));
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+
+  function beginGauge(elapsedMs = 0) {
+    clearInterval(gaugeIv);
+    remainingMs = TOTAL - elapsedMs;
+    bar.set(elapsedMs / TOTAL);
+    bar.animate(1, { duration: remainingMs });
+
+    gaugeIv = setInterval(() => {
+      remainingMs -= 1000;
+      if (remainingMs <= 0) {
         clearInterval(gaugeIv);
-        // 2) lleva el gauge a “agotado”
-        bar.set(1);                 // círculo completo
-        bar.setText("0:00");        // texto a cero
-        // 3) si quieres, también actualizas el temporizador pequeño:
-        const te = document.getElementById(`timer-${data.anuncioId}`);
-        if (te) te.innerText = "00:00";
-      });
-    });
-    
+        endAuction();
+      } else {
+        bar.setText(formatTime(remainingMs));
+      }
+    }, 1000);
+  }
+
+  function endAuction() {
+    clearInterval(gaugeIv);
+    document.getElementById('auctionMessage').innerText = '✅ La subasta ha finalizado';
+    bar.path.setAttribute('stroke', '#ff4757');
+    bar.set(1);
+    bar.setText('0:00');
+  }
+
+  // 2) Función recursiva para programar el arranque EXACTO
+  function scheduleStart() {
+    if (!startTime) {
+      // sin fecha = ya terminado
+      return endAuction();
+    }
+    const diff = startTime - Date.now();
+    if (diff <= 0) {
+      // llegó el momento
+      return beginGauge(0);
+    }
+    if (diff <= MAX_DELAY) {
+      // dentro del rango permitible
+      setTimeout(() => beginGauge(0), diff);
+    } else {
+      // demasiado lejos → esperamos hasta que diff <= MAX_DELAY
+      setTimeout(scheduleStart, diff - MAX_DELAY);
+    }
+  }
+
+  // 3) Arrancamos el scheduler
+  scheduleStart();
+
+  // 4) Atendemos evento remoto de fin de subasta
+  const socket = io();
+  socket.on("subasta_finalizada", () => {
+    endAuction();
+  });
+
+}); // DOMContentLoaded
+
   // Inscribirse
   function inscribirse(anuncioId) {
     fetch(`/inscribirse/${anuncioId}`, {
