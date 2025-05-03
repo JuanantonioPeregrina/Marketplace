@@ -413,3 +413,80 @@ button:hover .filled {
 .favorite-btn.favorito .empty {
   display: none;
 }
+
+/* Estilos para detallesAnuncio*/ 
+
+.radial-container {
+  width: 200px;
+  height: 200px;
+  margin: 1.5rem auto;
+}
+.radial-svg {
+  display: block;       /* para que ocupe todo el contenedor */
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.radial-bg {
+  stroke: #ddd;         /* un gris más oscuro */
+  stroke-width: 8;
+}
+.radial-fg {
+  stroke: #ff4757;      /* un rojo intenso */
+  stroke-width: 8;
+  transition: stroke-dashoffset 0.3s ease-out;
+}
+.radial-text {
+  fill: #333;
+  font-size: 1.25rem;
+}
+/* ——— fuerza que el gauge de progressbar.js ocupe su contenedor ——— */
+/* fuerza al SVG y sus paths a ser completamente visibles */
+#startTimer {
+  position: relative !important;
+}
+#startTimer svg {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* primer <path> = el “trail” */
+#startTimer svg path:nth-of-type(1) {
+  stroke: #ccc !important;
+  stroke-width: 8 !important;
+}
+
+/* segundo <path> = el avance animado */
+#startTimer svg path:nth-of-type(2) {
+  stroke-linecap: round !important;
+  stroke-width:   8 !important;
+}
+
+/* el texto del centro */
+#startTimer svg text {
+  fill:       #333 !important;
+  font-size:  1.25rem !important;
+  font-family: "Helvetica", sans-serif !important;
+}
+
+
+/* ——— el trayecto «vacío» ——— */
+#startTimer .progressbar-trail {
+  stroke: #eee;
+  stroke-width: 8;
+}
+
+/* ——— la barra animada ——— */
+#startTimer .progressbar-path {
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+/* ——— el texto central (segundos restantes) ——— */
+#startTimer .progressbar-text {
+  fill: #333;
+  font-size: 1.25rem;
+  font-family: "Helvetica", sans-serif;
+}
+

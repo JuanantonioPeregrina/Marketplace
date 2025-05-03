@@ -1,22 +1,33 @@
 <%- include("partials/header", { title: anuncio.titulo }) -%>
 
 <!-- scripts y estilos -->
-<script src="/socket.io/socket.io.js"></script>
+
 <script src="/js/subasta.js"></script>
-<script src="/js/countdown.js"></script>
+<script src="/js/countdown.js"></script> 
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/progressbar.js"></script>
+
 <link rel="stylesheet" href="/css/styleA.css">
 
-<main class="container mx-auto px-6 py-6">
-  <div class="max-w-xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+<main class="flex min-h-screen bg-gray-50">
 
+    <!-- ===== COLUMNA IZQUIERDA: VISUAL ===== -->
+  <aside class="w-1/2 h-full overflow-y-auto bg-white border-r border-gray-200">
     <!-- Imagen principal -->
-    <div class="h-64 w-full bg-gray-200 overflow-hidden">
-      <img src="<%= anuncio.imagen %>" 
-           alt="Imagen de <%= anuncio.titulo %>" 
-           class="w-full h-full object-cover">
+    <div class="h-64 bg-gray-200 overflow-hidden">
+      <img
+        src="<%= anuncio.imagen %>"
+        alt="Imagen de <%= anuncio.titulo %>"
+        class="w-full h-full object-cover"
+      />
     </div>
 
-    <div class="p-6 flex flex-col">
+</aside>
+
+    
+  <!-- ===== COLUMNA DERECHA: DATOS Y ACCIONES ===== -->
+  <section class="w-1/2 h-full overflow-y-auto p-8">
 
       <!-- Título y descripción -->
       <h1 class="text-3xl font-bold text-gray-900 mb-2"><%= anuncio.titulo %></h1>
@@ -37,7 +48,7 @@
           <% } else if (activa) { %>
             <span class="text-green-600 font-semibold">✅ En curso</span>
           <% } else if (pend) { %>
-            <span class="text-blue-500 font-semibold">🕒 Pendiente</span>
+            <span class="text-red-500 font-semibold">🕒 La subasta empieza en:</span>
           <% } %>
         </div>
         <div class="countdown-container" 
@@ -50,6 +61,10 @@
                     : '' %>">
 
           <div class="flex space-x-2 text-center">
+            <div class="countdown-box">
+                <div class="countdown-box-value">00</div>
+                <div class="countdown-box-label">SEGUNDOS</div>
+              </div>
             <% ['DÍAS','HORAS','MINUTOS','SEGUNDOS'].forEach((lbl,i) => { %>
               <div class="countdown-box">
                 <div class="countdown-box-value">00</div>
@@ -70,6 +85,24 @@
           </span>
         </div>
       </div>
+      
+
+     
+
+      <!-- CONTENEDOR DEL GAUGE 5 min-->
+<div id="startTimer" class="mx-auto my-6" style="width:200px;height:200px; position:relative;"></div>
+
+<!-- TEMPORIZADOR PEQUEÑO (oculto hasta que acabe el gauge) 
+<div id="bidTimer" class="bg-black text-white px-4 py-2 rounded inline-block" style="display:none;">
+  ⏳ <span id="small-timer">5:00</span>
+</div>-->
+
+
+      <!-- ② Gráfico de precio -->
+      <div class="w-full max-w-lg mx-auto mb-6">
+        <canvas id="priceChart-<%= anuncio._id %>"></canvas>
+      </div>
+
 
       <!-- Detalles -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-600 text-sm mb-6">
@@ -339,13 +372,84 @@
         </a>
       </div>
 
-    </div>
-  </div>
+    
+    </section>
 </main>
 
 <script>
-  // Correcciones de rutas y lógica idéntica a anuncios.ejs
-
+    document.addEventListener("DOMContentLoaded", () => {
+      const TOTAL = 5 * 60;
+      const cont = document.querySelector(".countdown-container");
+      const inicioISO = cont?.dataset.inicio;
+      const startTime = inicioISO ? new Date(inicioISO) : null;
+      const now = new Date();
+      let remaining = TOTAL;
+      let gaugeIv;    // ← guardaremos aquí el setInterval
+      let bar = new ProgressBar.Circle('#startTimer', {
+        strokeWidth: 8,
+        trailWidth: 8,
+        trailColor: '#eee',
+        easing: 'linear',
+        duration: 1000,
+        svgStyle: { width: '100%', height: '100%' },
+        text: { value: formatTime(remaining) },
+        from: { color: '#1dd1a1' },
+        to:   { color: '#ff4757' },
+        step: (state, circle) => {
+          circle.path.setAttribute('stroke', state.color);
+          circle.setText(formatTime(remaining));
+        }
+      });
+      // Centrar el texto:
+      Object.assign(bar.text.style, {
+        position:'absolute', top:'50%', left:'50%',
+        transform:'translate(-50%,-50%)',
+        margin:0, fontSize:'1.25rem', fontFamily:'Helvetica, sans-serif'
+      });
+    
+      function formatTime(sec) {
+        const m = Math.floor(sec/60), s = sec%60;
+        return `${m}:${s<10?'0':''}${s}`;
+      }
+    
+      function beginGauge(elapsed=0) {
+        remaining = TOTAL - elapsed;
+        bar.set(elapsed/TOTAL);
+        bar.animate(1, { duration: remaining*1000 });
+        gaugeIv = setInterval(() => {
+          remaining--;
+          if (remaining < 0) {
+            clearInterval(gaugeIv);
+            return;
+          }
+          bar.setText(formatTime(remaining));
+        }, 1000);
+      }
+    
+      if (startTime && now < startTime) {
+        setTimeout(()=> beginGauge(0), startTime - now);
+      } else if (startTime && now < startTime.getTime() + TOTAL*1000) {
+        const elapsed = Math.floor((now - startTime)/1000);
+        beginGauge(elapsed);
+      } else {
+        // si ya pasó, opcionalmente arrancas gauge a 0
+        beginGauge(TOTAL);
+      }
+    
+      // SOCKET.IO
+      const socket = io();
+      socket.on("subasta_finalizada", data => {
+        // 1) mata el interval del gauge
+        clearInterval(gaugeIv);
+        // 2) lleva el gauge a “agotado”
+        bar.set(1);                 // círculo completo
+        bar.setText("0:00");        // texto a cero
+        // 3) si quieres, también actualizas el temporizador pequeño:
+        const te = document.getElementById(`timer-${data.anuncioId}`);
+        if (te) te.innerText = "00:00";
+      });
+    });
+    
   // Inscribirse
   function inscribirse(anuncioId) {
     fetch(`/inscribirse/${anuncioId}`, {
