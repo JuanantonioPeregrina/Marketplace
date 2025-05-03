@@ -57,13 +57,18 @@
                
                    
  <!-- Enlace al anuncio específico -->
- <a href="/anuncios/<%= anuncio._id %>" class="block">
-    <!-- Imagen optimizada -->
+ <a href="/anuncios/<%= anuncio._id %>" class="block relative group">
     <div class="h-56 w-full bg-gray-200 overflow-hidden rounded-md">
-        <img src="<%= anuncio.imagen %>" alt="Imagen de <%= anuncio.titulo %>" 
-            class="w-full h-full object-cover">
+      <img src="<%= anuncio.imagen %>" alt="Imagen de <%= anuncio.titulo %>" 
+           class="w-full h-full object-cover transition-transform group-hover:scale-105" />
+      <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+        <span class="text-white font-semibold bg-blue-600 px-3 py-1 rounded">
+          🔎 Ver detalles
+        </span>
+      </div>
     </div>
-</a>
+  </a>
+  
 
 <div class="p-5 flex flex-col flex-grow justify-between">
     <div>
@@ -73,8 +78,9 @@
         <p class="text-gray-600 text-sm flex-grow line-clamp-3 h-16 overflow-hidden">
             <%= anuncio.descripcion %>
         </p>
-
-                        <!-- Contenedor del contador con data-inicio y data-fin -->
+        
+                
+                <!-- Contenedor del contador con data-inicio y data-fin -->
         <div 
         class="countdown-container mt-4" 
         id="countdown-<%= anuncio._id %>"
@@ -180,17 +186,9 @@
                                     <p class="text-gray-400 text-sm">No hay usuarios inscritos todavía.</p>
                                 <% } %>
                             </ul>
-                        </div>
-
-                        
+                        </div>              
                         
                     <% } %>
-
-                   
-                      
- 
-
-
 
                     <% if (user) { %>
                         <!-- Botón de favoritos -->
@@ -224,6 +222,11 @@
                     <% } else { %>
                         <p class="text-red-500 text-sm font-bold mt-2">Debe iniciar sesión para pujar.</p>
                     <% } %>
+                    <a href="/anuncios/<%= anuncio._id %>"
+                                     class="mt-2 text-blue-500 hover:underline text-sm font-medium inline-block text-center">
+                                     Click aquí para más detalles
+                                    </a>    
+
                     <!-- Pujar manualmente 
                     <form action="/anuncios/pujar/<%= anuncio._id %>" method="POST">
 
