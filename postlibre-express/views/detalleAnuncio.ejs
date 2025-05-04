@@ -502,31 +502,32 @@
         }
     
         // inicializar barra lineal y contador de bajada
-        lineEl.style.width = `${remainingMs/TOTAL*100}%`;
+       // inicializar barra de 10 s —siempre al 100%
+        lineEl.style.width = '100%';
         dropEl.textContent  = `${STEP_EUR} € en ${stepTimer}s`;
-    
+
         // unificar TODO en un solo intervalo
         gaugeIv = setInterval(() => {
-          remainingMs -= 1000;
-          stepTimer   -= 1;
-    
-          if (remainingMs <= 0) 
+        remainingMs -= 1000;
+        stepTimer   -= 1;
+
+        if (remainingMs <= 0) 
             return endAuction();
-    
-          // 1) Texto gauge
-          bar.setText(formatTime(remainingMs));
-    
-          // 2) Barra lineal
-          lineEl.style.width = `${remainingMs/TOTAL*100}%`;
-    
-          // 3) Contador de bajada (cada 10 s)
-          if (stepTimer <= 0) {
+
+        // 1) Texto gauge
+        bar.setText(formatTime(remainingMs));
+
+        // 2) Barra lineal → refleja sólo el STEP_SEC
+        lineEl.style.width = `${(stepTimer/STEP_SEC)*100}%`;
+
+        // 3) Contador de bajada (cada 10 s)
+        if (stepTimer <= 0) {
             stepTimer = STEP_SEC;
-            // aquí podrías disparar lógica extra, p.ej. emitir socket
-          }
-          dropEl.textContent = `${STEP_EUR} € en ${stepTimer}s`;
+            // aquí baja tu precio (100 €)…
+        }
+        dropEl.textContent = `${STEP_EUR} € en ${stepTimer}s`;
         }, 1000);
-      }
+    }
     
       function scheduleStart() {
         if (!startTime) return endAuction();
