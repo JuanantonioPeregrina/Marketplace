@@ -90,6 +90,7 @@
      
 
       <!-- CONTENEDOR DEL GAUGE 5 min-->
+<div id="auctionMessage" class="text-center font-semibold mb-2"></div>
 <div id="startTimer" class="mx-auto my-6" style="width:200px;height:200px; position:relative;"></div>
 
 <!-- TEMPORIZADOR PEQUEÑO (oculto hasta que acabe el gauge) 
@@ -376,45 +377,54 @@
     </section>
 </main>
 
+
+<main class="flex min-h-screen bg-gray-50">
+  <!-- ... tu columna izquierda ... -->
+
+  <section class="w-1/2 h-full overflow-y-auto p-8">
+    <!-- Título, descripción, countdown grande, precio, etc. -->
+
+    <!-- 0) Mensaje fijo de estado de subasta -->
+    <div id="auctionMessage"
+         class="text-center font-semibold mb-2"
+         data-estado="<%= anuncio.estadoSubasta %>">
+    </div>
+
+    <!-- 1) Gauge de 5 min -->
+    <div id="startTimer"
+         class="mx-auto my-6"
+         style="width:200px;height:200px;position:relative;">
+    </div>
+
+    <!-- resto de tu plantilla (canvas, pujas, botones…) -->
+  </section>
+</main>
+
+<%- include("partials/footer") -%>
+
+<!-- SCRIPTS: asegúrate de cargar socket.io y progressbar.js antes -->
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/progressbar.js"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const TOTAL     = 5 * 60 * 1000;        // 5 minutos en milisegundos
-  const MAX_DELAY = 0x7fffffff;           // ~24.8 días en ms
+  // 5 minutos en milisegundos
+  const TOTAL     = 5 * 60 * 1000;
+  const MAX_DELAY = 0x7fffffff;
+
+  // recogemos inicio y fin de los data-attributes
   const cont      = document.querySelector(".countdown-container");
   const inicioISO = cont?.dataset.inicio;
+  const finISO    = cont?.dataset.fin;
   const startTime = inicioISO ? new Date(inicioISO).getTime() : null;
+  const endTime   = finISO    ? new Date(finISO).getTime()    : null;
 
   let remainingMs = TOTAL;
-  let gaugeIv;
+  let gaugeIv, endTimeout;
 
-  // 1) Creamos el gauge (siempre en el DOM) pero sin animar
-  const bar = new ProgressBar.Circle('#startTimer', {
-    strokeWidth: 8,
-    trailWidth:  8,
-    trailColor: '#eee',
-    easing:      'linear',
-    duration:    1000,
-    svgStyle:    { width: '100%', height: '100%' },
-    from:        { color: '#1dd1a1' },
-    to:          { color: '#ff4757' },
-    text:        { value: formatTime(TOTAL), alignToBottom: false },
-    step(state, circle) {
-      circle.path.setAttribute('stroke', state.color);
-      circle.setText(formatTime(remainingMs));
-    }
-  });
+  // ——————————— funciones auxiliares ———————————
 
-  // centrar el texto
-  Object.assign(bar.text.style, {
-    position: 'absolute',
-    top:      '50%',
-    left:     '50%',
-    transform:'translate(-50%,-50%)',
-    margin:   0,
-    fontSize: '1.25rem',
-    fontFamily: 'Helvetica, sans-serif'
-  });
-
+  // formatea ms en "M:SS"
   function formatTime(ms) {
     const totalSec = Math.max(0, Math.ceil(ms / 1000));
     const m = Math.floor(totalSec / 60);
@@ -422,9 +432,23 @@ document.addEventListener("DOMContentLoaded", () => {
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   }
 
+  // pinta el gauge en 100% rojo y mensaje
+  function endAuction() {
+    clearInterval(gaugeIv);
+    clearTimeout(endTimeout);
+
+    document.getElementById('auctionMessage').innerText = '✅ La subasta ha finalizado';
+    bar.path.setAttribute('stroke', '#ff4757');
+    bar.set(1);
+    bar.setText('0:00');
+  }
+
+  // arranca el gauge descontando de TOTAL
   function beginGauge(elapsedMs = 0) {
     clearInterval(gaugeIv);
-    remainingMs = TOTAL - elapsedMs;
+    clearTimeout(endTimeout);
+
+    remainingMs = Math.max(0, TOTAL - elapsedMs);
     bar.set(elapsedMs / TOTAL);
     bar.animate(1, { duration: remainingMs });
 
@@ -437,46 +461,76 @@ document.addEventListener("DOMContentLoaded", () => {
         bar.setText(formatTime(remainingMs));
       }
     }, 1000);
+
+    // programa fin exacto según data-fin
+    if (endTime && Date.now() < endTime) {
+      endTimeout = setTimeout(endAuction, endTime - Date.now());
+    }
   }
 
-  function endAuction() {
-    clearInterval(gaugeIv);
-    document.getElementById('auctionMessage').innerText = '✅ La subasta ha finalizado';
-    bar.path.setAttribute('stroke', '#ff4757');
-    bar.set(1);
-    bar.setText('0:00');
-  }
-
-  // 2) Función recursiva para programar el arranque EXACTO
+  // scheduler recursivo para arrancar EXACTO a startTime
   function scheduleStart() {
     if (!startTime) {
-      // sin fecha = ya terminado
       return endAuction();
     }
     const diff = startTime - Date.now();
     if (diff <= 0) {
-      // llegó el momento
       return beginGauge(0);
     }
     if (diff <= MAX_DELAY) {
-      // dentro del rango permitible
       setTimeout(() => beginGauge(0), diff);
     } else {
-      // demasiado lejos → esperamos hasta que diff <= MAX_DELAY
       setTimeout(scheduleStart, diff - MAX_DELAY);
     }
   }
 
-  // 3) Arrancamos el scheduler
-  scheduleStart();
+  // ——————————— instanciamos ProgressBar ———————————
 
-  // 4) Atendemos evento remoto de fin de subasta
+  const bar = new ProgressBar.Circle('#startTimer', {
+    strokeWidth: 8,
+    trailWidth:  8,
+    trailColor: '#eee',
+    easing:      'linear',
+    duration:    1000,
+    svgStyle:    { width: '100%', height: '100%' },
+    from:        { color: '#1dd1a1' },
+    to:          { color: '#ff4757' },
+    text:        { value: formatTime(TOTAL) },
+    step(state, circle) {
+      circle.path.setAttribute('stroke', state.color);
+      circle.setText(formatTime(remainingMs));
+    }
+  });
+
+  Object.assign(bar.text.style, {
+    position:  'absolute',
+    top:       '50%',
+    left:      '50%',
+    transform: 'translate(-50%,-50%)',
+    margin:    0,
+    fontSize:  '1.25rem',
+    fontFamily:'Helvetica, sans-serif'
+  });
+
+  // ——————————— lógica inicial ———————————
+
+  // si ya llegó la expiración o el estado viene finalizado
+  const estado = document.getElementById('auctionMessage').dataset.estado;
+  if (estado === 'finalizada' || (endTime && Date.now() >= endTime)) {
+    endAuction();
+  } else {
+    // arrancamos el scheduler para los 5 min
+    scheduleStart();
+  }
+
+  // ——————————— escuchamos fin remoto ———————————
+
   const socket = io();
   socket.on("subasta_finalizada", () => {
     endAuction();
   });
 
-}); // DOMContentLoaded
+});
 
   // Inscribirse
   function inscribirse(anuncioId) {
@@ -613,4 +667,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 </script>
 
-<%- include("partials/footer") -%>
+
