@@ -104,6 +104,20 @@
 
 <div id="startTimer" class="mx-auto my-6" style="width:200px;height:200px; position:relative;"></div>
 
+<!-- Barra lineal regresiva -->
+<div id="countdown-line-container" class="h-1 bg-gray-300 w-full mx-auto mt-2">
+    <div 
+      id="countdown-line" 
+      class="h-full" 
+      style="width:100%; background-color:#ff4757;"
+    ></div>
+  </div>
+<!-- Mensaje de próxima bajada -->
+<div
+  id="next-drop"
+  class="text-center text-gray-600 text-sm italic mb-2"
+></div>
+
 <!-- TEMPORIZADOR PEQUEÑO (oculto hasta que acabe el gauge) 
 <div id="bidTimer" class="bg-black text-white px-4 py-2 rounded inline-block" style="display:none;">
   ⏳ <span id="small-timer">5:00</span>
@@ -418,99 +432,127 @@
 <script src="https://cdn.jsdelivr.net/npm/progressbar.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const TOTAL     = 5 * 60 * 1000;    // 5 minutos en ms
-  const MAX_DELAY = 0x7fffffff;       // ~24.8 días en ms
+    document.addEventListener("DOMContentLoaded", () => {
+      const TOTAL        = 5 * 60 * 1000;       // 5 min en ms
+      const MAX_DELAY    = 0x7fffffff;          // ~24 días en ms
+      const STEP_SEC     = 10;                  // cada 10 s
+      const STEP_EUR     = 100;                 // baja 100 €
+      const msgEl        = document.getElementById("auctionMessage");
+      const startISO     = msgEl.dataset.inicio;
+      const endISO       = msgEl.dataset.fin;
+      const estado       = msgEl.dataset.estado; // 'pendiente'|'activa'|'finalizada'
+      const startTime    = startISO ? Date.parse(startISO) : null;
+      const endTime      = endISO   ? Date.parse(endISO)   : null;
+      const dropEl       = document.getElementById("next-drop");
+      const lineEl       = document.getElementById("countdown-line");
+    
+      let remainingMs = TOTAL,
+          stepTimer   = STEP_SEC,
+          gaugeIv, endTimeout;
+    
+      // **** Gauge ****
+      const bar = new ProgressBar.Circle('#startTimer', {
+        strokeWidth: 8, trailWidth: 8, trailColor: '#eee',
+        easing: 'linear', duration: 1000,
+        from: { color: '#1dd1a1' }, to: { color: '#ff4757' },
+        text: { value: formatTime(TOTAL) },
+        step(state, circle) {
+          circle.path.setAttribute('stroke', state.color);
+          circle.setText(formatTime(remainingMs));
+        }
+      });
+      Object.assign(bar.text.style, {
+        position: 'absolute', top: '50%', left: '50%',
+        transform: 'translate(-50%,-50%)',
+        margin: 0, fontSize: '1.25rem', fontFamily: 'Helvetica, sans-serif'
+      });
+    
+      function formatTime(ms) {
+        const s = Math.max(0, Math.ceil(ms/1000));
+        const m = Math.floor(s/60), sec = s%60;
+        return `${m}:${sec<10?'0':''}${sec}`;
+      }
+    
+      function endAuction() {
+        clearInterval(gaugeIv);
+        clearTimeout(endTimeout);
+        dropEl.textContent = "";
+        lineEl.style.width = "0%";
+    
+        msgEl.innerText = '✅ La subasta ha finalizado';
+        msgEl.classList.replace('text-gray-800','text-green-600');
+        bar.set(1);
+        bar.path.setAttribute('stroke','#ff4757');
+        bar.setText('0:00');
+      }
+    
+      function beginGauge(elapsedMs = 0) {
+        clearInterval(gaugeIv);
+        clearTimeout(endTimeout);
+    
+        remainingMs = Math.max(0, TOTAL - elapsedMs);
+        stepTimer   = STEP_SEC;
+    
+        bar.set(elapsedMs / TOTAL);
+        bar.animate(1, { duration: remainingMs });
+    
+        // programar fin real
+        if (endTime && Date.now() < endTime) {
+          endTimeout = setTimeout(endAuction, endTime - Date.now());
+        }
+    
+        // inicializar barra lineal y contador de bajada
+        lineEl.style.width = `${remainingMs/TOTAL*100}%`;
+        dropEl.textContent  = `${STEP_EUR} € en ${stepTimer}s`;
+    
+        // unificar TODO en un solo intervalo
+        gaugeIv = setInterval(() => {
+          remainingMs -= 1000;
+          stepTimer   -= 1;
+    
+          if (remainingMs <= 0) 
+            return endAuction();
+    
+          // 1) Texto gauge
+          bar.setText(formatTime(remainingMs));
+    
+          // 2) Barra lineal
+          lineEl.style.width = `${remainingMs/TOTAL*100}%`;
+    
+          // 3) Contador de bajada (cada 10 s)
+          if (stepTimer <= 0) {
+            stepTimer = STEP_SEC;
+            // aquí podrías disparar lógica extra, p.ej. emitir socket
+          }
+          dropEl.textContent = `${STEP_EUR} € en ${stepTimer}s`;
+        }, 1000);
+      }
+    
+      function scheduleStart() {
+        if (!startTime) return endAuction();
+        const diff = startTime - Date.now();
+        if (diff <= 0)         return beginGauge(0);
+        if (diff <= MAX_DELAY) return setTimeout(() => beginGauge(0), diff);
+        setTimeout(scheduleStart, diff - MAX_DELAY);
+      }
+    
+      // ————— lógica según estado —————
+      if (estado === 'finalizada' || (endTime && Date.now() >= endTime)) {
+        endAuction();
+      } 
+      else if (estado === 'activa') {
+        const elapsed = startTime ? Date.now() - startTime : 0;
+        beginGauge(elapsed);
+      } 
+      else {
+        scheduleStart();
+      }
+    
+      // ————— fin remoto vía socket —————
+      const socket = io();
+      socket.on("subasta_finalizada", endAuction);
+    });
 
-  // Elementos y datos
-  const msgEl    = document.getElementById("auctionMessage");
-  const estado   = msgEl.dataset.estado;      // 'pendiente' | 'activa' | 'finalizada'
-  const startISO = msgEl.dataset.inicio;
-  const endISO   = msgEl.dataset.fin;
-  const startTime= startISO ? new Date(startISO).getTime() : null;
-  const endTime  = endISO   ? new Date(endISO).getTime()   : null;
-  const now      = Date.now();
-
-  // Instanciamos el Gauge (pero sin arrancarlo)
-  let remainingMs = TOTAL, gaugeIv, endTimeout;
-  const bar = new ProgressBar.Circle('#startTimer', {
-    strokeWidth: 8, trailWidth:8, trailColor:'#eee',
-    easing:'linear', duration:1000,
-    from:{ color:'#1dd1a1' }, to:{ color:'#ff4757' },
-    text:{ value: formatTime(TOTAL) },
-    step(state, circle) {
-      circle.path.setAttribute('stroke', state.color);
-      circle.setText(formatTime(remainingMs));
-    }
-  });
-  // Centramos el texto
-  Object.assign(bar.text.style, {
-    position:'absolute', top:'50%', left:'50%',
-    transform:'translate(-50%,-50%)',
-    margin:0, fontSize:'1.25rem', fontFamily:'Helvetica, sans-serif'
-  });
-
-  // Formatea milisegundos en "M:SS"
-  function formatTime(ms) {
-    const s = Math.max(0, Math.ceil(ms/1000));
-    const m = Math.floor(s/60), sec = s%60;
-    return `${m}:${sec<10?'0':''}${sec}`;
-  }
-
-  // Pinta el Gauge a 100% rojo + texto 0:00 + mensaje
-  function endAuction() {
-    clearInterval(gaugeIv); clearTimeout(endTimeout);
-    msgEl.innerText = '✅ La subasta ha finalizado';
-    msgEl.classList.add('text-green-600');
-    bar.path.setAttribute('stroke','#ff4757');
-    bar.set(1);
-    bar.setText('0:00');
-  }
-
-  // Arranca el Gauge descontando desde TOTAL
-  function beginGauge(elapsedMs = 0) {
-    clearInterval(gaugeIv); clearTimeout(endTimeout);
-    remainingMs = Math.max(0, TOTAL - elapsedMs);
-    bar.set(elapsedMs / TOTAL);
-    bar.animate(1, { duration: remainingMs });
-    gaugeIv = setInterval(() => {
-      remainingMs -= 1000;
-      if (remainingMs <= 0) return endAuction();
-      bar.setText(formatTime(remainingMs));
-    }, 1000);
-
-    // Y programamos un timeout exacto para la expiración real
-    if (endTime && Date.now() < endTime) {
-      endTimeout = setTimeout(endAuction, endTime - Date.now());
-    }
-  }
-
-  // Scheduler que dispara beginGauge justo en startTime
-  function scheduleStart() {
-    if (!startTime) return endAuction();
-    const diff = startTime - Date.now();
-    if (diff <= 0)       return beginGauge(0);
-    if (diff <= MAX_DELAY) return setTimeout(() => beginGauge(0), diff);
-    setTimeout(scheduleStart, diff - MAX_DELAY);
-  }
-
-  // ——————— LÓGICA SEGÚN ESTADO ———————
-  if (estado === 'finalizada') {
-    //  1) Si el estado viene de la base como 'finalizada', pintamos final y salimos
-    return endAuction();
-  }
-  if (estado === 'activa') {
-    //  2) Subasta ya activa → iniciamos gauge calculando elapsed
-    const elapsed = startTime ? (now - startTime) : 0;
-    return beginGauge(elapsed);
-  }
-  //  3) Subasta aún no empezó ('pendiente') → esperamos al instante exacto
-  scheduleStart();
-
-  // ————— Escuchamos fin remoto —————
-  const socket = io();
-  socket.on("subasta_finalizada", () => endAuction());
-});
   // Inscribirse
   function inscribirse(anuncioId) {
     fetch(`/inscribirse/${anuncioId}`, {
