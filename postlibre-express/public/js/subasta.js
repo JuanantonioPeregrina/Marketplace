@@ -1,3 +1,11 @@
+// lee el JSON inyectado en el div#user-data
+const userDataEl = document.getElementById('user-data');
+const user = userDataEl 
+  ? JSON.parse(userDataEl.dataset.user) 
+  : {};
+
+// ahora `user.username` funciona igual que antes
+console.log("🔍 Usuario detectado:", user);
 
 document.addEventListener("DOMContentLoaded", function () {
     const socket = io();
@@ -38,40 +46,34 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // 📢 Evento cuando se recibe una nueva puja (manual o automática)
-    // 📢 Evento cuando se recibe una nueva puja (manual o automática)
-socket.on("actualizar_pujas", (data) => {
-    console.log("📥 Datos de pujas recibidos en cliente:", JSON.stringify(data, null, 2)); // 🔥 DEBUG
-
-    const { anuncioId, pujas } = data;
-    const pujasContainer = document.getElementById(`pujas-${anuncioId}`);
-    const precioElement = document.getElementById(`precio-${anuncioId}`);
-
-    if (!pujasContainer || !precioElement) {
-        console.error("❌ No se encontró el contenedor de pujas o precio.");
-        return;
-    }
-
-    // 🔹 Mostrar todas las pujas
-    pujasContainer.innerHTML = `<h4 class="text-md font-semibold text-gray-700">📢 Pujas realizadas:</h4>`;
-
-    pujas.forEach(puja => {
-        pujasContainer.innerHTML += `
-            <p class="text-gray-800">
-                <strong>${puja.usuario}</strong> ha pujado €${puja.cantidad} 
-                ${puja.automatica ? '<span class="text-green-500">🤖 (Automática)</span>' : ''}
-            </p>`;
-    });
-
-    if (pujas.length === 0) {
-        pujasContainer.innerHTML += `<p class="text-gray-500">Aún no hay pujas.</p>`;
-    }
-
-    // 🔹 Actualizar el precio actual con la puja más alta
-    const maxPuja = Math.max(...pujas.map(p => p.cantidad), 0);
-    precioElement.innerText = `€${maxPuja}`;
-});
-
-    
+    socket.on("actualizar_pujas", ({ anuncioId, pujas }) => {
+        // 1) buscamos el contenedor de pujas para ESTE anuncio
+        const pujasContainer = document.getElementById(`pujas-${anuncioId}`);
+        const precioElement  = document.getElementById(`precio-${anuncioId}`);
+        if (!pujasContainer || !precioElement) return;  // no estamos en esta página
+      
+        // 2) reconstruimos la lista de pujas
+        let html = `<h3 class="font-semibold text-gray-800 mb-2">📢 Pujas realizadas:</h3>`;
+        if (pujas.length) {
+          for (const p of pujas) {
+            html += `
+              <div class="flex justify-between bg-gray-50 p-2 rounded mb-1">
+                <span>${p.usuario}</span>
+                <span class="${p.automatica?'text-green-500':''}">€${p.cantidad}</span>
+              </div>`;
+          }
+        } else {
+          html += `<p class="text-gray-500">Aún no hay pujas.</p>`;
+        }
+        pujasContainer.innerHTML = html;
+      
+        // 3) actualizamos el precio al máximo
+        const max = pujas.length
+          ? Math.max(...pujas.map(x => x.cantidad))
+          : 0;
+        precioElement.innerText = `€${max}`;
+      });
+      
     // 📢 Evento cuando se recibe una confirmación de oferta automática
     socket.on("confirmar_oferta_automatica", (data) => {
         console.log("🤖 Oferta automática confirmada:", data);

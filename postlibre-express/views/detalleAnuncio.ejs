@@ -1,10 +1,14 @@
 <%- include("partials/header", { title: anuncio.titulo }) -%>
 
-<!-- scripts y estilos -->
+<div id="user-data" 
+data-user='<%= JSON.stringify(user || {}) %>' 
+style="display:none;">
+</div>
 
+<!-- scripts y estilos -->
+<script src="/socket.io/socket.io.js"></script>
 <script src="/js/subasta.js"></script>
 <script src="/js/countdown.js"></script> 
-<script src="/socket.io/socket.io.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/progressbar.js"></script>
 
@@ -403,28 +407,6 @@
 </main>
 
 
-<main class="flex min-h-screen bg-gray-50">
-  <!-- ... tu columna izquierda ... -->
-
-  <section class="w-1/2 h-full overflow-y-auto p-8">
-    <!-- Título, descripción, countdown grande, precio, etc. -->
-
-    <!-- 0) Mensaje fijo de estado de subasta -->
-    <div id="auctionMessage"
-         class="text-center font-semibold mb-2"
-         data-estado="<%= anuncio.estadoSubasta %>">
-    </div>
-
-    <!-- 1) Gauge de 5 min -->
-    <div id="startTimer"
-         class="mx-auto my-6"
-         style="width:200px;height:200px;position:relative;">
-    </div>
-
-    <!-- resto de tu plantilla (canvas, pujas, botones…) -->
-  </section>
-</main>
-
 <%- include("partials/footer") -%>
 
 <!-- SCRIPTS: asegúrate de cargar socket.io y progressbar.js antes -->
@@ -551,6 +533,7 @@
     
       // ————— fin remoto vía socket —————
       const socket = io();
+
       socket.on("subasta_finalizada", endAuction);
     });
 
