@@ -339,19 +339,28 @@ style="display:none;">
             </button>
           </form>
 
-          <!-- Inscribirse / Inscrito 
-          <% if (!anuncio.inscritos.includes(user.username)) { %>
-            <button type="button" onclick="inscribirse('<%= anuncio._id %>')"
-                    class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded transition">
-              Inscribirme
-            </button>
-          <% } else { %>
-            <button disabled
-                    class="w-full bg-gray-400 text-white font-semibold py-2 rounded">
-              Inscrito
-            </button>
+          <!-- Inscribirse / Inscrito solo para inglesa -->
+          
+          <% if (anuncio.auctionType === 'inglesa') { %>
+            <% if (!anuncio.inscritos.includes(user.username)) { %>
+              <button 
+                type="button" 
+                onclick="inscribirse('<%= anuncio._id %>')"
+                class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded transition mb-6"
+              >
+                Inscribirme
+              </button>
+            <% } else { %>
+              <button 
+                disabled 
+                class="w-full bg-gray-400 text-white font-semibold py-2 rounded mb-6"
+              >
+                Inscrito
+              </button>
+            <% } %>
           <% } %>
--->
+
+
           <!-- Chat -->
           <% if (anuncio.inscritos.includes(user.username)) { %>
             <% if (anuncio.chatIniciado) { %>
