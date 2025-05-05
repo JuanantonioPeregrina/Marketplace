@@ -62,13 +62,13 @@ style="display:none;">
           </div>
         <% } else { %>
           <!-- Usuario NO inscrito: le invito a inscribirse -->
-          <div class="mb-8 p-6 bg-red-100 border border-red-400 rounded-lg text-center">
+          <div class="mb-8 p-6 bg-red-100 border border-red-400 rounded-lg text-center ">
             <p class="mb-4 text-red-800 font-semibold">
               Debes inscribirte para poder enviar ofertas automáticas.
             </p>
             <button 
               onclick="inscribirse('<%= anuncio._id %>')" 
-              class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded transition"
+              class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded transition mx-auto"
             >
               Inscribirme
             </button>
@@ -314,10 +314,10 @@ style="display:none;">
   </button>
 
         <!-- 2) Favorito / Inscripción / Chat -->
-        <div class="grid grid-cols-3 gap-2 mb-6">
+        <div class="mb-6 text-center flex justify-center" >
           <!-- Favorito -->
           <form action="/favoritos/<%= anuncio._id %>" method="POST">
-            <button type="submit" class="favorite-btn <%= anuncio.esFavorito ? 'favorito' : '' %>">
+            <button type="submit" class="mx-auto favorite-btn <%= anuncio.esFavorito ? 'favorito' : '' %>">
               <!-- Corazón vacío -->
               <svg class="empty" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path fill="none" d="M0 0H24V24H0z"></path>
@@ -339,7 +339,7 @@ style="display:none;">
             </button>
           </form>
 
-          <!-- Inscribirse / Inscrito -->
+          <!-- Inscribirse / Inscrito 
           <% if (!anuncio.inscritos.includes(user.username)) { %>
             <button type="button" onclick="inscribirse('<%= anuncio._id %>')"
                     class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded transition">
@@ -351,7 +351,7 @@ style="display:none;">
               Inscrito
             </button>
           <% } %>
-
+-->
           <!-- Chat -->
           <% if (anuncio.inscritos.includes(user.username)) { %>
             <% if (anuncio.chatIniciado) { %>
