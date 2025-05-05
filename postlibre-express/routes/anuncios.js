@@ -190,26 +190,31 @@ module.exports = (io) => {
 const STEP = 100; //ajuste aquí del “salto” de la subasta
 
 router.post("/oferta-automatica/:id", async (req, res) => {
-  try {
-    const { user } = req.session;
-    if (!user) {
-      return res.status(403).json({ error: "Debe iniciar sesión para registrar una oferta automática." });
-    }
-
-    // parseo y validación básica
-    const precioMaximo = parseInt(req.body.precioMaximo, 10);
-    if (isNaN(precioMaximo) || precioMaximo <= 0) {
-      return res.status(400).json({ error: "Precio máximo inválido." });
-    }
-    // 1) validar múltiplos de STEP
-    if (precioMaximo % STEP !== 0) {
-      return res.status(400).json({ error: `El precio debe ser múltiplo de ${STEP} €.` });
-    }
-
-    const anuncio = await Anuncio.findById(req.params.id);
-    if (!anuncio) {
-      return res.status(404).json({ error: "Anuncio no encontrado." });
-    }
+    try {
+      const { user } = req.session;
+      if (!user) {
+        return res.status(403).json({ error: "Debe iniciar sesión…" });
+      }
+  
+      const precioMaximo = parseInt(req.body.precioMaximo, 10);
+      if (isNaN(precioMaximo) || precioMaximo <= 0) {
+        return res.status(400).json({ error: "Precio máximo inválido." });
+      }
+      if (precioMaximo % STEP !== 0) {
+        return res.status(400).json({ error: `El precio debe ser múltiplo de ${STEP} €.` });
+      }
+  
+      const anuncio = await Anuncio.findById(req.params.id);
+      if (!anuncio) {
+        return res.status(404).json({ error: "Anuncio no encontrado." });
+      }
+  
+      // ← aquí insertas la validación de inscritos
+      if (!anuncio.inscritos.includes(user.username)) {
+        return res.status(403).json({
+          error: "Debes inscribirte en la subasta para enviar ofertas automáticas."
+        });
+      }
 
     // 2) un único registro por usuario
     const yaRegistrado = anuncio.ofertasAutomaticas

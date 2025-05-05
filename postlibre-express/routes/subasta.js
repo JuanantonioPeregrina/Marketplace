@@ -153,7 +153,7 @@ console.log(`🚀 Subasta holandesa iniciada: ${anuncioDoc.titulo}`);
         // registramos la puja al precio actual
         a.pujas.push({
           usuario:    ganadorAuto.usuario,
-          cantidad:   a.precioActual,
+          cantidad:   ganadorAuto.precioMaximo,
           fecha:      new Date(),
           automatica: true
         });
@@ -171,7 +171,7 @@ console.log(`🚀 Subasta holandesa iniciada: ${anuncioDoc.titulo}`);
         });
         io.emit("subasta_finalizada", {
           anuncioId,
-          precioFinal: a.precioActual,
+          precioFinal: ganadorAuto.precioMaximo,
           ganador:     ganadorAuto.usuario
         });
 

@@ -28,40 +28,55 @@ style="display:none;">
     </div>
 
     <% if (user && user.username !== anuncio.autor) { %>
-
-        <!-- Oferta automática (solo si está pendiente) -->
-        <% if (user && anuncio.estadoSubasta === 'pendiente') { %>
+      <% if (anuncio.estadoSubasta === 'pendiente') { %>
+        <% if (anuncio.inscritos.includes(user.username)) { %>
+          <!-- Usuario inscrito: muestro el formulario -->
           <div id="prebid-section" class="mb-8 p-6 bg-yellow-100 border-2 border-yellow-400 rounded-lg text-center">
-              <h2 class="text-2xl font-bold mb-2 text-yellow-800">🚀 ¡Prepara tu oferta!</h2>
-              <p class="mb-4 text-yellow-700">
-                Esta subasta arrancará en 
-                <strong><%= new Date(anuncio.fechaInicioSubasta).toLocaleString() %></strong>.  
-                Para fijar un precio de salida justo, necesitamos al menos 
-                <strong>3 ofertas automáticas</strong>.
-              </p>
-              <form id="prebid-form" action="/anuncios/oferta-automatica/<%= anuncio._id %>" method="POST" class="flex flex-col sm:flex-row justify-center gap-4">
-                <input 
-                  type="number"
-                  name="precioMaximo"
-                  min="50"
-                  step="50"
-                  required
-                  placeholder="Tu precio máximo (€)"
-                  class="w-full sm:w-1/3 border border-yellow-400 rounded p-3 focus:outline-none focus:ring-2 focus:ring-yellow-300"
-                >
-                <button 
-                  type="submit"
-                  class="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded transition"
-                >
-                  🤖 Enviar oferta automática
-                </button>
-              </form>
-              <p class="mt-4 text-sm text-yellow-800">
-                Ofertas recibidas: <strong><%= (anuncio.ofertasAutomaticas||[]).length %> / 3</strong>
-              </p>
-            </div>
-          <% } %>
-          <% } %>
+            <h2 class="text-2xl font-bold mb-2 text-yellow-800">🚀 ¡Prepara tu oferta!</h2>
+            <p class="mb-4 text-yellow-700">
+              Esta subasta arrancará en 
+              <strong><%= new Date(anuncio.fechaInicioSubasta).toLocaleString() %></strong>.  
+              Para fijar un precio de salida justo, necesitamos al menos 
+              <strong>3 ofertas automáticas</strong>.
+            </p>
+            <form id="prebid-form" action="/anuncios/oferta-automatica/<%= anuncio._id %>" method="POST" class="flex flex-col sm:flex-row justify-center gap-4">
+              <input 
+                type="number"
+                name="precioMaximo"
+                min="50"
+                step="50"
+                required
+                placeholder="Tu precio máximo (€)"
+                class="w-full sm:w-1/3 border border-yellow-400 rounded p-3 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+              >
+              <button 
+                type="submit"
+                class="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded transition"
+              >
+                🤖 Enviar oferta automática
+              </button>
+            </form>
+            <p class="mt-4 text-sm text-yellow-800">
+              Ofertas recibidas: <strong><%= (anuncio.ofertasAutomaticas||[]).length %> / 3</strong>
+            </p>
+          </div>
+        <% } else { %>
+          <!-- Usuario NO inscrito: le invito a inscribirse -->
+          <div class="mb-8 p-6 bg-red-100 border border-red-400 rounded-lg text-center">
+            <p class="mb-4 text-red-800 font-semibold">
+              Debes inscribirte para poder enviar ofertas automáticas.
+            </p>
+            <button 
+              onclick="inscribirse('<%= anuncio._id %>')" 
+              class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded transition"
+            >
+              Inscribirme
+            </button>
+          </div>
+        <% } %>
+      <% } %>
+    <% } %>
+    
 </aside>
 
     
