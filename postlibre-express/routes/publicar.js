@@ -41,7 +41,7 @@ router.post("/", upload.single("imagen"), async (req, res) => {
   const {
     titulo,
     descripcion,
-    precio,                // solo para holandesa
+    //precio,                // solo para holandesa
     categoria,
     ubicacion,
     fechaInicioSubasta,    // obligatorio siempre
@@ -76,11 +76,11 @@ router.post("/", upload.single("imagen"), async (req, res) => {
   // Validaciones específicas
   if (auctionType === "holandesa") {
     // Ya no validamos precioReserva aquí, sólo el precio inicial
-    if (!precio) {
+    /*if (!precio) {
       return res.status(400).send(
         "Para subasta holandesa necesitas precio inicial."
       );
-    }
+    } */
   } else {
     // Para inglesa seguimos validando todos sus campos, incluido el nuevo precioReservaInglesa
     if (
@@ -116,10 +116,14 @@ router.post("/", upload.single("imagen"), async (req, res) => {
     : "esperando_inicio";
 
   // — Precio inicial y arrancada —
+
+  // Holandesa arranca en 0€ (daremos el verdadero precio de salida cuando inicie)
+  const precioInicial = auctionType === "holandesa" ? 0 : 0;
   // Holandesa arranca en precioInicial, inglesa siempre en 0€
-  const precioInicial = auctionType === "holandesa"
+ /* const precioInicial = auctionType === "holandesa"
     ? Number(precio)
-    : 0;
+    : 0; */
+    
   const precioActual = precioInicial;
 
   try {
