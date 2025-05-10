@@ -1,4 +1,6 @@
 // public/js/subasta.js
+let _dropCountdownIv = null;
+let _currentDecremento = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
     const socket = io();
@@ -54,16 +56,45 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   
     // 3) ACTUALIZAR precio + timer
-    socket.on("actualizar_subasta", ({ anuncioId, precioActual, tiempoRestante }) => {
-      const precioEl = document.getElementById(`precio-${anuncioId}`);
-      if (precioEl) precioEl.textContent = `€${precioActual}`;
-      const timerEl = document.getElementById(`timer-${anuncioId}`);
-      if (timerEl) {
-        const m = Math.floor(tiempoRestante/60),
-              s = tiempoRestante % 60;
-        timerEl.textContent = `${m}:${s<10?'0':''}${s}`;
-      }
-    });
+    const lineEl = document.getElementById("countdown-line");
+    const dropEl = document.getElementById("next-drop");
+    
+    socket.on("actualizar_subasta", ({ precioActual, tiempoRestante, decremento, tickLeft }) => {
+        // 1) precio y timer pequeño
+        document.getElementById(`precio-${anuncioId}`).innerText = `€${precioActual}`;
+        const te = document.getElementById(`timer-${anuncioId}`);
+        if (te) {
+          const m = Math.floor(tiempoRestante/60), s = tiempoRestante%60;
+          te.innerText = `${m}:${s<10?'0':''}${s}`;
+        }
+      
+        // 2) gauge y barra lineal
+        const DUR = 300; // 5 minutos en segundos
+        lineEl.style.width = `${(tiempoRestante/DUR)*100}%`;
+        bar.set(tiempoRestante/(DUR));        // si usas ProgressBar
+      
+        // 3) reinicio y arranque del “1→0s” local
+        // guardamos el decremento para seguir mostrándolo
+        _currentDecremento = decremento;
+      
+        // limpiamos si había uno en marcha
+        if (_dropCountdownIv) clearInterval(_dropCountdownIv);
+      
+        // arranco el contador local desde tickLeft (1) hasta 0
+        let localTick = tickLeft;
+        dropEl.textContent = `${_currentDecremento} € en ${localTick}s`;
+      
+        _dropCountdownIv = setInterval(() => {
+          localTick--;
+          if (localTick >= 0) {
+            dropEl.textContent = `${_currentDecremento} € en ${localTick}s`;
+          } else {
+            clearInterval(_dropCountdownIv);
+            _dropCountdownIv = null;
+          }
+        }, 1000);
+      });
+s      
   
     // 4) FINALIZACIÓN: sustituye la lista por el ganador
     socket.on("subasta_finalizada", ({ anuncioId, precioFinal, ganador }) => {

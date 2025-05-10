@@ -178,7 +178,7 @@ module.exports = (io) => {
             
     
         } catch (error) {
-            console.error("❌ Error cargando anuncios:", error);
+            console.error("Error cargando anuncios:", error);
             res.status(500).send("Error al cargar los anuncios.");
         }
     });
@@ -193,7 +193,7 @@ router.post("/oferta-automatica/:id", async (req, res) => {
     try {
       const { user } = req.session;
       if (!user) {
-        return res.status(403).json({ error: "Debe iniciar sesión…" });
+        return res.status(403).json({ error: "Debe iniciar sesión para registrar una oferta automática." });
       }
   
       const precioMaximo = parseInt(req.body.precioMaximo, 10);
@@ -204,59 +204,64 @@ router.post("/oferta-automatica/:id", async (req, res) => {
         return res.status(400).json({ error: `El precio debe ser múltiplo de ${STEP} €.` });
       }
   
+      // ——————————————
+      // cargamos el anuncio
       const anuncio = await Anuncio.findById(req.params.id);
       if (!anuncio) {
         return res.status(404).json({ error: "Anuncio no encontrado." });
       }
   
-      // ← aquí insertas la validación de inscritos
+      // <<< NUEVA VALIDACIÓN >>> 
+      // sólo los inscritos pueden dejar ofertas automáticas
       if (!anuncio.inscritos.includes(user.username)) {
         return res.status(403).json({
           error: "Debes inscribirte en la subasta para enviar ofertas automáticas."
         });
       }
-
-    // 2) un único registro por usuario
-    const yaRegistrado = anuncio.ofertasAutomaticas
-      .some(o => o.usuario === user.username);
-    if (yaRegistrado) {
-      return res.status(400).json({ error: "Ya has registrado una oferta automática en esta subasta." });
+      // ——————————————
+  
+      // 2) un único registro por usuario
+      const yaRegistrado = anuncio.ofertasAutomaticas
+        .some(o => o.usuario === user.username);
+      if (yaRegistrado) {
+        return res.status(400).json({ error: "Ya has registrado una oferta automática en esta subasta." });
+      }
+  
+      // guardamos la oferta en array de automáticas (si no está activa aún)
+      if (anuncio.estadoSubasta !== "activa") {
+        anuncio.ofertasAutomaticas.push({
+          usuario:     user.username,
+          precioMaximo,
+          fecha:       new Date()
+        });
+      } else {
+        // si por algún milagro llegase activa, la ejecutamos instantánea
+        anuncio.pujas.push({
+          usuario:     user.username,
+          cantidad:    precioMaximo,
+          fecha:       new Date(),
+          automatica:  true
+        });
+      }
+  
+      await anuncio.save();
+  
+      // si ya está activa, avisamos a todos
+      if (anuncio.estadoSubasta === "activa") {
+        io.emit("actualizar_pujas", {
+          anuncioId: req.params.id,
+          pujas:     anuncio.pujas
+        });
+      }
+  
+      return res.json({ mensaje: "Oferta automática registrada correctamente." });
     }
-
-    // guardamos la oferta en array de automáticas (si no está activa aún)
-    if (anuncio.estadoSubasta !== "activa") {
-      anuncio.ofertasAutomaticas.push({
-        usuario:     user.username,
-        precioMaximo,
-        fecha:       new Date()
-      });
-    } else {
-      // si por algún milagro llegase activa, la ejecutamos instantánea
-      anuncio.pujas.push({
-        usuario:     user.username,
-        cantidad:    precioMaximo,
-        fecha:       new Date(),
-        automatica:  true
-      });
+    catch (err) {
+      console.error("Error al programar oferta automática:", err);
+      return res.status(500).json({ error: "Error interno al guardar la oferta automática." });
     }
-
-    await anuncio.save();
-
-    // si ya está activa, avisamos a todos
-    if (anuncio.estadoSubasta === "activa") {
-      io.emit("actualizar_pujas", {
-        anuncioId: req.params.id,
-        pujas:     anuncio.pujas
-      });
-    }
-
-    return res.json({ mensaje: "Oferta automática registrada correctamente." });
-  }
-  catch (err) {
-    console.error("❌ Error al programar oferta automática:", err);
-    return res.status(500).json({ error: "Error interno al guardar la oferta automática." });
-  }
-});
+  });
+  
 
 
     

@@ -70,36 +70,36 @@ async function procesarOfertasAutomaticas(anuncio, io) {
  *  • Arranca la bajada progresiva.
  */const MIN_OFERTAS_LOCALES = 3;
 
-async function prepararHolandesa(anuncioId, io) {
+ async function prepararHolandesa(anuncioId, io) {
   const anuncio = await Anuncio.findById(anuncioId);
   const autos    = (anuncio.ofertasAutomaticas || []).map(o => o.precioMaximo);
 
-    // Si NO hay ninguna oferta automática, cancelamos la subasta
-    if (autos.length === 0) {
-      anuncio.estadoSubasta = "finalizada";
-      anuncio.estado        = anuncio.inscritos.length ? "en_produccion" : "finalizado";
-      await anuncio.save();
-      io.emit("subasta_finalizada", {
-        anuncioId: anuncio._id.toString(),
-        precioFinal: anuncio.precioActual || 0,
-        ganador: null
-      });
-      return;  // no arrancamos la holandesa
-    }
-  // ———————————————
-  // 1) Si hay ≥3, mediana local; 2) si <3, histórica; 3) si histórica falla pero hay <3, local; 4) fallback
-  let precioInicial = null;
-  if (autos.length >= MIN_OFERTAS_LOCALES) {
+  if (autos.length === 0) {
+    anuncio.estadoSubasta = "finalizada";
+    anuncio.estado        = anuncio.inscritos.length ? "en_produccion" : "finalizado";
+    await anuncio.save();
+    io.emit("subasta_finalizada", {
+      anuncioId: anuncio._id.toString(),
+      precioFinal: anuncio.precioActual || 0,
+      ganador: null
+    });
+    return;
+  }
+
+  // 1) Mediana local ≥3 o histórica
+  let precioInicial = autos.length >= MIN_OFERTAS_LOCALES
+    ? calcularMediana(autos)
+    : await medianaHistorica(anuncio.categoria);
+  if ((!precioInicial || precioInicial === 0) && autos.length > 0) {
     precioInicial = calcularMediana(autos);
-  } else {
-    precioInicial = await medianaHistorica(anuncio.categoria);
-    if ((!precioInicial || precioInicial === 0) && autos.length > 0) {
-      precioInicial = calcularMediana(autos);
-    }
   }
   if (!precioInicial) precioInicial = anuncio.precioInicial || 100;
 
-  // descartamos ofertas ≥ precioInicial
+  // Aseguramos múltiplo de 50 por defecto
+  const STEP = 50;
+  precioInicial = Math.ceil(precioInicial / STEP) * STEP;
+
+  // Descartamos ofertas ≥ precioInicial
   anuncio.ofertasAutomaticas = anuncio.ofertasAutomaticas
     .filter(o => o.precioMaximo < precioInicial);
 
@@ -117,16 +117,24 @@ async function prepararHolandesa(anuncioId, io) {
 }
 
 
-
-
-// Subasta Holandesa (baja progresiva, sin cierre por tiempo)
-// ——————————————————————————————————————————————
+// Subasta Holandesa (baja progresiva, tiempo fijo con decremento dinámico)
 async function iniciarHolandesa(anuncioDoc, io) {
-console.log(`🚀 Subasta holandesa iniciada: ${anuncioDoc.titulo}`);
-  let tiempoRestante = 300;     // 5 minutos en segundos
-  const decremento   = 100;     // € cada 10s
-  const anuncioId    = anuncioDoc._id.toString();
-  const precioInicial = anuncioDoc.precioActual;  // 📌 guardamos la mediana
+  console.log(`🚀 Subasta holandesa iniciada: ${anuncioDoc.titulo}`);
+
+  const duracionSeg   = 300;        // 5 minutos
+  const TICK_MS       = 1000;       // 1 segundo entre cada tick
+  const anuncioId     = anuncioDoc._id.toString();
+
+  // STEP para redondear al múltiplo de 50 inicial
+  const STEP = 50;
+  let precioIni = Math.round(anuncioDoc.precioActual / STEP) * STEP;
+
+  // Calculamos decremento base y resto
+  const baseDecr = Math.floor(precioIni / duracionSeg);
+  const resto    = precioIni - (baseDecr * duracionSeg);
+
+  let precioActual    = precioIni;
+  let segundosPasados = 0;
 
   const iv = setInterval(async () => {
     try {
@@ -136,67 +144,69 @@ console.log(`🚀 Subasta holandesa iniciada: ${anuncioDoc.titulo}`);
         return;
       }
 
-      // — 1) Buscamos sólo las ofertas automáticas cuyo max esté
-      //    entre el precioActual y el precioInicial:
+      // 1) Procesar ofertas automáticas
       const elegibles = (a.ofertasAutomaticas || []).filter(o =>
-        o.precioMaximo >= a.precioActual &&
-        o.precioMaximo <= precioInicial
+        o.precioMaximo >= a.precioActual && o.precioMaximo <= precioIni
       );
-
       if (elegibles.length) {
-        // elegimos la oferta con precioMaximo más bajo
-        const ganadorAuto = elegibles.reduce(
-          (min, o) => o.precioMaximo < min.precioMaximo ? o : min,
+        const winner = elegibles.reduce((min, o) =>
+          o.precioMaximo < min.precioMaximo ? o : min,
           elegibles[0]
         );
-
-        // registramos la puja al precio actual
         a.pujas.push({
-          usuario:    ganadorAuto.usuario,
-          cantidad:   ganadorAuto.precioMaximo,
+          usuario:    winner.usuario,
+          cantidad:   a.precioActual,
           fecha:      new Date(),
           automatica: true
         });
-
-        // cerramos la subasta
         a.ofertasAutomaticas = [];
         a.estadoSubasta      = "finalizada";
         a.estado             = a.inscritos.length ? "en_produccion" : "finalizado";
         await a.save();
 
-        // emitimos sólo la puja ganadora y el cierre
-        io.emit("actualizar_pujas", {
-          anuncioId,
-          pujas: [ a.pujas.slice(-1)[0] ]
-        });
-        io.emit("subasta_finalizada", {
-          anuncioId,
-          precioFinal: ganadorAuto.precioMaximo,
-          ganador:     ganadorAuto.usuario
-        });
-
+        io.emit("actualizar_pujas",   { anuncioId, pujas: [a.pujas.slice(-1)[0]] });
+        io.emit("subasta_finalizada", { anuncioId, precioFinal: a.precioActual, ganador: winner.usuario });
         clearInterval(iv);
         return;
       }
 
-      // — 2) Si no hay ninguna elegible, aplicamos el decremento…
-      a.precioActual = Math.max(0, a.precioActual - decremento);
-      tiempoRestante = Math.max(0, tiempoRestante - 10);
+      // 2) Decremento dinámico: baseDecr ó baseDecr+1
+      const decremento = segundosPasados < resto
+        ? baseDecr + 1
+        : baseDecr;
+      precioActual = Math.max(0, precioActual - decremento);
+      segundosPasados++;
+
+      // 3) Guardar y emitir estado + datos de tick
+      a.precioActual   = precioActual;
+      const tiempoLeft = Math.max(0, duracionSeg - segundosPasados);
       await a.save();
 
+      /* calculamos cuantos segundos quedan para el próximo tick
+      const tickIntervalSec = TICK_MS / 1000;           // aquí 1
+      const tickLeft        = tickIntervalSec - (segundosPasados % tickIntervalSec);
+*/
       io.emit("actualizar_subasta", {
         anuncioId,
-        precioActual:   a.precioActual,
-        tiempoRestante
+        precioActual,
+        tiempoRestante: tiempoLeft,
+        decremento,    // € que caerán
+        tickLeft:1       // s hasta el próximo tick
       });
 
-      // ¡NUNCA cerramos aquí por tiempo ni por precio 0!
-    }
-    catch (err) {
+      // 4) Cierre al terminar tiempo o llegar a 0
+      if (segundosPasados >= duracionSeg || precioActual === 0) {
+        a.estadoSubasta = "finalizada";
+        a.estado        = a.inscritos.length ? "en_produccion" : "finalizado";
+        await a.save();
+        io.emit("subasta_finalizada", { anuncioId, precioFinal: precioActual, ganador: null });
+        clearInterval(iv);
+      }
+    } catch (err) {
       console.error("❌ Error en subasta holandesa:", err);
       clearInterval(iv);
     }
-  }, 10000);
+  }, TICK_MS);
 }
 
 
@@ -244,7 +254,7 @@ async function iniciarInglesa(anuncioDoc, io) {
         clearInterval(interval);
       }
     } catch (err) {
-      console.error("❌ Error en subasta inglesa:", err);
+      console.error("Error en subasta inglesa:", err);
       clearInterval(interval);
     }
   }, intervaloSeg * 1000);
