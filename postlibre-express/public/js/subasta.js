@@ -77,24 +77,17 @@ document.addEventListener("DOMContentLoaded", () => {
         // guardamos el decremento para seguir mostrándolo
         _currentDecremento = decremento;
       
-        // limpiamos si había uno en marcha
-        if (_dropCountdownIv) clearInterval(_dropCountdownIv);
-      
-        // arranco el contador local desde tickLeft (1) hasta 0
-        let localTick = tickLeft;
-        dropEl.textContent = `${_currentDecremento} € en ${localTick}s`;
-      
-        _dropCountdownIv = setInterval(() => {
-          localTick--;
-          if (localTick >= 0) {
-            dropEl.textContent = `${_currentDecremento} € en ${localTick}s`;
-          } else {
-            clearInterval(_dropCountdownIv);
-            _dropCountdownIv = null;
-          }
-        }, 1000);
-      });
-s      
+        // 1) despejamos timeout anterior
+  if (_dropTimeout) clearTimeout(_dropTimeout);
+
+  // 2) pintamos 1s
+  dropEl.textContent = `${decremento} € en ${tickLeft}s`;
+
+  // 3) programamos el “0 s” **un pelín antes** de que llegue la siguiente emisión (~1000 ms)
+  _dropTimeout = setTimeout(() => {
+    dropEl.textContent = `${decremento} € en 0s`;
+  }, tickLeft * 1000 - 100);  // por ejemplo 900 ms
+});
   
     // 4) FINALIZACIÓN: sustituye la lista por el ganador
     socket.on("subasta_finalizada", ({ anuncioId, precioFinal, ganador }) => {
