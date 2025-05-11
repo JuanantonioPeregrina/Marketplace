@@ -79,7 +79,6 @@ async function procesarOfertasAutomaticas(anuncio, io) {
  *  • Fija precioInicial y emite YA la actualización al cliente.
  *  • Arranca la bajada progresiva.
  */const MIN_OFERTAS_LOCALES = 3;
- const STEP= 50;
 
  async function prepararHolandesa(anuncioId, io) {
   const anuncio = await Anuncio.findById(anuncioId);
@@ -105,6 +104,14 @@ async function procesarOfertasAutomaticas(anuncio, io) {
     precioInicial = calcularMediana(autos);
   }
   if (!precioInicial) precioInicial = anuncio.precioInicial || 100;
+
+  // ——— LOGS DE DEBUG ———
+  console.log("🏷️ [DEBUG holandesa] categoría:", anuncio.categoria);
+  console.log("🔢 [DEBUG holandesa] autos (ofertasAutomáticas):", autos);
+  console.log("📊 [DEBUG holandesa] mediana local (>=3):",
+    autos.length >= MIN_OFERTAS_LOCALES ? calcularMediana(autos) : "n/a");
+  console.log("📜 [DEBUG holandesa] mediana histórica:", await medianaHistorica(anuncio.categoria));
+  console.log("⚙️ [DEBUG holandesa] precioInicial antes de redondeo:", precioInicial);
 
   // Aseguramos múltiplo de 50 por defecto
   const STEP = 50;
