@@ -290,10 +290,11 @@ style="display:none;">
 
      <!-- ACCIONES DEL USUARIO -->
      <% if (user && user.username !== anuncio.autor) { %>
-        
+  
 
         <!-- Oferta automática (solo si está pendiente) -->
       <% if (user && anuncio.estadoSubasta==='pendiente') { %>
+        <% if (anuncio.auctionType === 'inglesa') { %>
         <form id="oferta-automatica-form-<%= anuncio._id %>" method="POST" action="/anuncios/oferta-automatica/<%= anuncio._id %>" class="flex gap-2 mb-6">
           <input type="number" name="precioMaximo" min="0" max="<%= anuncio.precioActual %>" required
                  class="flex-1 border rounded p-2 focus:ring-2 focus:ring-green-300"
@@ -304,17 +305,18 @@ style="display:none;">
           </button>
         </form>
       <% } %>
-      
+      <% } %>
   
   
   
       <!-- 1) PUJA MANUAL (botón, manejado por subasta.js) -->
+      <% if (anuncio.auctionType === 'inglesa') { %>    
       <button 
       class="pujar-btn w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded mb-6 transition"
       data-anuncio-id="<%= anuncio._id %>">
     🔥 Pujar
   </button>
-
+  <% } %>
         <!-- 2) Favorito / Inscripción / Chat -->
         <div class="mb-6 text-center flex justify-center" >
           <!-- Favorito -->
