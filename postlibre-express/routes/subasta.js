@@ -22,16 +22,26 @@ function calcularMediana(array) {
  * finalizadas en la misma categoría.
  */
 async function medianaHistorica(categoria) {
+  // traemos precioActual y pujas para cada holandesa finalizada
   const antiguas = await Anuncio.find({
     categoria,
     auctionType: "holandesa",
     estadoSubasta: "finalizada"
-  }).select("pujas");
+  }).select("precioActual pujas");
+
+  // si hay pujas, tiramos de la última; si no, de precioActual
   const finales = antiguas
-    .map(a => a.pujas?.length && a.pujas[a.pujas.length - 1].cantidad)
-    .filter(x => typeof x === "number");
+    .map(a => {
+      if (Array.isArray(a.pujas) && a.pujas.length > 0) {
+        return a.pujas[a.pujas.length - 1].cantidad;
+      }
+      return a.precioActual;
+    })
+    .filter(x => typeof x === "number" && x > 0);
+
   return calcularMediana(finales);
 }
+
 
 // ——————————————————————————————————————————————
 // Procesa ofertas automáticas (solo para holandesa)
@@ -69,6 +79,7 @@ async function procesarOfertasAutomaticas(anuncio, io) {
  *  • Fija precioInicial y emite YA la actualización al cliente.
  *  • Arranca la bajada progresiva.
  */const MIN_OFERTAS_LOCALES = 3;
+ const STEP= 50;
 
  async function prepararHolandesa(anuncioId, io) {
   const anuncio = await Anuncio.findById(anuncioId);
