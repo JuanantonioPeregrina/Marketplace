@@ -61,6 +61,8 @@ style="display:none;">
             </p>
           </div>
         <% } else { %>
+          
+          <% if (anuncio.auctionType !== 'inglesa') { %>
           <!-- Usuario NO inscrito: le invito a inscribirse -->
           <div class="mb-8 p-6 bg-red-100 border border-red-400 rounded-lg text-center ">
             <p class="mb-4 text-red-800 font-semibold">
@@ -73,6 +75,7 @@ style="display:none;">
               Inscribirme
             </button>
           </div>
+          <% } %>
         <% } %>
       <% } %>
     <% } %>
@@ -317,6 +320,7 @@ style="display:none;">
     🔥 Pujar
   </button>
   <% } %>
+  
         <!-- 2) Favorito / Inscripción / Chat -->
         <div class="mb-6 text-center flex justify-center" >
           <!-- Favorito -->

@@ -100,13 +100,24 @@ router.get("/nuevo", (req, res) => {
  */
 router.post("/nuevo", upload.single("imagen"), async (req, res) => {
     try {
-        const { titulo, descripcion, precio, categoria, ubicacion, fechaInicioSubasta } = req.body;
+        const { titulo, descripcion, precio, categoria, ubicacion, fechaInicioSubasta,inglesaIncremento, inglesaIntervalo,
+        inglesaDuracion, precioReserva } = req.body;
         const imagen = req.file ? `/uploads/${req.file.filename}` : null;
 
  //Permitir que `imagen` sea opcional
 if (!titulo || !descripcion || !precio || !categoria || !fechaInicioSubasta) {
   return res.status(400).json({ error: "Todos los campos son obligatorios, excepto la imagen." });
 }
+ // igual que en /publicar:
+    const auctionType = categoria === "lujo-reliquia"
+      ? "inglesa"
+      : "holandesa";
+ 
+    // calcular expiración según tipo…
+    const inicio    = new Date(fechaInicioSubasta);
+    const expiracion = auctionType === "inglesa"
+      ? new Date(inicio.getTime() + Number(inglesaDuracion)*1000)
+      : new Date(inicio.getTime() + 5*60*1000);
 
         const nuevoAnuncio = new Anuncio({
             titulo,
@@ -115,11 +126,20 @@ if (!titulo || !descripcion || !precio || !categoria || !fechaInicioSubasta) {
             precioActual: Number(precio),
             imagen,
             categoria,
+            auctionType,
             ubicacion,
             fechaInicioSubasta: new Date(fechaInicioSubasta),
             autor: req.user.username, // Obtener usuario autenticado
             inscritos: [],
-            estadoSubasta: "pendiente"
+            estadoSubasta: "pendiente",
+
+            // campos de subasta inglesa sólo si toca
+     ...(auctionType === "inglesa" && {
+          inglesaIncremento: Number(inglesaIncremento),
+          inglesaIntervalo:  Number(inglesaIntervalo),
+          inglesaDuracion:   Number(inglesaDuracion),
+          precioReserva:     Number(precioReserva)
+         })
         });
 
         await nuevoAnuncio.save();

@@ -401,6 +401,11 @@ router.post("/oferta-automatica/:id", async (req, res) => {
         imagen:                     a.imagen,
         precioInicial:              a.precioInicial,
         precioActual:               a.precioActual,
+        auctionType:                a.auctionType,  //tipo de subasta 
+        inglesaIncremento:          a.inglesaIncremento,
+        inglesaIntervalo:           a.inglesaIntervalo,
+        inglesaDuracion:            a.inglesaDuracion,
+        precioReserva:              a.precioReserva,
         autor:                      a.autor,
         ubicacion:                  a.ubicacion,
         inscritos:                  a.inscritos||[],
