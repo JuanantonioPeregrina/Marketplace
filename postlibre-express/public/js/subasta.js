@@ -59,35 +59,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const lineEl = document.getElementById("countdown-line");
     const dropEl = document.getElementById("next-drop");
     
-    socket.on("actualizar_subasta", ({ precioActual, tiempoRestante, decremento, tickLeft }) => {
-        // 1) precio y timer pequeño
-        document.getElementById(`precio-${anuncioId}`).innerText = `€${precioActual}`;
-        const te = document.getElementById(`timer-${anuncioId}`);
-        if (te) {
-          const m = Math.floor(tiempoRestante/60), s = tiempoRestante%60;
-          te.innerText = `${m}:${s<10?'0':''}${s}`;
-        }
+    
+    socket.on("actualizar_subasta", ({ anuncioId, precioActual, tiempoRestante, decremento, tickLeft }) => {
+         // 1) precio y pequeño timer
+         const pe = document.getElementById(`precio-${anuncioId}`);
+         if (pe) pe.textContent = `€${precioActual}`;
+         const te = document.getElementById(`timer-${anuncioId}`);
+         if (te) {
+           const m = Math.floor(tiempoRestante/60),
+                 s = tiempoRestante%60;
+           te.textContent = `${m}:${s<10?'0':''}${s}`;
+         }
       
-        // 2) gauge y barra lineal
-        const DUR = 300; // 5 minutos en segundos
-        lineEl.style.width = `${(tiempoRestante/DUR)*100}%`;
-        bar.set(tiempoRestante/(DUR));        // si usas ProgressBar
+         // 2) gauge y barra lineal
+         lineEl.style.width = `${(tiempoRestante/300)*100}%`;
+         bar.set(tiempoRestante/(TOTAL_MS/1000));
       
-        // 3) reinicio y arranque del “1→0s” local
-        // guardamos el decremento para seguir mostrándolo
-        _currentDecremento = decremento;
-      
-        // 1) despejamos timeout anterior
-  if (_dropTimeout) clearTimeout(_dropTimeout);
-
-  // 2) pintamos 1s
-  dropEl.textContent = `${decremento} € en ${tickLeft}s`;
-
-  // 3) programamos el “0 s” **un pelín antes** de que llegue la siguiente emisión (~1000 ms)
-  _dropTimeout = setTimeout(() => {
-    dropEl.textContent = `${decremento} € en 0s`;
-  }, tickLeft * 1000 - 100);  // por ejemplo 900 ms
-});
+         // 3) animar decremento local
+         if (_dropTimeout) clearTimeout(_dropTimeout);
+         dropEl.textContent = `${decremento} € en ${tickLeft}s`;
+         _dropTimeout = setTimeout(() => {
+           dropEl.textContent = `${decremento} € en 0s`;
+         }, Math.max(0, tickLeft*1000 - 100));
+       });
   
     // 4) FINALIZACIÓN: sustituye la lista por el ganador
     socket.on("subasta_finalizada", ({ anuncioId, precioFinal, ganador }) => {

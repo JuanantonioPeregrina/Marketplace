@@ -30,6 +30,7 @@ style="display:none;">
     <% if (user && user.username !== anuncio.autor) { %>
       <% if (anuncio.estadoSubasta === 'pendiente') { %>
         <% if (anuncio.inscritos.includes(user.username)) { %>
+          <% if (anuncio.auctionType !== 'inglesa') { %>
           <!-- Usuario inscrito: muestro el formulario -->
           <div id="prebid-section" class="mb-8 p-6 bg-yellow-100 border-2 border-yellow-400 rounded-lg text-center">
             <h2 class="text-2xl font-bold mb-2 text-yellow-800">🚀 ¡Prepara tu oferta!</h2>
@@ -60,6 +61,7 @@ style="display:none;">
               Ofertas recibidas: <strong><%= (anuncio.ofertasAutomaticas||[]).length %> / 3</strong>
             </p>
           </div>
+          <% } %>
         <% } else { %>
           
           <% if (anuncio.auctionType !== 'inglesa') { %>
@@ -298,15 +300,47 @@ style="display:none;">
         <!-- Oferta automática (solo si está pendiente) -->
       <% if (user && anuncio.estadoSubasta==='pendiente') { %>
         <% if (anuncio.auctionType === 'inglesa') { %>
-        <form id="oferta-automatica-form-<%= anuncio._id %>" method="POST" action="/anuncios/oferta-automatica/<%= anuncio._id %>" class="flex gap-2 mb-6">
-          <input type="number" name="precioMaximo" min="0" max="<%= anuncio.precioActual %>" required
-                 class="flex-1 border rounded p-2 focus:ring-2 focus:ring-green-300"
-                 placeholder="Oferta auto (€)">
-          <button type="submit"
-                  class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded transition">
-            🤖 Programar
-          </button>
-        </form>
+          <!-- Botón para abrir/cerrar la pestaña -->
+<button
+id="toggle-auto-bids-<%= anuncio._id %>"
+class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded mb-4 transition"
+>
+🤖 Ofertas automáticas
+</button>
+
+<!-- Contenedor colapsible (oculto por defecto) -->
+<div
+id="auto-bids-panel-<%= anuncio._id %>"
+class="hidden bg-green-50 p-4 rounded mb-6 space-y-4"
+>
+<form id="auto-bids-form-<%= anuncio._id %>" method="POST" action="/anuncios/oferta-automatica/<%= anuncio._id %>">
+  <div id="auto-bids-list-<%= anuncio._id %>">
+    <!-- Fila de ejemplo -->
+    <div class="auto-bid-row flex gap-2">
+      <input
+        type="number"
+        name="precioMaximo[]"
+        min="<%= anuncio.precioReserva || 1 %>"
+        required
+        class="flex-1 border rounded p-2 focus:ring-2 focus:ring-green-300"
+        placeholder="€ Oferta"
+      />
+      <button type="button" class="remove-auto-bid-btn text-red-500 px-2">✖</button>
+    </div>
+  </div>
+  <button type="button"
+    class="add-auto-bid-btn bg-green-400 hover:bg-green-500 text-white px-4 py-2 rounded transition"
+  >
+    + Añadir otra oferta
+  </button>
+  <button type="submit"
+    class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded mt-4 transition"
+  >
+    🚀 Enviar todas las ofertas
+  </button>
+</form>
+</div>
+      
       <% } %>
       <% } %>
   
@@ -710,6 +744,42 @@ style="display:none;">
     }
     setTimeout(attachDelete, 500);
   });
+
+  document.addEventListener("DOMContentLoaded", () => {
+  const toggleBtn = document.getElementById("toggle-auto-bids-<%= anuncio._id %>");
+  const panel     = document.getElementById("auto-bids-panel-<%= anuncio._id %>");
+  const list      = document.getElementById("auto-bids-list-<%= anuncio._id %>");
+
+  // Abrir / cerrar panel
+  toggleBtn.addEventListener("click", () => {
+    panel.classList.toggle("hidden");
+  });
+
+  // Añadir nueva fila
+  panel.querySelector(".add-auto-bid-btn").addEventListener("click", () => {
+    const row = document.createElement("div");
+    row.className = "auto-bid-row flex gap-2";
+    row.innerHTML = `
+      <input
+        type="number"
+        name="precioMaximo[]"
+        min="<%= anuncio.precioReserva || 1 %>"
+        required
+        class="flex-1 border rounded p-2 focus:ring-2 focus:ring-green-300"
+        placeholder="€ Oferta"
+      />
+      <button type="button" class="remove-auto-bid-btn text-red-500 px-2">✖</button>
+    `;
+    list.appendChild(row);
+  });
+
+  // Delegación: eliminar fila
+  list.addEventListener("click", e => {
+    if (e.target.matches(".remove-auto-bid-btn")) {
+      e.target.closest(".auto-bid-row").remove();
+    }
+  });
+});
 </script>
 
 

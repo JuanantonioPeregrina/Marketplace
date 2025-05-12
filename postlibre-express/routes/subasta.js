@@ -232,51 +232,60 @@ async function iniciarHolandesa(anuncioDoc, io) {
 // Subasta Inglesa (sube progresivamente)
 // ——————————————————————————————————————————————
 async function iniciarInglesa(anuncioDoc, io) {
-  console.log(`🚀 Subasta inglesa iniciada: ${anuncioDoc.titulo}`);
-  const {
-    inglesaIncremento: inc,
-    inglesaIntervalo: intervaloSeg,
-    inglesaDuracion: duracionSeg
-  } = anuncioDoc;
-
+  const { inglesaIncremento: inc, inglesaIntervalo: intervaloSeg, inglesaDuracion: duracionSeg } = anuncioDoc;
   let elapsed = 0;
   const anuncioId = anuncioDoc._id.toString();
 
   const interval = setInterval(async () => {
-    try {
-      const a = await Anuncio.findById(anuncioId);
-      if (!a || a.estadoSubasta !== "activa") {
-        clearInterval(interval);
-        return;
+    const a = await Anuncio.findById(anuncioId);
+    if (!a || a.estadoSubasta !== "activa") return clearInterval(interval);
+
+    // cada tick sube…
+    a.precioActual += inc;
+    elapsed += intervaloSeg;
+    await a.save();
+    io.emit("actualizar_subasta", {
+      anuncioId,
+      precioActual: a.precioActual,
+      tiempoRestante: Math.max(0, duracionSeg - elapsed)
+    });
+
+    // **Al terminar**:
+    if (elapsed >= duracionSeg) {
+      // 1) elegir ganador de auto-ofertas si existen
+      let ganador = null;
+      if (a.ofertasAutomaticas.length) {
+        // la más alta
+        const best = a.ofertasAutomaticas
+          .sort((x,y) => y.precioMaximo - x.precioMaximo)[0];
+        const final = Math.min(best.precioMaximo, a.precioActual);
+        a.pujas.push({ usuario: best.usuario, cantidad: final, fecha: new Date(), automatica: true });
+        ganador = best.usuario;
+        a.precioActual = final;
+      }
+      // 2) si no hubo autos, gana última manual
+      else if (a.pujas.length) {
+        const last = a.pujas[a.pujas.length - 1];
+        ganador = last.usuario;
       }
 
-      a.precioActual += inc;
-      elapsed += intervaloSeg;
+      // 3) cerrar subasta
+      a.estadoSubasta = "finalizada";
+      a.estado        = a.inscritos.length ? "en_produccion" : "finalizado";
       await a.save();
 
-      io.emit("actualizar_subasta", {
+      // 4) emitir cierre **con** ganador
+      io.emit("subasta_finalizada", {
         anuncioId,
-        precioActual: a.precioActual,
-        tiempoRestante: Math.max(0, duracionSeg - elapsed)
+        precioFinal: a.precioActual,
+        ganador
       });
 
-      if (elapsed >= duracionSeg) {
-        a.estadoSubasta = "finalizada";
-        a.estado = a.inscritos.length > 0 ? "en_produccion" : "finalizado";
-        await a.save();
-        io.emit("subasta_finalizada", {
-          anuncioId,
-          precioFinal: a.precioActual,
-          adjudicada: a.inscritos.length > 0
-        });
-        clearInterval(interval);
-      }
-    } catch (err) {
-      console.error("Error en subasta inglesa:", err);
       clearInterval(interval);
     }
   }, intervaloSeg * 1000);
 }
+
 
 // ——————————————————————————————————————————————
 // Prepara y fija el precio inicial de la holandesa mediante mediana
