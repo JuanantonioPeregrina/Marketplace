@@ -151,22 +151,8 @@ style="display:none;">
   <strong>¿Quién da más?</strong>
 </div>
 
-<!-- === AVATARES DE INSCRITOS === -->
-<div id="avatar-list" class="flex justify-center space-x-6 mb-4">
-  <% anuncio.inscritos.forEach(u => { %>
-    <div class="avatar-item relative text-center" data-user="<%= u %>">
-      <img 
-        src="<%= u.avatarUrl || '/img/default-avatar.png' %>" 
-        alt="<%= u %>" 
-        class="w-12 h-12 rounded-full mx-auto"
-      >
-      <div class="hand-icon absolute inset-x-0 -top-2 opacity-0">
-        ✋
-      </div>
-      <div class="text-xs mt-1"><%= u %></div>
-    </div>
-  <% }) %>
-</div>
+
+
 
 <!-- === TEXTO INFERIOR DINÁMICO === -->
 <div 
@@ -210,7 +196,26 @@ style="display:none;">
   id="next-drop"
   class="text-center text-gray-600 text-sm italic mb-2"
 ></div>
+<!-- === AVATARES DE INSCRITOS === -->
+<div id="bottom-info" class="flex items-center justify-between mt-4">
+  <div id="avatar-list" class="flex space-x-2">
+    <% anuncio.inscritosDetallados.forEach(ins => { %>
+      <div class="avatar-item flex flex-col items-center" data-user="<%= ins.username %>">
+        <img
+          src="<%= ins.imagen_perfil || '/images/avatar.webp' %>"
+          alt="<%= ins.username %>"
+          class="w-10 h-10 rounded-full"
+        />
+        <span class="text-xs mt-1 truncate text-center"><%= ins.username %></span>
 
+      </div>
+    <% }) %>
+  </div>
+  <div class="text-right">
+    <p><strong id="bottom-price">—</strong> por <span id="bottom-user">—</span></p>
+    <p>Quedan <span id="bottom-time">—</span></p>
+  </div>
+</div>
 
 <!-- TEMPORIZADOR PEQUEÑO (oculto hasta que acabe el gauge) 
 <div id="bidTimer" class="bg-black text-white px-4 py-2 rounded inline-block" style="display:none;">
@@ -574,22 +579,24 @@ class="hidden bg-green-50 p-4 rounded mb-6 space-y-4"
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    const TOTAL_MS   = 5 * 60 * 1000;        // 5 min en ms
-    const msgEl      = document.getElementById("auctionMessage");
-    const dropEl     = document.getElementById("next-drop");
-    const lineEl     = document.getElementById("countdown-line");
-    const startISO   = msgEl.dataset.inicio;
-    const endISO     = msgEl.dataset.fin;
-    const estado     = msgEl.dataset.estado;
-    const startTime  = startISO ? Date.parse(startISO) : null;
-    const endTime    = endISO   ? Date.parse(endISO)   : null;
+    // ——————————————————————————————
+    // Helpers y referencias DOM
+    function formatTime(ms) {
+      const s   = Math.max(0, Math.ceil(ms/1000)),
+            m   = Math.floor(s/60),
+            sec = s % 60;
+      return `${m}:${sec<10?'0':''}${sec}`;
+    }
   
-    // Inicializa gauge igual que antes…
-    const bar = new ProgressBar.Circle('#startTimer', {
+    // Gauge + barra + texto central
+    const msgEl   = document.getElementById("auctionMessage");
+    const dropEl  = document.getElementById("next-drop");
+    const lineEl  = document.getElementById("countdown-line");
+    const bar     = new ProgressBar.Circle('#startTimer', {
       strokeWidth: 8, trailWidth: 8, trailColor: '#eee',
       easing: 'linear', duration: 1000,
       from: { color: '#1dd1a1' }, to: { color: '#ff4757' },
-      text: { value: formatTime(TOTAL_MS) },
+      text: { value: formatTime(5*60*1000) },
       step(s, c) { c.path.setAttribute('stroke', s.color); }
     });
     Object.assign(bar.text.style, {
@@ -598,220 +605,239 @@ class="hidden bg-green-50 p-4 rounded mb-6 space-y-4"
       margin:0, fontSize:'1.25rem', fontFamily:'Helvetica, sans-serif'
     });
   
-    function formatTime(ms) {
-      const s = Math.max(0, Math.ceil(ms/1000)),
-            m = Math.floor(s/60),
-            sec = s % 60;
-      return `${m}:${sec<10?'0':''}${sec}`;
-    }
+    // Zona inferior: tiempo, precio, usuario y avatars
+    const bottomTime  = document.getElementById("bottom-time");
+    const bottomPrice = document.getElementById("bottom-price");
+    const bottomUser  = document.getElementById("bottom-user");
+    const avatars     = document.querySelectorAll("#avatar-list .avatar-item");
   
-    function endAuction() {
-      bar.set(1); bar.setText('0:00');
-      lineEl.style.width = '0%';
-      dropEl.textContent = '';
-      msgEl.innerText = '✅ La subasta ha finalizado';
-      msgEl.classList.replace('text-gray-800','text-green-600');
-    }
-  
-    // … (scheduleStart / beginGauge / lógica inicial idéntica)
-  
-    const socket = io();
-  
-    socket.on("subasta_finalizada", endAuction);
+    let dropTimeout = null;
   
     // ——————————————————————————————
-    // Aquí el truco: mini‐timeout local para animar 1→0s
-    let _dropTimeout = null;
+    // Socket.IO
+    const socket = io();
   
-    socket.on("actualizar_subasta", ({ tiempoRestante, decremento, tickLeft }) => {
-      // 1) gauge + barra lineal
-      bar.set( tiempoRestante / (TOTAL_MS/1000) );
-      bar.setText( formatTime(tiempoRestante * 1000) );
-      lineEl.style.width = `${(tiempoRestante/300)*100}%`;
+    // 1) Tick de subasta (Holandesa o Inglesa)
+    socket.on("actualizar_subasta", ({ tiempoRestante, decremento, tickLeft, anuncioId, precioActual }) => {
+      // a) Gauge + texto central
+      const frac = tiempoRestante / (5*60);
+      bar.set(frac);
+      bar.setText(formatTime(tiempoRestante*1000));
   
-      // 2) cancelamos cualquier animación previa
-      if (_dropTimeout) clearTimeout(_dropTimeout);
+      // b) Línea regresiva
+      lineEl.style.width = `${frac*100}%`;
   
-      // 3) pintamos “X € en 1s”
+      // c) Texto “X € en Ys”
       dropEl.textContent = `${decremento} € en ${tickLeft}s`;
-  
-      // 4) tras ~900ms bajamos a “0s” (antes de que llegue el siguiente tick)
-      _dropTimeout = setTimeout(() => {
+      clearTimeout(dropTimeout);
+      dropTimeout = setTimeout(() => {
         dropEl.textContent = `${decremento} € en 0s`;
       }, 900);
-    });
-  });
- 
-
-  // Inscribirse
-  function inscribirse(anuncioId) {
-    fetch(`/inscribirse/${anuncioId}`, {
-      method: "POST",
-      credentials: "same-origin"
-    })
-    .then(res => res.json())
-    .then(json => {
-      if (json.message === "Inscripción exitosa") {
-        return location.reload();
+  
+      // d) Zona inferior: tiempo
+      if (bottomTime)  bottomTime .textContent = `${tiempoRestante}s`;
+      // e) Ticker grande de precio (si viene)
+      const pe = document.getElementById(`precio-${anuncioId}`);
+      if (pe && typeof precioActual==='number') {
+        pe.textContent = `€${precioActual}`;
       }
-      alert(json.message || "Error al inscribirse");
-    })
-    .catch(() => alert("Error en la petición de inscripción"));
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    var user = JSON.parse('<%- JSON.stringify(user || {}) %>');
-    
-    const socket = io();
-
-    // Countdown grandes
+    });
+  
+    // 2) Nueva puja (manual o automática)
+    socket.on("actualizar_pujas", ({ anuncioId, pujas, precioActual }) => {
+      if (!pujas.length) return;
+      const last   = pujas[pujas.length-1];
+      const user   = last.usuario;
+      const amount = last.cantidad;
+  
+      // a) Zona inferior: precio y usuario
+      if (bottomPrice) bottomPrice.textContent = `€${amount}`;
+      if (bottomUser)  bottomUser .textContent = user;
+  
+      // b) Animar avatar
+      avatars.forEach(el => {
+        if (el.dataset.user === user) {
+          el.classList.add("animate-hand");
+          setTimeout(() => el.classList.remove("animate-hand"), 1000);
+        }
+      });
+  
+      // c) Actualizar ticker grande también
+      const pe = document.getElementById(`precio-${anuncioId}`);
+      if (pe) pe.textContent = `€${precioActual}`;
+    });
+  
+    // 3) Fin de subasta
+    socket.on("subasta_finalizada", ({ anuncioId, precioFinal, ganador }) => {
+      // a) Completar gauge y texto
+      bar.set(1);
+      bar.setText('0:00');
+      lineEl.style.width = '0%';
+      dropEl.textContent  = '';
+  
+      // b) Mensaje
+      msgEl.innerText = '✅ La subasta ha finalizado';
+      msgEl.classList.replace('text-gray-800','text-green-600');
+  
+      // c) Zona inferior
+      if (bottomTime)  bottomTime .textContent = '0s';
+      if (bottomPrice) bottomPrice.textContent = `€${precioFinal}`;
+      if (bottomUser)  bottomUser .textContent = ganador || '—';
+  
+      // d) Mostrar ganador en lista
+      const wrap = document.getElementById(`pujas-container-${anuncioId}`);
+      if (wrap) {
+        wrap.innerHTML = `
+          <h3 class="font-semibold text-gray-800 mb-2">🏆 Puja ganadora:</h3>
+          <div class="flex justify-between bg-gray-50 p-2 rounded">
+            <strong>${ganador||'—'}</strong>
+            <span class="text-green-600">€${precioFinal}</span>
+          </div>`;
+      }
+    });
+  
+    // ——————————————————————————————
+    // Countdown principal (countdown.js)
     document.querySelectorAll(".countdown-container").forEach(el => {
       iniciarCuentaRegresiva(el.id.replace("countdown-",""));
     });
-
-    // Oferta automática
-    document.querySelectorAll('[id^="oferta-automatica-form-"]').forEach(form => {
-      form.addEventListener("submit", function (e) {
+  
+    // ——————————————————————————————
+    // Ofertas Automáticas (prebid)
+    document.querySelectorAll('form[id^="prebid-form"]').forEach(form => {
+      form.addEventListener("submit", e => {
         e.preventDefault();
-        const formData = new FormData(form);
-        const id = form.id.replace("oferta-automatica-form-","");
+        const id = form.action.split("/").pop();
+        const data = new URLSearchParams(new FormData(form));
         fetch(`/anuncios/oferta-automatica/${id}`, {
           method: "POST",
-          body: new URLSearchParams(formData),
-          headers: { "Content-Type":"application/x-www-form-urlencoded" }
+          body: data,
+          headers: { "Content-Type": "application/x-www-form-urlencoded" }
         })
         .then(r=>r.json())
-        .then(d=>{
-          if(d.mensaje){
-            alert("✅ "+d.mensaje);
-          }
-        });
+        .then(d => d.mensaje && alert("✅ "+d.mensaje))
+        .catch(()=> alert("❌ Error en oferta automática"));
       });
     });
-
-    // Actualizaciones via socket
-    socket.on("actualizar_subasta", data => {
-      const { anuncioId, precioActual, tiempoRestante } = data;
-      const pe = document.getElementById(`precio-${anuncioId}`);
-      const te = document.getElementById(`timer-${anuncioId}`);
-      if (pe) pe.innerText = `€${precioActual}`;
-      if (te) {
-        if (tiempoRestante>=0) {
-          const m = Math.floor(tiempoRestante/60),
-                s = tiempoRestante%60;
-          te.innerText = `${m}:${s<10?'0':''}${s}`;
-        } else te.innerText = "00:00";
-      }
-    });
-    socket.on("subasta_finalizada", data=>{
-      alert(`La subasta ${data.anuncioId} ha finalizado en €${data.precioFinal}`);
-    });
-
-    // Editar
+  
+    // ——————————————————————————————
+    // Pujar manual (subasta.js original)
+    // — el propio subasta.js escucha actualizar_pujas y reset_turno, así que no lo duplicamos aquí.
+  
+    // ——————————————————————————————
+    // Editar/Eliminar Anuncio
     const editModal = document.getElementById("editModal"),
           editForm  = document.getElementById("editForm");
-    document.querySelectorAll(".edit-btn").forEach(btn=>{
-      btn.addEventListener("click",()=> {
-        document.getElementById("editAnuncioId").value = btn.dataset.id;
-        document.getElementById("editTitulo").value    = btn.dataset.titulo;
+    document.querySelectorAll(".edit-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.getElementById("editAnuncioId").value    = btn.dataset.id;
+        document.getElementById("editTitulo").value      = btn.dataset.titulo;
         document.getElementById("editDescripcion").value = btn.dataset.descripcion;
-        document.getElementById("editPrecio").value    = btn.dataset.precio;
+        document.getElementById("editPrecio").value      = btn.dataset.precio;
         editModal.classList.remove("hidden");
       });
     });
-    document.getElementById("cancelEdit").addEventListener("click", ()=> {
+    document.getElementById("cancelEdit").addEventListener("click", () => {
       editModal.classList.add("hidden");
     });
     editForm.addEventListener("submit", async e => {
       e.preventDefault();
       const id = document.getElementById("editAnuncioId").value;
-      const updatedData = {
-        titulo: document.getElementById("editTitulo").value,
-        descripcion: document.getElementById("editDescripcion").value,
+      const body = {
+        titulo:       document.getElementById("editTitulo").value,
+        descripcion:  document.getElementById("editDescripcion").value,
         precioActual: Number(document.getElementById("editPrecio").value)
       };
       try {
-        const res = await fetch(`/api/anuncios/${id}`, {
+        const res  = await fetch(`/api/anuncios/${id}`, {
           method: "PUT",
           headers: {
             "Content-Type":"application/json",
             "x-api-key": localStorage.getItem("apiKey")
           },
-          body: JSON.stringify(updatedData)
+          body: JSON.stringify(body)
         });
         const json = await res.json();
         if (json.success) {
           alert("✅ Anuncio actualizado");
           location.reload();
         } else alert("❌ "+json.error);
-      } catch(err) {
+      } catch {
         alert("❌ Error al actualizar");
       }
     });
-
-    // Eliminar
-    function attachDelete() {
-      document.querySelectorAll(".delete-btn").forEach(btn=>{
-        btn.addEventListener("click", async ()=> {
-          if (!confirm("¿Eliminar anuncio?")) return;
-          const id = btn.dataset.id;
-          try {
-            const res = await fetch(`/api/anuncios/${id}`, {
-              method: "DELETE",
-              headers: {
-                "Content-Type":"application/json",
-                "x-api-key": localStorage.getItem("apiKey")
-              }
-            });
-            const json = await res.json();
-            if (json.success) {
-              alert("✅ Eliminado");
-              location.href = "/anuncios";
-            } else alert("❌ "+json.error);
-          } catch(e) {
-            alert("❌ Error al eliminar");
-          }
-        });
+  
+    // ——————————————————————————————
+    // Eliminar anuncio
+    document.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar anuncio?")) return;
+        const id = btn.dataset.id;
+        try {
+          const res  = await fetch(`/api/anuncios/${id}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type":"application/json",
+              "x-api-key": localStorage.getItem("apiKey")
+            }
+          });
+          const json = await res.json();
+          if (json.success) {
+            alert("✅ Eliminado");
+            location.href = "/anuncios";
+          } else alert("❌ "+json.error);
+        } catch {
+          alert("❌ Error al eliminar");
+        }
       });
-    }
-    setTimeout(attachDelete, 500);
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-  const toggleBtn = document.getElementById("toggle-auto-bids-<%= anuncio._id %>");
-  const panel     = document.getElementById("auto-bids-panel-<%= anuncio._id %>");
-  const list      = document.getElementById("auto-bids-list-<%= anuncio._id %>");
-
-  // Abrir / cerrar panel
-  toggleBtn.addEventListener("click", () => {
-    panel.classList.toggle("hidden");
-  });
-
-  // Añadir nueva fila
-  panel.querySelector(".add-auto-bid-btn").addEventListener("click", () => {
-    const row = document.createElement("div");
-    row.className = "auto-bid-row flex gap-2";
-    row.innerHTML = `
-      <input
-        type="number"
-        name="precioMaximo[]"
-        min="<%= anuncio.precioReserva || 1 %>"
-        required
-        class="flex-1 border rounded p-2 focus:ring-2 focus:ring-green-300"
-        placeholder="€ Oferta"
-      />
-      <button type="button" class="remove-auto-bid-btn text-red-500 px-2">✖</button>
-    `;
-    list.appendChild(row);
-  });
-
-  // Delegación: eliminar fila
-  list.addEventListener("click", e => {
-    if (e.target.matches(".remove-auto-bid-btn")) {
-      e.target.closest(".auto-bid-row").remove();
-    }
-  });
-});
-</script>
+    });
+  
+    // ——————————————————————————————
+    // Toggle Oferta Automática (Inglesa)
+    document.querySelectorAll('[id^="toggle-auto-bids-"]').forEach(btn => {
+      const id = btn.id.replace("toggle-auto-bids-","");
+      const panel = document.getElementById(`auto-bids-panel-${id}`);
+      btn.addEventListener("click", () => panel.classList.toggle("hidden"));
+    });
+  
+    // Añadir/Quitar filas en el panel de auto-bids
+    document.querySelectorAll('[id^="auto-bids-list-"]').forEach(list => {
+      list.addEventListener("click", e => {
+        if (e.target.matches(".remove-auto-bid-btn")) {
+          e.target.closest(".auto-bid-row").remove();
+        }
+      });
+    });
+    document.querySelectorAll(".add-auto-bid-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id   = btn.closest("[id^='auto-bids-panel-']").id.split("-").pop();
+        const list = document.getElementById(`auto-bids-list-${id}`);
+        const row  = document.createElement("div");
+        row.className = "auto-bid-row flex gap-2";
+        row.innerHTML = `
+          <input type="number" name="precioMaximo[]" min="1" required
+                 class="flex-1 border rounded p-2 focus:ring-2 focus:ring-green-300"
+                 placeholder="€ Oferta"/>
+          <button type="button" class="remove-auto-bid-btn text-red-500 px-2">✖</button>`;
+        list.appendChild(row);
+      });
+    });
+  
+  }); // fin DOMContentLoaded
+  
+  // Función global para el onclick inline de “Inscribirse”
+  function inscribirse(anuncioId) {
+    fetch(`/inscribirse/${anuncioId}`, {
+      method: "POST", credentials: "same-origin"
+    })
+    .then(r=>r.json())
+    .then(j=> {
+      if (j.message==="Inscripción exitosa") return location.reload();
+      alert(j.message||"Error al inscribirse");
+    })
+    .catch(()=> alert("Error en la petición de inscripción"));
+  }
+  </script>
+  
 
 

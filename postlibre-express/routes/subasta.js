@@ -237,10 +237,10 @@ async function iniciarInglesa(anuncioDoc, io) {
   let tiempoRestante   = duracionSeg;
 
   // ───> 1) Al arrancar fija el precioActual al precioReserva
-  anuncioDoc.precioActual    = anuncioDoc.precioReserva;            // NUEVO
+  anuncioDoc.precioActual    = anuncioDoc.precioReserva;            
   // ───> 2) actualiza la fecha de expiración
-  anuncioDoc.fechaExpiracion = new Date(Date.now() + duracionSeg * 1000); // NUEVO
-  await anuncioDoc.save();                                         // NUEVO
+  anuncioDoc.fechaExpiracion = new Date(Date.now() + duracionSeg * 1000); 
+  await anuncioDoc.save();                                         
 
   // Arrancar cliente (opcional gauge)
   io.emit("subasta_inglesa_iniciada", {
@@ -249,37 +249,37 @@ async function iniciarInglesa(anuncioDoc, io) {
   });
 
   // ───> Proxy-bidding inicial: de cada usuario solo su oferta mínima
-  const autos = anuncioDoc.ofertasAutomaticas || [];               // NUEVO
-  const minimoPorUsuario = autos.reduce((map, o) => {               // NUEVO
-    if (!map[o.usuario] || o.precioMaximo < map[o.usuario].precioMaximo) { // NUEVO
-      map[o.usuario] = o;                                          // NUEVO
-    }                                                              // NUEVO
-    return map;                                                    // NUEVO
-  }, {});                                                          // NUEVO
+  const autos = anuncioDoc.ofertasAutomaticas || [];               
+  const minimoPorUsuario = autos.reduce((map, o) => {               
+    if (!map[o.usuario] || o.precioMaximo < map[o.usuario].precioMaximo) { 
+      map[o.usuario] = o;                                          
+    }                                                              
+    return map;                                                    
+  }, {});                                                          
 
-  const candidatos = Object.values(minimoPorUsuario);               // NUEVO
-  if (candidatos.length) {                                         // NUEVO
-    candidatos.sort((a, b) => b.precioMaximo - a.precioMaximo);    // NUEVO
-    const mejor = candidatos[0].precioMaximo;                     // NUEVO
-    const topIguales = candidatos.filter(o => o.precioMaximo === mejor); // NUEVO
-    const ganadorAuto = topIguales[Math.floor(Math.random() * topIguales.length)]; // NUEVO
+  const candidatos = Object.values(minimoPorUsuario);               
+  if (candidatos.length) {                                         
+    candidatos.sort((a, b) => b.precioMaximo - a.precioMaximo);    
+    const mejor = candidatos[0].precioMaximo;                     
+    const topIguales = candidatos.filter(o => o.precioMaximo === mejor); 
+    const ganadorAuto = topIguales[Math.floor(Math.random() * topIguales.length)]; 
 
-    anuncioDoc.pujas.push({                                        // NUEVO
-      usuario:    ganadorAuto.usuario,                             // NUEVO
-      cantidad:   mejor,                                           // NUEVO
-      fecha:      new Date(),                                      // NUEVO
-      automatica: true                                             // NUEVO
-    });                                                            // NUEVO
+    anuncioDoc.pujas.push({                                        
+      usuario:    ganadorAuto.usuario,                             
+      cantidad:   mejor,                                           
+      fecha:      new Date(),                                      
+      automatica: true                                             
+    });                                                            
 
-    anuncioDoc.precioActual       = Math.max(anuncioDoc.precioActual, mejor); // NUEVO
-    anuncioDoc.ofertasAutomaticas = [];                             // NUEVO
-    await anuncioDoc.save();                                       // NUEVO
+    anuncioDoc.precioActual       = Math.max(anuncioDoc.precioActual, mejor); 
+    anuncioDoc.ofertasAutomaticas = [];                             
+    await anuncioDoc.save();                                       
 
-    io.emit("actualizar_pujas", {                                 // NUEVO
+    io.emit("actualizar_pujas", {                                 
       anuncioId,
       pujas:     anuncioDoc.pujas
-    });                                                            // NUEVO
-  }                                                                // NUEVO
+    });                                                            
+  }                                                                
 
   // ───> Ahora arrancamos el conteo normal
   const iv = setInterval(async () => {

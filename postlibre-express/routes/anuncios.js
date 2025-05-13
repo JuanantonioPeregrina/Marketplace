@@ -189,7 +189,6 @@ module.exports = (io) => {
     
     // Ruta para registrar oferta automática antes del inicio de la subasta
 
-// routes/anuncios.js  (o donde lo tengas)
 const STEP = 100;     // tu STEP para inglesa
 
 router.post("/oferta-automatica/:id", async (req, res) => {
@@ -377,6 +376,21 @@ router.post("/oferta-automatica/:id", async (req, res) => {
       const u = await Usuario.findOne({ username: usuario });
       esFavorito = u?.favoritos?.some(fav => fav.toString() === a._id.toString());
     }   
+
+// Mapeamos cada username a { username, imagen_perfil }
+const inscritosDetallados = await Promise.all(
+  (a.inscritos || []).map(async username => {
+    const usr = await Usuario.findOne(
+      { username },
+      'username imagen_perfil'
+    );
+    return {
+      username: usr?.username,
+      imagen_perfil: usr?.imagen_perfil || '/images/avatar.webp'
+    };
+  })
+);
+
       // Montamos el objeto que tu EJS espera
       const anuncio = {
         _id:                        a._id.toString(),
@@ -402,7 +416,8 @@ router.post("/oferta-automatica/:id", async (req, res) => {
         resenaEnviadaAlAutor,
         inscritosConResenaPorAnuncio,
         sugerencias,
-        esFavorito
+        esFavorito,
+        inscritosDetallados
       };
 
       res.render("detalleAnuncio", {
