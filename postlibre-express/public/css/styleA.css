@@ -490,3 +490,15 @@ button:hover .filled {
   font-family: "Helvetica", sans-serif;
 }
 
+.avatar-item .hand-icon {
+  font-size: 1.25rem;
+  color: #ff4757;
+}
+@keyframes raise-hand {
+  0%   { transform: translateY(0);   opacity: 0; }
+  20%  { transform: translateY(-10px); opacity: 1; }
+  100% { transform: translateY(0);   opacity: 0; }
+}
+.avatar-item .animate-hand .hand-icon {
+  animation: raise-hand 1s ease-out forwards;
+}

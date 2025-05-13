@@ -47,13 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       contenedor.innerHTML = html;
   
-      // actualizar ticker de precio
-      const max = pujas.length
-        ? Math.max(...pujas.map(x => x.cantidad))
-        : 0;
-      const precioEl = document.getElementById(`precio-${anuncioId}`);
-      if (precioEl) precioEl.textContent = `€${max}`;
-    });
+      // ahora actualizamos el precio con el valor que envía el servidor
+   const precioEl = document.getElementById(`precio-${anuncioId}`);
+   if (precioEl) precioEl.textContent = `€${precioActual}`;
+  });
   
     // 3) ACTUALIZAR precio + timer
     const lineEl = document.getElementById("countdown-line");

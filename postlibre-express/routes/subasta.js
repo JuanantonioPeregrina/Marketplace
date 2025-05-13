@@ -232,59 +232,114 @@ async function iniciarHolandesa(anuncioDoc, io) {
 // Subasta Inglesa (sube progresivamente)
 // ——————————————————————————————————————————————
 async function iniciarInglesa(anuncioDoc, io) {
-  const { inglesaIncremento: inc, inglesaIntervalo: intervaloSeg, inglesaDuracion: duracionSeg } = anuncioDoc;
-  let elapsed = 0;
-  const anuncioId = anuncioDoc._id.toString();
+  const anuncioId      = anuncioDoc._id.toString();
+  const duracionSeg    = anuncioDoc.inglesaDuracion || anuncioDoc.inglesaIntervalo;
+  let tiempoRestante   = duracionSeg;
 
-  const interval = setInterval(async () => {
+  // ───> 1) Al arrancar fija el precioActual al precioReserva
+  anuncioDoc.precioActual    = anuncioDoc.precioReserva;            // NUEVO
+  // ───> 2) actualiza la fecha de expiración
+  anuncioDoc.fechaExpiracion = new Date(Date.now() + duracionSeg * 1000); // NUEVO
+  await anuncioDoc.save();                                         // NUEVO
+
+  // Arrancar cliente (opcional gauge)
+  io.emit("subasta_inglesa_iniciada", {
+    anuncioId,
+    duracion: duracionSeg
+  });
+
+  // ───> Proxy-bidding inicial: de cada usuario solo su oferta mínima
+  const autos = anuncioDoc.ofertasAutomaticas || [];               // NUEVO
+  const minimoPorUsuario = autos.reduce((map, o) => {               // NUEVO
+    if (!map[o.usuario] || o.precioMaximo < map[o.usuario].precioMaximo) { // NUEVO
+      map[o.usuario] = o;                                          // NUEVO
+    }                                                              // NUEVO
+    return map;                                                    // NUEVO
+  }, {});                                                          // NUEVO
+
+  const candidatos = Object.values(minimoPorUsuario);               // NUEVO
+  if (candidatos.length) {                                         // NUEVO
+    candidatos.sort((a, b) => b.precioMaximo - a.precioMaximo);    // NUEVO
+    const mejor = candidatos[0].precioMaximo;                     // NUEVO
+    const topIguales = candidatos.filter(o => o.precioMaximo === mejor); // NUEVO
+    const ganadorAuto = topIguales[Math.floor(Math.random() * topIguales.length)]; // NUEVO
+
+    anuncioDoc.pujas.push({                                        // NUEVO
+      usuario:    ganadorAuto.usuario,                             // NUEVO
+      cantidad:   mejor,                                           // NUEVO
+      fecha:      new Date(),                                      // NUEVO
+      automatica: true                                             // NUEVO
+    });                                                            // NUEVO
+
+    anuncioDoc.precioActual       = Math.max(anuncioDoc.precioActual, mejor); // NUEVO
+    anuncioDoc.ofertasAutomaticas = [];                             // NUEVO
+    await anuncioDoc.save();                                       // NUEVO
+
+    io.emit("actualizar_pujas", {                                 // NUEVO
+      anuncioId,
+      pujas:     anuncioDoc.pujas
+    });                                                            // NUEVO
+  }                                                                // NUEVO
+
+  // ───> Ahora arrancamos el conteo normal
+  const iv = setInterval(async () => {
     const a = await Anuncio.findById(anuncioId);
-    if (!a || a.estadoSubasta !== "activa") return clearInterval(interval);
+    if (!a || a.estadoSubasta !== "activa") {
+      clearInterval(iv);
+      return;
+    }
 
-    // cada tick sube…
-    a.precioActual += inc;
-    elapsed += intervaloSeg;
-    await a.save();
+    tiempoRestante--;
+
     io.emit("actualizar_subasta", {
       anuncioId,
       precioActual: a.precioActual,
-      tiempoRestante: Math.max(0, duracionSeg - elapsed)
+      tiempoRestante,
+      decremento: 0,
+      tickLeft: 1
     });
 
-    // **Al terminar**:
-    if (elapsed >= duracionSeg) {
-      // 1) elegir ganador de auto-ofertas si existen
+    if (tiempoRestante <= 0) {
+      clearInterval(iv);
+
+      // Al acabar, elegimos ganador entre ofertas automáticas o la última manual:
       let ganador = null;
+      let precioFinal = a.precioActual;
+
       if (a.ofertasAutomaticas.length) {
-        // la más alta
+        // la oferta automática más alta
         const best = a.ofertasAutomaticas
-          .sort((x,y) => y.precioMaximo - x.precioMaximo)[0];
-        const final = Math.min(best.precioMaximo, a.precioActual);
-        a.pujas.push({ usuario: best.usuario, cantidad: final, fecha: new Date(), automatica: true });
-        ganador = best.usuario;
-        a.precioActual = final;
+          .sort((x, y) => y.precioMaximo - x.precioMaximo)[0];
+        const finalAmt = Math.min(best.precioMaximo, a.precioActual);
+        a.pujas.push({
+          usuario:    best.usuario,
+          cantidad:   finalAmt,
+          fecha:      new Date(),
+          automatica: true
+        });
+        ganador     = best.usuario;
+        precioFinal = finalAmt;
+        a.precioActual = finalAmt;
       }
-      // 2) si no hubo autos, gana última manual
       else if (a.pujas.length) {
         const last = a.pujas[a.pujas.length - 1];
         ganador = last.usuario;
+        precioFinal = last.cantidad;
       }
 
-      // 3) cerrar subasta
       a.estadoSubasta = "finalizada";
       a.estado        = a.inscritos.length ? "en_produccion" : "finalizado";
       await a.save();
 
-      // 4) emitir cierre **con** ganador
       io.emit("subasta_finalizada", {
         anuncioId,
-        precioFinal: a.precioActual,
+        precioFinal,
         ganador
       });
-
-      clearInterval(interval);
     }
-  }, intervaloSeg * 1000);
+  }, 1000);
 }
+
 
 
 // ——————————————————————————————————————————————
@@ -300,6 +355,10 @@ async function iniciarProcesoSubasta(anuncioId, io) {
   if (!anuncio || anuncio.estadoSubasta !== "activa") return;
 
   if (anuncio.auctionType === "inglesa") {
+    if (!anuncio.precioActual) {
+      anuncio.precioActual = anuncio.precioReserva;
+      await anuncio.save();
+    }
     iniciarInglesa(anuncio, io);
   } else {
     // Para holandesa primero calculamos el precio con mediana
@@ -317,7 +376,6 @@ function iniciarVerificacionSubastas(io) {
       estadoSubasta: "pendiente",
       fechaInicioSubasta: { $lte: new Date(ahora.getTime() + 5000) }
     });
-
     for (const a of pendientes) {
       a.estadoSubasta = "activa";
       a.estado        = "en_subasta";
@@ -335,13 +393,11 @@ async function registrarPuja(io, anuncioId, usuario, cantidad) {
   if (!anuncio || anuncio.estadoSubasta !== "activa") return;
 
   if (anuncio.auctionType === "holandesa") {
-    // registro la puja y cierro
+    // igual que antes: registras, cierras y emites
     anuncio.pujas.push({ usuario, cantidad, fecha: new Date(), automatica: false });
     anuncio.estadoSubasta = "finalizada";
     anuncio.estado        = anuncio.inscritos.length ? "en_produccion" : "finalizado";
     await anuncio.save();
-
-    // emito sólo esa puja y el cierre
     io.emit("actualizar_pujas", {
       anuncioId,
       pujas: [ anuncio.pujas.slice(-1)[0] ]
@@ -354,20 +410,25 @@ async function registrarPuja(io, anuncioId, usuario, cantidad) {
     return;
   }
 
+
   // caso subasta inglesa…
-  anuncio.pujas.push({ usuario, cantidad, fecha: new Date(), automatica: false });
-  if (cantidad > anuncio.precioActual) anuncio.precioActual = cantidad;
+ anuncio.pujas.push({ usuario, cantidad, fecha: new Date(), automatica: false });
+  if (cantidad > anuncio.precioActual) {
+    anuncio.precioActual = cantidad;
+  }
   await anuncio.save();
 
   io.emit("actualizar_pujas", {
     anuncioId,
-    usuario,
-    cantidad,
-    precioActual: anuncio.precioActual,
-    pujas: anuncio.pujas
+    pujas:       anuncio.pujas,
+    precioActual: anuncio.precioActual
+  });
+  // reiniciamos el turno
+  io.emit("reset_turno", {
+    anuncioId,
+    duracion: anuncio.inglesaIntervalo
   });
 }
-
 
 module.exports = {
   iniciarProcesoSubasta,

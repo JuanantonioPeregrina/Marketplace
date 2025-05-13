@@ -145,6 +145,38 @@ style="display:none;">
         </div>
       </div>
  
+<!-- === PREGUNTA “Quién da más?” === -->
+<div id="bid-prompt" class="text-center mb-4">
+  Precio de salida: €<%= anuncio.precioReserva %>.  
+  <strong>¿Quién da más?</strong>
+</div>
+
+<!-- === AVATARES DE INSCRITOS === -->
+<div id="avatar-list" class="flex justify-center space-x-6 mb-4">
+  <% anuncio.inscritos.forEach(u => { %>
+    <div class="avatar-item relative text-center" data-user="<%= u %>">
+      <img 
+        src="<%= u.avatarUrl || '/img/default-avatar.png' %>" 
+        alt="<%= u %>" 
+        class="w-12 h-12 rounded-full mx-auto"
+      >
+      <div class="hand-icon absolute inset-x-0 -top-2 opacity-0">
+        ✋
+      </div>
+      <div class="text-xs mt-1"><%= u %></div>
+    </div>
+  <% }) %>
+</div>
+
+<!-- === TEXTO INFERIOR DINÁMICO === -->
+<div 
+  id="bottom-line-text" 
+  class="text-center italic text-gray-600 mb-6"
+>
+  Finaliza en <span id="bottom-time">--s</span>  
+  por un total <span id="bottom-price">--</span>  
+  para el usuario <span id="bottom-user">--</span>.
+</div>
 
      
 
