@@ -232,113 +232,102 @@ async function iniciarHolandesa(anuncioDoc, io) {
 // Subasta Inglesa (sube progresivamente)
 // ——————————————————————————————————————————————
 async function iniciarInglesa(anuncioDoc, io) {
-  const anuncioId      = anuncioDoc._id.toString();
-  const duracionSeg    = anuncioDoc.inglesaDuracion || anuncioDoc.inglesaIntervalo;
-  let tiempoRestante   = duracionSeg;
+  const anuncioId   = anuncioDoc._id.toString()
+  const duracionSeg = anuncioDoc.inglesaDuracion || anuncioDoc.inglesaIntervalo
 
-  // ───> 1) Al arrancar fija el precioActual al precioReserva
-  anuncioDoc.precioActual    = anuncioDoc.precioReserva;            
-  // ───> 2) actualiza la fecha de expiración
-  anuncioDoc.fechaExpiracion = new Date(Date.now() + duracionSeg * 1000); 
-  await anuncioDoc.save();                                         
+  // 1) Fijar precio de salida y fecha de expiración
+  anuncioDoc.precioActual    = anuncioDoc.precioReserva
+  anuncioDoc.fechaExpiracion = new Date(Date.now() + duracionSeg * 1000)
+  await anuncioDoc.save()
+  io.emit("subasta_inglesa_iniciada", { anuncioId, duracion: duracionSeg })
 
-  // Arrancar cliente (opcional gauge)
-  io.emit("subasta_inglesa_iniciada", {
-    anuncioId,
-    duracion: duracionSeg
-  });
+  // 2) Preparar todas las ofertas automáticas ordenadas ascendente
+  let todas = Array.from(anuncioDoc.ofertasAutomaticas || [])
+  todas.sort((a, b) => a.precioMaximo - b.precioMaximo)
 
-  // ───> Proxy-bidding inicial: de cada usuario solo su oferta mínima
-  const autos = anuncioDoc.ofertasAutomaticas || [];               
-  const minimoPorUsuario = autos.reduce((map, o) => {               
-    if (!map[o.usuario] || o.precioMaximo < map[o.usuario].precioMaximo) { 
-      map[o.usuario] = o;                                          
-    }                                                              
-    return map;                                                    
-  }, {});                                                          
+  // 3) Función recursiva que lanza cada puja automáticamente
+  function scheduleNext() {
+    // elegir la oferta mínima > precioActual
+    const siguiente = todas
+      .filter(o => o.precioMaximo > anuncioDoc.precioActual)
+      .reduce((best, o) => {
+        if (!best || o.precioMaximo < best.precioMaximo) return o
+        if (o.precioMaximo === best.precioMaximo)
+          return Math.random() < 0.5 ? o : best
+        return best
+      }, null)
 
-  const candidatos = Object.values(minimoPorUsuario);               
-  if (candidatos.length) {                                         
-    candidatos.sort((a, b) => b.precioMaximo - a.precioMaximo);    
-    const mejor = candidatos[0].precioMaximo;                     
-    const topIguales = candidatos.filter(o => o.precioMaximo === mejor); 
-    const ganadorAuto = topIguales[Math.floor(Math.random() * topIguales.length)]; 
+    if (!siguiente) return
+    todas = todas.filter(o => o !== siguiente)
 
-    anuncioDoc.pujas.push({                                        
-      usuario:    ganadorAuto.usuario,                             
-      cantidad:   mejor,                                           
-      fecha:      new Date(),                                      
-      automatica: true                                             
-    });                                                            
+    const delay = (3 + Math.random() * 12) * 1000  // 3–15 s
+    setTimeout(async () => {
+      const a = await Anuncio.findById(anuncioId)
+      if (!a || a.estadoSubasta !== "activa") return
 
-    anuncioDoc.precioActual       = Math.max(anuncioDoc.precioActual, mejor); 
-    anuncioDoc.ofertasAutomaticas = [];                             
-    await anuncioDoc.save();                                       
+      // aplicar la puja
+      a.pujas.push({
+        usuario:    siguiente.usuario,
+        cantidad:   siguiente.precioMaximo,
+        fecha:      new Date(),
+        automatica: true
+      })
+      a.precioActual = siguiente.precioMaximo
 
-    io.emit("actualizar_pujas", {                                 
-      anuncioId,
-      pujas:     anuncioDoc.pujas
-    });                                                            
-  }                                                                
+      // extender 15 s la subasta
+      a.fechaExpiracion = new Date(a.fechaExpiracion.getTime() + 15_000)
+      await a.save()
 
-  // ───> Ahora arrancamos el conteo normal
+      io.emit("actualizar_pujas", { anuncioId, pujas: a.pujas })
+
+      // encadenar siguiente puja
+      scheduleNext()
+    }, delay)
+  }
+
+  scheduleNext()
+
+  // 4) Ticker cada segundo para actualizar tiempo y, al expirar, cerrar
   const iv = setInterval(async () => {
-    const a = await Anuncio.findById(anuncioId);
+    const a = await Anuncio.findById(anuncioId)
     if (!a || a.estadoSubasta !== "activa") {
-      clearInterval(iv);
-      return;
+      clearInterval(iv)
+      return
     }
 
-    tiempoRestante--;
-
+    const tiempoRestante = Math.max(
+      0,
+      Math.ceil((a.fechaExpiracion.getTime() - Date.now()) / 1000)
+    )
     io.emit("actualizar_subasta", {
       anuncioId,
-      precioActual: a.precioActual,
+      precioActual:   a.precioActual,
       tiempoRestante,
-      decremento: 0,
-      tickLeft: 1
-    });
+      decremento:     0,
+      tickLeft:       1
+    })
 
     if (tiempoRestante <= 0) {
-      clearInterval(iv);
+      clearInterval(iv)
 
-      // Al acabar, elegimos ganador entre ofertas automáticas o la última manual:
-      let ganador = null;
-      let precioFinal = a.precioActual;
+      // elegir ganador: la última puja registrada
+      const last = a.pujas[a.pujas.length - 1] || {}
+      const ganador     = last.usuario || null
+      const precioFinal = last.cantidad || a.precioActual
 
-      if (a.ofertasAutomaticas.length) {
-        // la oferta automática más alta
-        const best = a.ofertasAutomaticas
-          .sort((x, y) => y.precioMaximo - x.precioMaximo)[0];
-        const finalAmt = Math.min(best.precioMaximo, a.precioActual);
-        a.pujas.push({
-          usuario:    best.usuario,
-          cantidad:   finalAmt,
-          fecha:      new Date(),
-          automatica: true
-        });
-        ganador     = best.usuario;
-        precioFinal = finalAmt;
-        a.precioActual = finalAmt;
-      }
-      else if (a.pujas.length) {
-        const last = a.pujas[a.pujas.length - 1];
-        ganador = last.usuario;
-        precioFinal = last.cantidad;
-      }
-
-      a.estadoSubasta = "finalizada";
-      a.estado        = a.inscritos.length ? "en_produccion" : "finalizado";
-      await a.save();
+      a.estadoSubasta = "finalizada"
+      a.estado        = a.inscritos.length ? "en_produccion" : "finalizado"
+      await a.save()
 
       io.emit("subasta_finalizada", {
         anuncioId,
         precioFinal,
         ganador
-      });
+      })
     }
-  }, 1000);
+  }, 1000)
 }
+
 
 
 
