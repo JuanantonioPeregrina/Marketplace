@@ -67,7 +67,7 @@ async function procesarOfertasAutomaticas(anuncio, io) {
     await anuncio.save();
     io.emit("actualizar_pujas", {
       anuncioId: anuncio._id.toString(),
-      pujas:     anuncio.pujas
+      pujas: anuncio.pujas
     });
   }
 }
@@ -278,7 +278,7 @@ async function iniciarInglesa(anuncioDoc, io) {
       a.fechaExpiracion = new Date(a.fechaExpiracion.getTime() + 15_000)
       await a.save()
 
-      io.emit("actualizar_pujas", { anuncioId, pujas: a.pujas })
+      io.emit("actualizar_pujas", { anuncioId, pujas: a.pujas, precioActual: a.precioActual })
 
       // encadenar siguiente puja
       scheduleNext()
@@ -409,7 +409,7 @@ async function registrarPuja(io, anuncioId, usuario, cantidad) {
 
   io.emit("actualizar_pujas", {
     anuncioId,
-    pujas:       anuncio.pujas,
+    pujas: anuncio.pujas,
     precioActual: anuncio.precioActual
   });
   // reiniciamos el turno
