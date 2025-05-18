@@ -369,6 +369,11 @@ function iniciarVerificacionSubastas(io) {
       a.estadoSubasta = "activa";
       a.estado        = "en_subasta";
       await a.save();
+
+      // Emitimos el evento de subasta iniciada
+      io.emit("subasta_iniciada", { anuncioId: a._id.toString() });
+
+      //Iniciamos el proceso de subasta
       iniciarProcesoSubasta(a._id.toString(), io);
     }
   }, 1000);

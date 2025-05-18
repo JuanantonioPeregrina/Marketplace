@@ -71,6 +71,11 @@ iniciarVerificacionSubastas(io);  //Ahora sí existe
 io.on("connection", (socket) => {
   console.log("Nuevo cliente conectado.");
 
+  socket.on("join_auction", (anuncioId) => {
+    socket.join(`auction_${anuncioId}`);
+    console.log(`Cliente unido a la sala: auction_${anuncioId}`);
+  });
+  
   socket.on("puja_realizada", async (data) => {
     console.log("📥 Puja recibida en el servidor:", data);
 
