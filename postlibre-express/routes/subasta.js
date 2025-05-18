@@ -232,104 +232,125 @@ async function iniciarHolandesa(anuncioDoc, io) {
 // Subasta Inglesa (sube progresivamente)
 // ——————————————————————————————————————————————
 async function iniciarInglesa(anuncioDoc, io) {
-  const anuncioId   = anuncioDoc._id.toString()
-  const duracionSeg = anuncioDoc.inglesaDuracion || anuncioDoc.inglesaIntervalo
+  const anuncioId = anuncioDoc._id.toString();
+  const duracionSeg = anuncioDoc.inglesaDuracion || anuncioDoc.inglesaIntervalo;
 
   // 1) Fijar precio de salida y fecha de expiración
-  anuncioDoc.precioActual    = anuncioDoc.precioReserva
-  anuncioDoc.fechaExpiracion = new Date(Date.now() + duracionSeg * 1000)
-  await anuncioDoc.save()
-  io.emit("subasta_inglesa_iniciada", { anuncioId, duracion: duracionSeg })
+  anuncioDoc.precioActual = anuncioDoc.precioReserva;
+  anuncioDoc.fechaExpiracion = new Date(Date.now() + duracionSeg * 1000);
+  await anuncioDoc.save();
+
+  io.emit("subasta_inglesa_iniciada", { anuncioId, duracion: duracionSeg });
 
   // 2) Preparar todas las ofertas automáticas ordenadas ascendente
-  let todas = Array.from(anuncioDoc.ofertasAutomaticas || [])
-  todas.sort((a, b) => a.precioMaximo - b.precioMaximo)
+  let todas = Array.from(anuncioDoc.ofertasAutomaticas || []);
+  todas.sort((a, b) => a.precioMaximo - b.precioMaximo);
 
-  // 3) Función recursiva que lanza cada puja automáticamente
+  /**
+   * 3) Función recursiva que lanza cada puja automáticamente
+   */
   function scheduleNext() {
+    const pujasActuales = anuncioDoc.pujas;
+    const ultimaPuja = pujasActuales[pujasActuales.length - 1];
+
     // elegir la oferta mínima > precioActual
     const siguiente = todas
       .filter(o => o.precioMaximo > anuncioDoc.precioActual)
       .reduce((best, o) => {
-        if (!best || o.precioMaximo < best.precioMaximo) return o
-        if (o.precioMaximo === best.precioMaximo)
-          return Math.random() < 0.5 ? o : best
-        return best
-      }, null)
+        // Si el usuario ya tiene una puja ganadora más baja, ignorar esta puja
+        if (ultimaPuja && ultimaPuja.usuario === o.usuario && ultimaPuja.cantidad <= o.precioMaximo) {
+          return best;
+        }
 
-    if (!siguiente) return
-    todas = todas.filter(o => o !== siguiente)
+        if (!best || o.precioMaximo < best.precioMaximo) return o;
+        if (o.precioMaximo === best.precioMaximo) return Math.random() < 0.5 ? o : best;
+        return best;
+      }, null);
 
-    const delay = (3 + Math.random() * 12) * 1000  // 3–15 s
+    if (!siguiente) return;
+    todas = todas.filter(o => o !== siguiente);
+
+    const delay = (3 + Math.random() * 12) * 1000; // 3–15 s
+
     setTimeout(async () => {
-      const a = await Anuncio.findById(anuncioId)
-      if (!a || a.estadoSubasta !== "activa") return
+      const a = await Anuncio.findById(anuncioId);
+      if (!a || a.estadoSubasta !== "activa") return;
+
+      const pujasActualizadas = a.pujas;
+      const ultimaPujaActualizada = pujasActualizadas[pujasActualizadas.length - 1];
+
+      // Verificar nuevamente si esta puja debe aplicarse
+      if (ultimaPujaActualizada && ultimaPujaActualizada.usuario === siguiente.usuario && ultimaPujaActualizada.cantidad <= siguiente.precioMaximo) {
+        console.log(`⏳ Puja de ${siguiente.usuario} por ${siguiente.precioMaximo} ignorada ya que su puja previa es más baja y sigue ganando.`);
+        return scheduleNext(); // Saltar a la siguiente puja
+      }
 
       // aplicar la puja
       a.pujas.push({
-        usuario:    siguiente.usuario,
-        cantidad:   siguiente.precioMaximo,
-        fecha:      new Date(),
+        usuario: siguiente.usuario,
+        cantidad: siguiente.precioMaximo,
+        fecha: new Date(),
         automatica: true
-      })
-      a.precioActual = siguiente.precioMaximo
+      });
+
+      a.precioActual = siguiente.precioMaximo;
 
       // extender 15 s la subasta
-      a.fechaExpiracion = new Date(a.fechaExpiracion.getTime() + 15_000)
-      await a.save()
+      a.fechaExpiracion = new Date(a.fechaExpiracion.getTime() + 15_000);
+      await a.save();
 
-      io.emit("actualizar_pujas", { anuncioId, pujas: a.pujas, precioActual: a.precioActual })
+      io.emit("actualizar_pujas", { anuncioId, pujas: a.pujas, precioActual: a.precioActual });
 
       // encadenar siguiente puja
-      scheduleNext()
-    }, delay)
+      scheduleNext();
+    }, delay);
   }
 
-  scheduleNext()
+  scheduleNext();
 
-  // 4) Ticker cada segundo para actualizar tiempo y, al expirar, cerrar
+  /**
+   * 4) Ticker cada segundo para actualizar tiempo y, al expirar, cerrar
+   */
   const iv = setInterval(async () => {
-    const a = await Anuncio.findById(anuncioId)
+    const a = await Anuncio.findById(anuncioId);
     if (!a || a.estadoSubasta !== "activa") {
-      clearInterval(iv)
-      return
+      clearInterval(iv);
+      return;
     }
 
     const tiempoRestante = Math.max(
       0,
       Math.ceil((a.fechaExpiracion.getTime() - Date.now()) / 1000)
-    )
+    );
+
     io.emit("actualizar_subasta", {
       anuncioId,
-      precioActual:   a.precioActual,
+      precioActual: a.precioActual,
       tiempoRestante,
-      decremento:     0,
-      tickLeft:       1
-    })
+      decremento: 0,
+      tickLeft: 1
+    });
 
     if (tiempoRestante <= 0) {
-      clearInterval(iv)
+      clearInterval(iv);
 
       // elegir ganador: la última puja registrada
-      const last = a.pujas[a.pujas.length - 1] || {}
-      const ganador     = last.usuario || null
-      const precioFinal = last.cantidad || a.precioActual
+      const last = a.pujas[a.pujas.length - 1] || {};
+      const ganador = last.usuario || null;
+      const precioFinal = last.cantidad || a.precioActual;
 
-      a.estadoSubasta = "finalizada"
-      a.estado        = a.inscritos.length ? "en_produccion" : "finalizado"
-      await a.save()
+      a.estadoSubasta = "finalizada";
+      a.estado = a.inscritos.length ? "en_produccion" : "finalizado";
+      await a.save();
 
       io.emit("subasta_finalizada", {
         anuncioId,
         precioFinal,
         ganador
-      })
+      });
     }
-  }, 1000)
+  }, 1000);
 }
-
-
-
 
 // ——————————————————————————————————————————————
 // Prepara y fija el precio inicial de la holandesa mediante mediana
