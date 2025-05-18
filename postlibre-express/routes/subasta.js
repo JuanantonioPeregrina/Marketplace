@@ -251,41 +251,69 @@ async function iniciarInglesa(anuncioDoc, io) {
    */
   function scheduleNext() {
     const pujasActuales = anuncioDoc.pujas;
-    const ultimaPuja = pujasActuales[pujasActuales.length - 1];
+    const ultimaPuja = pujasActuales[pujasActuales.length - 1] || {};
 
-    // elegir la oferta mínima > precioActual
-    const siguiente = todas
-      .filter(o => o.precioMaximo > anuncioDoc.precioActual)
-      .reduce((best, o) => {
-        // Si el usuario ya tiene una puja ganadora más baja, ignorar esta puja
-        if (ultimaPuja && ultimaPuja.usuario === o.usuario && ultimaPuja.cantidad <= o.precioMaximo) {
-          return best;
-        }
+    // Agrupamos las pujas por usuario
+    const pujasPorUsuario = {};
+    pujasActuales.forEach(p => {
+      if (!pujasPorUsuario[p.usuario]) pujasPorUsuario[p.usuario] = [];
+      pujasPorUsuario[p.usuario].push(p.cantidad);
+    });
 
-        if (!best || o.precioMaximo < best.precioMaximo) return o;
-        if (o.precioMaximo === best.precioMaximo) return Math.random() < 0.5 ? o : best;
-        return best;
-      }, null);
+    // Verificamos si algún usuario ya tiene una puja ganadora
+    const usuarioGanador = ultimaPuja.usuario;
+    const pujasDelGanador = pujasPorUsuario[usuarioGanador] || [];
+    const maxGanadora = Math.max(...pujasDelGanador, 0);
 
-    if (!siguiente) return;
+    // Si todas las pujas restantes son del mismo usuario que ya está ganando, salimos
+    const restantes = todas.filter(o => o.usuario !== usuarioGanador || o.precioMaximo > maxGanadora);
+    if (restantes.length === 0) return;
+
+    // Filtramos las pujas automáticas que deben lanzarse
+    const siguientes = todas.filter(o => {
+      const pujasUsuario = pujasPorUsuario[o.usuario] || [];
+      const pujaMaxUsuario = Math.max(...pujasUsuario, 0);
+
+      /**
+       * Reglas:
+       * - Si el usuario ya tiene una puja ganadora más baja, no lanzará una puja superior innecesariamente.
+       * - Si alguien hace una contraoferta más alta, lanzamos la siguiente puja del usuario.
+       */
+      const fueSuperado = ultimaPuja.usuario !== o.usuario && o.precioMaximo > ultimaPuja.cantidad;
+      const sigueGanando = pujasUsuario.includes(anuncioDoc.precioActual);
+
+      return fueSuperado || (!sigueGanando && o.precioMaximo > anuncioDoc.precioActual);
+    });
+
+    // Si no hay más pujas automáticas pendientes, salir
+    if (!siguientes.length) return;
+
+    // Elegimos la siguiente puja que tiene sentido lanzar
+    const siguiente = siguientes[0];
+
+    // Eliminamos la puja del array para no repetirla
     todas = todas.filter(o => o !== siguiente);
 
-    const delay = (3 + Math.random() * 12) * 1000; // 3–15 s
+    const delay = (3 + Math.random() * 12) * 1000;
 
     setTimeout(async () => {
       const a = await Anuncio.findById(anuncioId);
       if (!a || a.estadoSubasta !== "activa") return;
 
       const pujasActualizadas = a.pujas;
-      const ultimaPujaActualizada = pujasActualizadas[pujasActualizadas.length - 1];
+      const pujasUsuario = pujasActualizadas.filter(p => p.usuario === siguiente.usuario);
+      const pujaMaxUsuario = Math.max(...pujasUsuario.map(p => p.cantidad), 0);
 
-      // Verificar nuevamente si esta puja debe aplicarse
-      if (ultimaPujaActualizada && ultimaPujaActualizada.usuario === siguiente.usuario && ultimaPujaActualizada.cantidad <= siguiente.precioMaximo) {
-        console.log(`⏳ Puja de ${siguiente.usuario} por ${siguiente.precioMaximo} ignorada ya que su puja previa es más baja y sigue ganando.`);
-        return scheduleNext(); // Saltar a la siguiente puja
+      /**
+       * Verificar nuevamente antes de aplicar la puja:
+       * - Si el usuario ya tiene una puja ganadora más baja, no lanzamos esta.
+       */
+      if (pujaMaxUsuario >= siguiente.precioMaximo) {
+        console.log(`⏳ Puja de ${siguiente.usuario} por ${siguiente.precioMaximo} ignorada (ya tiene una ganadora de ${pujaMaxUsuario}).`);
+        return scheduleNext();
       }
 
-      // aplicar la puja
+      // Registrar la puja automática
       a.pujas.push({
         usuario: siguiente.usuario,
         cantidad: siguiente.precioMaximo,
@@ -294,14 +322,12 @@ async function iniciarInglesa(anuncioDoc, io) {
       });
 
       a.precioActual = siguiente.precioMaximo;
-
-      // extender 15 s la subasta
-      a.fechaExpiracion = new Date(a.fechaExpiracion.getTime() + 15_000);
+      a.fechaExpiracion = new Date(a.fechaExpiracion.getTime() + 15000);
       await a.save();
 
       io.emit("actualizar_pujas", { anuncioId, pujas: a.pujas, precioActual: a.precioActual });
 
-      // encadenar siguiente puja
+      // Encadenar la siguiente puja
       scheduleNext();
     }, delay);
   }
@@ -318,10 +344,7 @@ async function iniciarInglesa(anuncioDoc, io) {
       return;
     }
 
-    const tiempoRestante = Math.max(
-      0,
-      Math.ceil((a.fechaExpiracion.getTime() - Date.now()) / 1000)
-    );
+    const tiempoRestante = Math.max(0, Math.ceil((a.fechaExpiracion.getTime() - Date.now()) / 1000));
 
     io.emit("actualizar_subasta", {
       anuncioId,
@@ -334,23 +357,22 @@ async function iniciarInglesa(anuncioDoc, io) {
     if (tiempoRestante <= 0) {
       clearInterval(iv);
 
-      // elegir ganador: la última puja registrada
-      const last = a.pujas[a.pujas.length - 1] || {};
-      const ganador = last.usuario || null;
-      const precioFinal = last.cantidad || a.precioActual;
+      const lastPuja = a.pujas[a.pujas.length - 1] || {};
+      const ganador = lastPuja.usuario || null;
+      const precioFinal = lastPuja.cantidad || a.precioActual;
 
       a.estadoSubasta = "finalizada";
       a.estado = a.inscritos.length ? "en_produccion" : "finalizado";
+      a.precioActual = precioFinal;
       await a.save();
 
-      io.emit("subasta_finalizada", {
-        anuncioId,
-        precioFinal,
-        ganador
-      });
+      io.emit("subasta_finalizada", { anuncioId, precioFinal, ganador });
     }
   }, 1000);
 }
+
+
+
 
 // ——————————————————————————————————————————————
 // Prepara y fija el precio inicial de la holandesa mediante mediana
