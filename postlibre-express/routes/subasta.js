@@ -394,14 +394,15 @@ async function iniciarProcesoSubasta(anuncioId, io) {
   if (!anuncio || anuncio.estadoSubasta !== "activa") return;
 
   if (anuncio.auctionType === "inglesa") {
-    if (!anuncio.precioActual) {
-      anuncio.precioActual = anuncio.precioReserva;
-      await anuncio.save();
-    }
+    console.log(`🔵 Iniciando subasta inglesa para ${anuncioId}`);
     iniciarInglesa(anuncio, io);
-  } else {
-    // Para holandesa primero calculamos el precio con mediana
-    await prepararHolandesa(anuncioId, io);
+  } 
+  else if (anuncio.auctionType === "holandesa") {
+    console.log(`🟠 Iniciando subasta holandesa para ${anuncioId}`);
+    prepararHolandesa(anuncioId, io);
+  } 
+  else {
+    console.warn(`⚠️ Tipo de subasta no reconocido: ${anuncio.auctionType}`);
   }
 }
 

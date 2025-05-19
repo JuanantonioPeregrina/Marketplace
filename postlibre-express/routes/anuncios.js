@@ -199,9 +199,9 @@ router.post("/oferta-automatica/:id", async (req, res) => {
     // Solo para inglesas: si no es inglesa, ignoramos esta ruta
     const anuncio = await Anuncio.findById(req.params.id);
     if (!anuncio) return res.status(404).json({ error: "No encontrado." });
-    if (anuncio.auctionType !== "inglesa") {
-      return res.status(400).json({ error: "Oferta automática solo en inglesa." });
-    }
+    if (!["inglesa", "holandesa"].includes(anuncio.auctionType)) {
+      return res.status(400).json({ error: "Oferta automática no permitida en este tipo de subasta." });
+  }
 
     // 1) Tomar array de precios
     let { precioMaximo } = req.body;
