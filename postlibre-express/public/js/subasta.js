@@ -1,5 +1,6 @@
 let _dropCountdownIv = null;
 let _currentDecremento = 0;
+let _dropTimeout = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   const socket = io();

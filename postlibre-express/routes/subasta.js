@@ -242,78 +242,70 @@ async function iniciarInglesa(anuncioDoc, io) {
 
   io.emit("subasta_inglesa_iniciada", { anuncioId, duracion: duracionSeg });
 
-  // 2) Preparar todas las ofertas automáticas ordenadas ascendente
-  let todas = Array.from(anuncioDoc.ofertasAutomaticas || []);
-  todas.sort((a, b) => a.precioMaximo - b.precioMaximo);
+  const bufferPujasPendientes = {};
 
   /**
-   * 3) Función recursiva que lanza cada puja automáticamente
+   * Función recursiva que lanza cada puja automáticamente.
    */
-  function scheduleNext() {
+  function scheduleNext(anuncioDoc, io) {
+    let todas = Array.from(anuncioDoc.ofertasAutomaticas || []);
+    todas.sort((a, b) => a.precioMaximo - b.precioMaximo);
+
     const pujasActuales = anuncioDoc.pujas;
     const ultimaPuja = pujasActuales[pujasActuales.length - 1] || {};
+    const ganadorActual = ultimaPuja.usuario || null;
+    const maxGanadora = ultimaPuja.cantidad || anuncioDoc.precioReserva;
 
-    // Agrupamos las pujas por usuario
+    console.log(`🏆 [INFO] Ganador actual: ${ganadorActual} con ${maxGanadora}`);
+
     const pujasPorUsuario = {};
     pujasActuales.forEach(p => {
       if (!pujasPorUsuario[p.usuario]) pujasPorUsuario[p.usuario] = [];
       pujasPorUsuario[p.usuario].push(p.cantidad);
     });
 
-    // Verificamos si algún usuario ya tiene una puja ganadora
-    const usuarioGanador = ultimaPuja.usuario;
-    const pujasDelGanador = pujasPorUsuario[usuarioGanador] || [];
-    const maxGanadora = Math.max(...pujasDelGanador, 0);
-
-    // Si todas las pujas restantes son del mismo usuario que ya está ganando, salimos
-    const restantes = todas.filter(o => o.usuario !== usuarioGanador || o.precioMaximo > maxGanadora);
-    if (restantes.length === 0) return;
-
-    // Filtramos las pujas automáticas que deben lanzarse
     const siguientes = todas.filter(o => {
       const pujasUsuario = pujasPorUsuario[o.usuario] || [];
-      const pujaMaxUsuario = Math.max(...pujasUsuario, 0);
+      const maxUsuario = Math.max(...pujasUsuario, 0);
 
-      /**
-       * Reglas:
-       * - Si el usuario ya tiene una puja ganadora más baja, no lanzará una puja superior innecesariamente.
-       * - Si alguien hace una contraoferta más alta, lanzamos la siguiente puja del usuario.
-       */
-      const fueSuperado = ultimaPuja.usuario !== o.usuario && o.precioMaximo > ultimaPuja.cantidad;
-      const sigueGanando = pujasUsuario.includes(anuncioDoc.precioActual);
+      const esDelGanador = o.usuario === ganadorActual;
+      const sigueGanando = esDelGanador && maxUsuario >= maxGanadora;
+      const esContraoferta = !esDelGanador && o.precioMaximo > maxGanadora;
 
-      return fueSuperado || (!sigueGanando && o.precioMaximo > anuncioDoc.precioActual);
+      if (esDelGanador && sigueGanando) {
+        console.log(`⏳ Puja de ${o.usuario} por ${o.precioMaximo} enviada al buffer.`);
+        if (!bufferPujasPendientes[o.usuario]) bufferPujasPendientes[o.usuario] = [];
+        bufferPujasPendientes[o.usuario].push(o);
+        return false;
+      }
+
+      return esContraoferta;
     });
 
-    // Si no hay más pujas automáticas pendientes, salir
-    if (!siguientes.length) return;
+    console.log(`➡️ [INFO] Pujas a lanzar: ${JSON.stringify(siguientes)}`);
 
-    // Elegimos la siguiente puja que tiene sentido lanzar
+    if (siguientes.length === 0) {
+      console.log("✅ [INFO] No hay más pujas a lanzar. La subasta se mantiene en su estado actual.");
+      return;
+    }
+
     const siguiente = siguientes[0];
-
-    // Eliminamos la puja del array para no repetirla
-    todas = todas.filter(o => o !== siguiente);
-
     const delay = (3 + Math.random() * 12) * 1000;
 
     setTimeout(async () => {
-      const a = await Anuncio.findById(anuncioId);
+      const a = await Anuncio.findById(anuncioDoc._id);
       if (!a || a.estadoSubasta !== "activa") return;
 
-      const pujasActualizadas = a.pujas;
-      const pujasUsuario = pujasActualizadas.filter(p => p.usuario === siguiente.usuario);
-      const pujaMaxUsuario = Math.max(...pujasUsuario.map(p => p.cantidad), 0);
+      const pujasUsuario = a.pujas.filter(p => p.usuario === siguiente.usuario);
+      const maxUsuario = Math.max(...pujasUsuario.map(p => p.cantidad), 0);
 
-      /**
-       * Verificar nuevamente antes de aplicar la puja:
-       * - Si el usuario ya tiene una puja ganadora más baja, no lanzamos esta.
-       */
-      if (pujaMaxUsuario >= siguiente.precioMaximo) {
-        console.log(`⏳ Puja de ${siguiente.usuario} por ${siguiente.precioMaximo} ignorada (ya tiene una ganadora de ${pujaMaxUsuario}).`);
-        return scheduleNext();
+      if (maxUsuario >= siguiente.precioMaximo) {
+        console.log(`⏳ Puja de ${siguiente.usuario} por ${siguiente.precioMaximo} ignorada (ya está ganando con ${maxUsuario}).`);
+        return scheduleNext(a, io);
       }
 
-      // Registrar la puja automática
+      console.log(`✅ Puja aplicada: ${JSON.stringify(siguiente)}`);
+
       a.pujas.push({
         usuario: siguiente.usuario,
         cantidad: siguiente.precioMaximo,
@@ -325,14 +317,24 @@ async function iniciarInglesa(anuncioDoc, io) {
       a.fechaExpiracion = new Date(a.fechaExpiracion.getTime() + 15000);
       await a.save();
 
-      io.emit("actualizar_pujas", { anuncioId, pujas: a.pujas, precioActual: a.precioActual });
+      io.emit("actualizar_pujas", {
+        anuncioId: a._id.toString(),
+        pujas: a.pujas,
+        precioActual: a.precioActual
+      });
 
-      // Encadenar la siguiente puja
-      scheduleNext();
+      // Revisar el buffer del ganador actual
+      if (bufferPujasPendientes[siguiente.usuario]?.length) {
+        console.log(`⏳ Activando pujas del buffer para ${siguiente.usuario}`);
+        a.ofertasAutomaticas.push(...bufferPujasPendientes[siguiente.usuario]);
+        delete bufferPujasPendientes[siguiente.usuario];
+      }
+
+      scheduleNext(a, io);
     }, delay);
   }
 
-  scheduleNext();
+  scheduleNext(anuncioDoc, io);
 
   /**
    * 4) Ticker cada segundo para actualizar tiempo y, al expirar, cerrar
@@ -366,18 +368,14 @@ async function iniciarInglesa(anuncioDoc, io) {
       a.precioActual = precioFinal;
       await a.save();
 
-      io.emit("subasta_finalizada", { anuncioId, precioFinal, ganador });
+      io.emit("subasta_finalizada", {
+        anuncioId,
+        precioFinal,
+        ganador
+      });
     }
   }, 1000);
 }
-
-
-
-
-// ——————————————————————————————————————————————
-// Prepara y fija el precio inicial de la holandesa mediante mediana
-// ——————————————————————————————————————————————
-
 
 // ——————————————————————————————————————————————
 // Arranca el proceso según tipo de subasta
@@ -470,5 +468,6 @@ async function registrarPuja(io, anuncioId, usuario, cantidad) {
 module.exports = {
   iniciarProcesoSubasta,
   iniciarVerificacionSubastas,
-  registrarPuja
+  registrarPuja,
+  iniciarInglesa
 };
