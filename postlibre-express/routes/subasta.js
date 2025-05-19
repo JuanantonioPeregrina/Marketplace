@@ -229,7 +229,7 @@ async function iniciarHolandesa(anuncioDoc, io) {
 
 
 // ——————————————————————————————————————————————
-// Subasta Inglesa (sube progresivamente)
+// Subasta Inglesa (sube progresivamente) - Con Aleatoriedad en Pujas Iguales
 // ——————————————————————————————————————————————
 async function iniciarInglesa(anuncioDoc, io) {
   const anuncioId = anuncioDoc._id.toString();
@@ -249,7 +249,15 @@ async function iniciarInglesa(anuncioDoc, io) {
    */
   function scheduleNext(anuncioDoc, io) {
     let todas = Array.from(anuncioDoc.ofertasAutomaticas || []);
-    todas.sort((a, b) => a.precioMaximo - b.precioMaximo);
+
+    // Ordenamos primero por precio y luego aleatoriamente en caso de igualdad
+    todas.sort((a, b) => {
+      if (a.precioMaximo !== b.precioMaximo) {
+        return a.precioMaximo - b.precioMaximo;
+      } else {
+        return Math.random() - 0.5; // Aleatoriedad en caso de igualdad
+      }
+    });
 
     const pujasActuales = anuncioDoc.pujas;
     const ultimaPuja = pujasActuales[pujasActuales.length - 1] || {};
@@ -376,6 +384,7 @@ async function iniciarInglesa(anuncioDoc, io) {
     }
   }, 1000);
 }
+
 
 // ——————————————————————————————————————————————
 // Arranca el proceso según tipo de subasta
