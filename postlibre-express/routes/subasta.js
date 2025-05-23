@@ -180,6 +180,7 @@ async function iniciarHolandesa(anuncioDoc, io) {
         a.ofertasAutomaticas = [];
         a.estadoSubasta      = "finalizada";
         a.estado             = a.inscritos.length ? "en_produccion" : "finalizado";
+        a.inscritoGanador = winner.usuario;
         await a.save();
 
         io.emit("actualizar_pujas",   { anuncioId, pujas: [a.pujas.slice(-1)[0]] });
@@ -369,6 +370,7 @@ async function iniciarInglesa(anuncioDoc, io) {
 
       const lastPuja = a.pujas[a.pujas.length - 1] || {};
       const ganador = lastPuja.usuario || null;
+      a.inscritoGanador = ganador;
       const precioFinal = lastPuja.cantidad || a.precioActual;
 
       a.estadoSubasta = "finalizada";
@@ -442,6 +444,7 @@ async function registrarPuja(io, anuncioId, usuario, cantidad) {
     anuncio.pujas.push({ usuario, cantidad, fecha: new Date(), automatica: false });
     anuncio.estadoSubasta = "finalizada";
     anuncio.estado        = anuncio.inscritos.length ? "en_produccion" : "finalizado";
+    anuncio.inscritoGanador= usuario;
     await anuncio.save();
     io.emit("actualizar_pujas", {
       anuncioId,
@@ -461,6 +464,7 @@ async function registrarPuja(io, anuncioId, usuario, cantidad) {
   if (cantidad > anuncio.precioActual) {
     anuncio.precioActual = cantidad;
   }
+  anuncio.inscritoGanador = usuario; 
   await anuncio.save();
 
   io.emit("actualizar_pujas", {

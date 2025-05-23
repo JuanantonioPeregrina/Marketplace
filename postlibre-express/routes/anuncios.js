@@ -418,7 +418,11 @@ const inscritosDetallados = await Promise.all(
         inscritosConResenaPorAnuncio,
         sugerencias,
         esFavorito,
-        inscritosDetallados
+        inscritosDetallados,
+        inscritoGanador: a.inscritoGanador || null,
+        confirmacion: a.confirmacion || { autor: false, inscrito: false },
+        estado: a.estado
+      
       };
 
       res.render("detalleAnuncio", {
@@ -432,7 +436,36 @@ const inscritosDetallados = await Promise.all(
     }
   });
 
-
+  router.post("/confirmar-entrega/:id", async (req, res) => {
+    try {
+      console.log("📥 Body recibido en entrega:", req.body);
+      console.log("📥 ID recibido:", req.params.id);
+  
+      const anuncio = await Anuncio.findById(req.params.id);
+      if (!anuncio) return res.status(404).json({ success: false, error: "Anuncio no encontrado." });
+  
+      const usuario = req.body.usuario;
+      if (!usuario) return res.status(400).json({ success: false, error: "Usuario no especificado." });
+  
+      if (usuario === anuncio.autor) {
+        anuncio.confirmacion.autor = true;
+      } else if (usuario === anuncio.inscritoGanador) {
+        anuncio.confirmacion.inscrito = true;
+      } else {
+        return res.status(403).json({ success: false, error: "No tienes permiso para confirmar." });
+      }
+  
+      await anuncio.save();
+      return res.json({ success: true });
+  
+    } catch (err) {
+      console.error("❌ Error en confirmar entrega:", err);
+      return res.status(500).json({ success: false, error: "Error interno del servidor." });
+    }
+  });
+  
+  
+  
   return router;
 };
 

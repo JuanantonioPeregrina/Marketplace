@@ -536,9 +536,46 @@ class="hidden bg-green-50 p-4 rounded mb-6 space-y-4"
     <p class="text-green-600 mb-2">✅ Ya has enviado reseña a <%= inscrito %>.</p>
   <% } %>
 <% }) %>
+<% } %> 
+
+<% if (
+  anuncio.estado === "en_produccion" &&
+  user &&
+  typeof user.username === "string" &&
+  (
+    user.username.trim() === (anuncio.autor || "").trim() ||
+    user.username.trim() === (anuncio.inscritoGanador || "").trim()
+  )
+) { %>
+  <div class="mt-6 bg-yellow-50 border border-yellow-300 rounded-lg p-4 text-sm text-yellow-800">
+    <p class="font-semibold mb-2">Confirmación de entrega:</p>
+
+    <% if (
+      (user.username === anuncio.autor && !anuncio.confirmacion?.autor) ||
+      (user.username === anuncio.inscritoGanador && !anuncio.confirmacion?.inscrito)
+    ) { %>
+      <button 
+  data-anuncio-id="<%= anuncio._id %>"
+  data-usuario="<%= user.username %>"
+  class="btn-confirmacion-entrega bg-yellow-500 text-white px-4 py-2 rounded mt-2">
+  ✅ Confirmar que he recibido o completado el servicio
+</button>
+
+    <% } else { %>
+      <p class="text-green-700 mt-2">✅ Has confirmado. Esperando al otro usuario...</p>
+    <% } %>
+
+    <p class="mt-4">Estado de confirmación:</p>
+    <ul class="list-disc ml-6">
+      <li><strong>Autor:</strong> <%= anuncio.confirmacion?.autor ? "✔ Confirmado" : "❌ Pendiente" %></li>
+      <li><strong>Inscrito:</strong> <%= anuncio.confirmacion?.inscrito ? "✔ Confirmado" : "❌ Pendiente" %></li>
+    </ul>
+  </div>
 <% } %>
 
-      
+
+
+
 
       <!-- EDITAR / ELIMINAR (solo autor) -->
       <% if (user && user.username===anuncio.autor) { %>
@@ -835,6 +872,39 @@ class="hidden bg-green-50 p-4 rounded mb-6 space-y-4"
     }
   });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.querySelector(".btn-confirmacion-entrega");
+
+  if (btn) {
+    btn.addEventListener("click", async () => {
+      const anuncioId = btn.dataset.anuncioId;
+      const usuario   = btn.dataset.usuario;
+
+      try {
+        const res = await fetch(`/anuncios/confirmar-entrega/${anuncioId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ usuario })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert("✅ Confirmación registrada correctamente.");
+          location.reload();
+        } else {
+          alert("⚠️ Error al confirmar: " + data.error);
+        }
+      } catch (err) {
+        console.error("❌ Error al confirmar entrega:", err);
+        alert("❌ Error al procesar la solicitud.");
+      }
+    });
+  }
+});
+</script>
+
+
 </script>
 
 

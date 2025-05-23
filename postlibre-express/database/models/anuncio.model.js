@@ -18,6 +18,10 @@ const AnuncioSchema = new mongoose.Schema({
   },
   fechaPublicacion: { type: Date, default: Date.now },
   inscritos: [{ type: String, required: true }],
+  confirmacion: {
+    autor: { type: Boolean, default: false },
+    inscrito: { type: Boolean, default: false }
+  }, 
   fechaInicioSubasta: { type: Date, required:true },
   fechaExpiracion: { type: Date, required: false },
 
@@ -67,7 +71,9 @@ const AnuncioSchema = new mongoose.Schema({
       fecha: { type: Date, default: Date.now },
       automatica: { type: Boolean, default: false }
     }
-  ]
+  ],
+  inscritoGanador: { type: String } // (puede ser null por defecto)
+
 });
 
 module.exports = mongoose.model("Anuncio", AnuncioSchema);
