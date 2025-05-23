@@ -550,28 +550,38 @@ class="hidden bg-green-50 p-4 rounded mb-6 space-y-4"
   <div class="mt-6 bg-yellow-50 border border-yellow-300 rounded-lg p-4 text-sm text-yellow-800">
     <p class="font-semibold mb-2">Confirmación de entrega:</p>
 
-    <% if (
-      (user.username === anuncio.autor && !anuncio.confirmacion?.autor) ||
-      (user.username === anuncio.inscritoGanador && !anuncio.confirmacion?.inscrito)
-    ) { %>
-      <button 
-  data-anuncio-id="<%= anuncio._id %>"
-  data-usuario="<%= user.username %>"
-  class="btn-confirmacion-entrega bg-yellow-500 text-white px-4 py-2 rounded mt-2">
-  ✅ Confirmar que he recibido o completado el servicio
-</button>
+    <% 
+      const autorConfirmado = anuncio.confirmacion?.autor;
+      const inscritoConfirmado = anuncio.confirmacion?.inscrito;
+      const soyAutor = user.username.trim() === (anuncio.autor || "").trim();
+      const soyGanador = user.username.trim() === (anuncio.inscritoGanador || "").trim();
+      const yoYaConfirme = (soyAutor && autorConfirmado) || (soyGanador && inscritoConfirmado);
+      const faltaOtro = !autorConfirmado || !inscritoConfirmado;
+    %>
 
-    <% } else { %>
+    <% if ((soyAutor && !autorConfirmado) || (soyGanador && !inscritoConfirmado)) { %>
+      <button 
+        data-anuncio-id="<%= anuncio._id %>"
+        data-usuario="<%= user.username %>"
+        class="btn-confirmacion-entrega bg-yellow-500 text-white px-4 py-2 rounded mt-2">
+        ✅ Confirmar que he recibido o completado el servicio
+      </button>
+
+    <% } else if (yoYaConfirme && faltaOtro) { %>
       <p class="text-green-700 mt-2">✅ Has confirmado. Esperando al otro usuario...</p>
+
+    <% } else if (autorConfirmado && inscritoConfirmado) { %>
+      <p class="text-green-800 mt-2">🎉 Ambos han confirmado. ¡Servicio finalizado!</p>
     <% } %>
 
     <p class="mt-4">Estado de confirmación:</p>
     <ul class="list-disc ml-6">
-      <li><strong>Autor:</strong> <%= anuncio.confirmacion?.autor ? "✔ Confirmado" : "❌ Pendiente" %></li>
-      <li><strong>Inscrito:</strong> <%= anuncio.confirmacion?.inscrito ? "✔ Confirmado" : "❌ Pendiente" %></li>
+      <li><strong>Autor:</strong> <%= autorConfirmado ? "✔ Confirmado" : "❌ Pendiente" %></li>
+      <li><strong>Inscrito:</strong> <%= inscritoConfirmado ? "✔ Confirmado" : "❌ Pendiente" %></li>
     </ul>
   </div>
 <% } %>
+
 
 
 
