@@ -229,7 +229,22 @@ style="display:none;">
 
       <!-- Detalles -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-600 text-sm mb-6">
-        <div>📌 Publicó: <strong><%= anuncio.autor %></strong></div>
+        <div>
+          📌 Publicado por: <strong><%= anuncio.autor %></strong><br>
+          <% if (anuncio.fechaPublicacion && !isNaN(new Date(anuncio.fechaPublicacion))) { %>
+            El: <%= new Date(anuncio.fechaPublicacion).toLocaleString('es-ES', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            }) %>
+          <% } else { %>
+            El: <span class="text-red-500">Fecha no disponible</span>
+          <% } %>
+          
+        </div>
+        
         <div>📌 Ubicación: <strong><%= anuncio.ubicacion || 'No especificada' %></strong></div>
         <div class="sm:col-span-2">
           📌 Inscritos: 

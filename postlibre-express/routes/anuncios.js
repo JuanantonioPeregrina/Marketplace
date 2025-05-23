@@ -408,6 +408,7 @@ const inscritosDetallados = await Promise.all(
         ubicacion:                  a.ubicacion,
         inscritos:                  a.inscritos||[],
         estadoSubasta:              a.estadoSubasta,
+        fechaPublicacion:           a.fechaPublicacion,
         fechaInicioSubasta:         a.fechaInicioSubasta,
         fechaExpiracion:            a.fechaExpiracion,
         pujas:                      a.pujas||[],
