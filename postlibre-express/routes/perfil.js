@@ -91,4 +91,30 @@ router.post('/cambiar-password', async (req, res) => {
     }
 });
 
+router.post("/datos-cobro", async (req, res) => {
+    const { metodo, numero } = req.body;
+    const username = req.session.user?.username;
+  
+    if (!username) return res.redirect("/login");
+  
+    try {
+      await Usuario.updateOne(
+        { username },
+        {
+          $set: {
+            "datosCobro.metodo": metodo,
+            "datosCobro.numero": numero
+          }
+        }
+      );
+  
+      req.session.user.datosCobro = { metodo, numero }; // Refrescar en sesión si lo usas así
+      res.redirect("/perfil");
+    } catch (err) {
+      console.error("❌ Error guardando datos de cobro:", err);
+      res.status(500).send("Error al guardar los datos de cobro.");
+    }
+  });
+  
+
 module.exports = router;

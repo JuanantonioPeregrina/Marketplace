@@ -883,7 +883,6 @@ class="hidden bg-green-50 p-4 rounded mb-6 space-y-4"
   });
 });
 
-
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.querySelector(".btn-confirmacion-entrega");
 
@@ -902,17 +901,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = await res.json();
 
         if (data.success) {
-          // Si es el autor y hay que redirigir al pago:
           if (data.redirigirAPago && data.sessionId) {
-            const stripe = Stripe('pk_test_51QLsXtFbnZOINmh9dklrByRQGQrJPpxvnTboYEcEYwsMVrDAIIkLcGpwiswvGUEPIosI7i6aTMZJ85e70el4rl1c00zlnlMczy');
+            const stripe = Stripe('pk_test_...');
             await stripe.redirectToCheckout({ sessionId: data.sessionId });
           } else {
             alert("✅ Confirmación registrada correctamente.");
             location.reload();
           }
+        } else if (data.redirect) {
+          alert(data.error);
+          window.location.href = data.redirectTo;
         } else {
           alert("⚠️ Error al confirmar: " + data.error);
         }
+
       } catch (err) {
         console.error("❌ Error al confirmar entrega:", err);
         alert("❌ Error al procesar la solicitud.");

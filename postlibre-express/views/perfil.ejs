@@ -23,6 +23,33 @@
             </div>
         </div>
 
+        <div class="bg-gray-50 shadow-lg rounded-lg p-6 mt-6">
+            <h3 class="text-lg font-semibold mb-4">💸 Método de cobro (para acompañantes)</h3>
+          
+            <form action="/perfil/datos-cobro" method="POST" class="space-y-4">
+          
+              <label class="block">
+                <span class="text-sm font-medium text-gray-700">Método preferido:</span>
+                <select name="metodo" class="border mt-1 p-2 w-full rounded-md shadow-sm">
+                  <option value="">-- Selecciona uno --</option>
+                  <option value="cuenta" <%= usuario.datosCobro?.metodo === 'cuenta' ? 'selected' : '' %>>Cuenta Bancaria (IBAN)</option>
+                  <option value="bizum" <%= usuario.datosCobro?.metodo === 'bizum' ? 'selected' : '' %>>Bizum</option>
+                </select>
+              </label>
+          
+              <label class="block">
+                <span class="text-sm font-medium text-gray-700">Número de cuenta o Bizum:</span>
+                <input type="text" name="numero" required value="<%= usuario.datosCobro?.numero || '' %>" placeholder="ES12 3456 7890 1234 5678 9012"
+                  class="border mt-1 p-2 w-full rounded-md shadow-sm">
+              </label>
+          
+              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700 transition">
+                Guardar datos de cobro
+              </button>
+            </form>
+          </div>
+        <!-- Sección para cambiar la contraseña -->          
+
         <div class="password-change bg-white shadow-lg rounded-lg p-6 mt-6">
             <h3 class="text-lg font-semibold mb-4">Cambiar Contraseña</h3>
             <form action="/perfil/cambiar-password" method="POST">

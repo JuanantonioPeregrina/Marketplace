@@ -57,7 +57,12 @@ const userSchema = new mongoose.Schema({
     resetToken: String,
     resetTokenExpires: Date,
 
-    apiKeys: { type: [apiKeySchema], default: [] }
+    apiKeys: { type: [apiKeySchema], default: [] },
+    datosCobro: {
+        metodo: { type: String, enum: ['cuenta', 'bizum'], required: false },
+        numero: { type: String, required: false }
+      }      
+         
 });
 
 // 🔐 Middleware para hashear la contraseña y generar API Key
