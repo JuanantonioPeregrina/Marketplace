@@ -436,33 +436,70 @@ const inscritosDetallados = await Promise.all(
     }
   });
 
-  router.post("/confirmar-entrega/:id", async (req, res) => {
-    try {
-      console.log("📥 Body recibido en entrega:", req.body);
-      console.log("📥 ID recibido:", req.params.id);
-  
-      const anuncio = await Anuncio.findById(req.params.id);
-      if (!anuncio) return res.status(404).json({ success: false, error: "Anuncio no encontrado." });
-  
-      const usuario = req.body.usuario;
-      if (!usuario) return res.status(400).json({ success: false, error: "Usuario no especificado." });
-  
-      if (usuario === anuncio.autor) {
-        anuncio.confirmacion.autor = true;
-      } else if (usuario === anuncio.inscritoGanador) {
-        anuncio.confirmacion.inscrito = true;
-      } else {
-        return res.status(403).json({ success: false, error: "No tienes permiso para confirmar." });
-      }
-  
-      await anuncio.save();
-      return res.json({ success: true });
-  
-    } catch (err) {
-      console.error("❌ Error en confirmar entrega:", err);
-      return res.status(500).json({ success: false, error: "Error interno del servidor." });
+  const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+router.post("/confirmar-entrega/:id", async (req, res) => {
+  try {
+    const anuncio = await Anuncio.findById(req.params.id);
+    if (!anuncio) return res.status(404).json({ success: false, error: "Anuncio no encontrado." });
+
+    const usuario = req.body.usuario;
+    if (!usuario) return res.status(400).json({ success: false, error: "Usuario no especificado." });
+
+    const io = req.app.get("io"); // sockets
+
+    let redirigirAPago = false;
+    let sessionId = null;
+
+    if (usuario === anuncio.autor) {
+      anuncio.confirmacion.autor = true;
+      redirigirAPago = true;
+
+      // Crear sesión de Stripe
+      const clienteEmail = req.session.user?.email || 'cliente@email.com';
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        mode: 'payment',
+        customer_email: clienteEmail,
+        line_items: [{
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: `Pago acompañamiento - Anuncio ${anuncio.titulo}`,
+            },
+            unit_amount: anuncio.precioActual * 100, // en céntimos
+          },
+          quantity: 1,
+        }],
+        success_url: `http://localhost:4000/pago/exito?anuncio=${anuncio._id}`,
+        cancel_url: `http://localhost:4000/pago/cancelado`,
+      });
+
+      sessionId = session.id;
+
+    } else if (usuario === anuncio.inscritoGanador) {
+      anuncio.confirmacion.inscrito = true;
+    } else {
+      return res.status(403).json({ success: false, error: "No tienes permiso para confirmar." });
     }
-  });
+
+    await anuncio.save();
+
+    io.to(`auction_${anuncio._id}`).emit("confirmacion_actualizada", {
+      anuncioId: anuncio._id.toString(),
+      confirmacion: anuncio.confirmacion
+    });
+
+    return res.json({ success: true, redirigirAPago, sessionId });
+
+  } catch (err) {
+    console.error("❌ Error en confirmar entrega:", err);
+    return res.status(500).json({ success: false, error: "Error interno del servidor." });
+  }
+});
+
+  
   
   
   

@@ -11,7 +11,7 @@ style="display:none;">
 <script src="/js/countdown.js"></script> 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/progressbar.js"></script>
-
+<script src="https://js.stripe.com/v3/"></script>
 <link rel="stylesheet" href="/css/styleA.css">
 
 <main class="flex min-h-screen bg-gray-50">
@@ -883,6 +883,7 @@ class="hidden bg-green-50 p-4 rounded mb-6 space-y-4"
   });
 });
 
+
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.querySelector(".btn-confirmacion-entrega");
 
@@ -899,9 +900,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         const data = await res.json();
+
         if (data.success) {
-          alert("✅ Confirmación registrada correctamente.");
-          location.reload();
+          // Si es el autor y hay que redirigir al pago:
+          if (data.redirigirAPago && data.sessionId) {
+            const stripe = Stripe('pk_test_51QLsXtFbnZOINmh9dklrByRQGQrJPpxvnTboYEcEYwsMVrDAIIkLcGpwiswvGUEPIosI7i6aTMZJ85e70el4rl1c00zlnlMczy');
+            await stripe.redirectToCheckout({ sessionId: data.sessionId });
+          } else {
+            alert("✅ Confirmación registrada correctamente.");
+            location.reload();
+          }
         } else {
           alert("⚠️ Error al confirmar: " + data.error);
         }
@@ -912,8 +920,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-</script>
-
 
 </script>
 
