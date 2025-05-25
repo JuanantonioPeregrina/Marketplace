@@ -902,7 +902,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (data.success) {
           if (data.redirigirAPago && data.sessionId) {
-            const stripe = Stripe('pk_test_...');
+            const stripe = Stripe('pk_test_51QLsXtFbnZOINmh9dklrByRQGQrJPpxvnTboYEcEYwsMVrDAIIkLcGpwiswvGUEPIosI7i6aTMZJ85e70el4rl1c00zlnlMczy');
             await stripe.redirectToCheckout({ sessionId: data.sessionId });
           } else {
             alert("✅ Confirmación registrada correctamente.");

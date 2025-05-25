@@ -471,8 +471,9 @@ const inscritosDetallados = await Promise.all(
             },
             quantity: 1,
           }],
-          success_url: `http://localhost:4000/pago/exito?anuncio=${anuncio._id}`,
-          cancel_url: `http://localhost:4000/pago/cancelado`,
+          success_url: `${req.protocol}://${req.get("host")}/pago/exito?anuncio=${anuncio._id}`,
+          cancel_url: `${req.protocol}://${req.get("host")}/pago/cancelado`,
+
         });
       
         sessionId = session.id;
