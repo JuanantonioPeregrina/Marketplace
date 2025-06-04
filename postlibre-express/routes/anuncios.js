@@ -194,59 +194,48 @@ const STEP = 100;     // tu STEP para inglesa
 router.post("/oferta-automatica/:id", async (req, res) => {
   try {
     const { user } = req.session;
-    if (!user) return res.status(403).json({ error: "Debes iniciar sesión." });
+    if (!user) {
+      return res.status(403).json({ error: "Debes iniciar sesión." });
+    }
 
-    // Solo para inglesas: si no es inglesa, ignoramos esta ruta
     const anuncio = await Anuncio.findById(req.params.id);
-    if (!anuncio) return res.status(404).json({ error: "No encontrado." });
-    if (!["inglesa", "holandesa"].includes(anuncio.auctionType)) {
-      return res.status(400).json({ error: "Oferta automática no permitida en este tipo de subasta." });
-  }
-
-    // 1) Tomar array de precios
-    let { precioMaximo } = req.body;
-    if (!precioMaximo) {
-      return res.status(400).json({ error: "Envía al menos una oferta." });
-    }
-    if (!Array.isArray(precioMaximo)) {
-      precioMaximo = [ precioMaximo ];
-    }
-    // 2) Normalizar y validar
-    const validos = precioMaximo
-      .map(x => parseInt(x,10))
-      .filter(x => !isNaN(x) && x > 0 && x % STEP === 0);
-
-    if (validos.length === 0) {
-      return res
-        .status(400)
-        .json({ error: `Cada oferta debe ser múltiplo de ${STEP} €.` });
+    if (!anuncio) {
+      return res.status(404).json({ error: "No encontrado." });
     }
 
-    // 3) Solo inscritos pueden
+    if (anuncio.auctionType !== "inglesa") {
+      return res.status(400).json({ error: "Solo disponible para subastas inglesas." });
+    }
+
+    const { precioMaximo, incrementoPaso } = req.body;
+    const max = parseInt(precioMaximo, 10);
+    const paso = parseInt(incrementoPaso, 10);
+
+    if (isNaN(max) || max <= 0 || isNaN(paso) || paso <= 0) {
+      return res.status(400).json({ error: "Valores inválidos." });
+    }
+
     if (!anuncio.inscritos.includes(user.username)) {
-      return res.status(403)
-        .json({ error: "Debes inscribirte primero para programar ofert." });
+      return res.status(403).json({ error: "Debes inscribirte primero." });
     }
 
-    // 4) Añadir todas las tiradas
-    validos.forEach(precio => {
-      anuncio.ofertasAutomaticas.push({
-        usuario:      user.username,
-        precioMaximo: precio,
-        fecha:        new Date(),
-      });
+    anuncio.ofertasAutomaticas.push({
+      usuario: user.username,
+      precioMaximo: max,
+      incrementoPaso: paso,
+      fecha: new Date(),
     });
-    await anuncio.save();
 
-    return res.json({
-      mensaje: `Registradas ${validos.length} ofertas automáticas.`,
-    });
-  }
-  catch(err) {
-    console.error(err);
-    return res.status(500).json({ error: "Error interno." });
+    await anuncio.save();
+    res.json({ mensaje: "Oferta automática registrada correctamente." });
+
+  } catch (err) {
+    console.error("Error oferta automática:", err);
+    res.status(500).json({ error: "Error interno." });
   }
 });
+
+
 
     
     // Modificar la lógica de pujas para aplicar oferta automática

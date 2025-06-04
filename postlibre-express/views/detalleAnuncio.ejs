@@ -368,32 +368,18 @@ class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 roun
 id="auto-bids-panel-<%= anuncio._id %>"
 class="hidden bg-green-50 p-4 rounded mb-6 space-y-4"
 >
-<form id="auto-bids-form-<%= anuncio._id %>" method="POST" action="/anuncios/oferta-automatica/<%= anuncio._id %>">
-  <div id="auto-bids-list-<%= anuncio._id %>">
-    <!-- Fila de ejemplo -->
-    <div class="auto-bid-row flex gap-2">
-      <input
-        type="number"
-        name="precioMaximo[]"
-        min="<%= anuncio.precioReserva || 1 %>"
-        required
-        class="flex-1 border rounded p-2 focus:ring-2 focus:ring-green-300"
-        placeholder="€ Oferta"
-      />
-      <button type="button" class="remove-auto-bid-btn text-red-500 px-2">✖</button>
-    </div>
-  </div>
-  <button type="button"
-    class="add-auto-bid-btn bg-green-400 hover:bg-green-500 text-white px-4 py-2 rounded transition"
-  >
-    + Añadir otra oferta
-  </button>
-  <button type="submit"
-    class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded mt-4 transition"
-  >
-    🚀 Enviar todas las ofertas
+<form action="/anuncios/oferta-automatica/<%= anuncio._id %>" method="POST" class="space-y-3">
+  <label>Precio máximo:</label>
+  <input type="number" name="precioMaximo" class="border p-2 rounded w-full" required placeholder="Ej. 3000€" min="<%= anuncio.precioActual + 100 %>">
+
+  <label>Incremento por paso (€):</label>
+  <input type="number" name="incrementoPaso" class="border p-2 rounded w-full" required placeholder="Ej. 50" min="1">
+
+  <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+    🚀 Activar puja automática
   </button>
 </form>
+
 </div>
       
       <% } %>

@@ -61,7 +61,13 @@ const AnuncioSchema = new mongoose.Schema({
     {
       usuario: String,
       precioMaximo: Number,
-      fecha: Date
+      incrementoPaso:{ //nuevo campo solo relevante para inglesa
+        type: Number,
+        required: function () {
+          return this.auctionType === 'inglesa';
+        }
+      },
+        fecha: Date
     }
   ],
   pujas: [

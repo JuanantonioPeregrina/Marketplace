@@ -315,22 +315,33 @@ async function iniciarInglesa(anuncioDoc, io) {
 
       console.log(`✅ Puja aplicada: ${JSON.stringify(siguiente)}`);
 
-      a.pujas.push({
-        usuario: siguiente.usuario,
-        cantidad: siguiente.precioMaximo,
-        fecha: new Date(),
-        automatica: true
-      });
+      // Calcular nueva puja sumando su incremento, pero sin pasarse de su precioMaximo
+      const nuevoPrecio = Math.min(
+        a.precioActual + (siguiente.incrementoPaso || 100),
+        siguiente.precioMaximo
+      );
+       
 
-      a.precioActual = siguiente.precioMaximo;
-      a.fechaExpiracion = new Date(a.fechaExpiracion.getTime() + 15000);
-      await a.save();
+      // Solo pujar si sube el precio
+      if (nuevoPrecio > a.precioActual) {
+        a.pujas.push({
+          usuario: siguiente.usuario,
+          cantidad: nuevoPrecio,
+          fecha: new Date(),
+          automatica: true
+        });
 
-      io.emit("actualizar_pujas", {
-        anuncioId: a._id.toString(),
-        pujas: a.pujas,
-        precioActual: a.precioActual
-      });
+        a.precioActual = nuevoPrecio;
+        a.fechaExpiracion = new Date(a.fechaExpiracion.getTime() + 15000);
+        await a.save();
+
+        io.emit("actualizar_pujas", {
+          anuncioId: a._id.toString(),
+          pujas: a.pujas,
+          precioActual: a.precioActual
+        });
+      }
+
 
       // Revisar el buffer del ganador actual
       if (bufferPujasPendientes[siguiente.usuario]?.length) {
