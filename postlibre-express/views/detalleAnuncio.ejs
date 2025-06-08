@@ -389,21 +389,21 @@ class="hidden bg-green-50 p-4 rounded mb-6 space-y-4"
   
       <!-- 1) PUJA MANUAL (botón, manejado por subasta.js) -->
       <% if (['inglesa', 'holandesa'].includes(anuncio.auctionType)) { %>    
-      <button 
+      
+        <% if (anuncio.auctionType === 'inglesa') { %>
+          <input 
+            type="number" 
+            id="puja-manual" 
+            placeholder="Introduce tu puja"
+            min="<%= anuncio.precioActual + 1 %>" 
+            class="border rounded w-full px-4 py-2 mb-2"
+          />
+        <% } %>
+        <button 
       class="pujar-btn w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded mb-6 transition"
       data-anuncio-id="<%= anuncio._id %>">
     🔥 Pujar
   </button>
-  <% if (anuncio.auctionType === 'inglesa') { %>
-    <input 
-      type="number" 
-      id="puja-manual" 
-      placeholder="Introduce tu puja"
-      min="<%= anuncio.precioActual + 1 %>" 
-      class="border rounded w-full px-4 py-2 mb-2"
-    />
-  <% } %>
-  
   <% } %>
   
         <!-- 2) Favorito / Inscripción / Chat -->

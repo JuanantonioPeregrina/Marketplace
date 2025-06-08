@@ -23,23 +23,36 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   document.body.addEventListener("click", e => {
     if (!e.target.classList.contains("pujar-btn")) return;
-
+  
     const anuncioId = e.target.dataset.anuncioId;
-    const precioEl = document.getElementById(`precio-${anuncioId}`);
-    const precio = parseInt(precioEl.textContent.replace("€", ""), 10);
-
+    const inputManual = document.getElementById("puja-manual");
+  
+    let cantidad;
+  
+    if (inputManual) {
+      const valorInput = parseInt(inputManual.value, 10);
+      if (isNaN(valorInput) || valorInput <= 0) {
+        return alert("Introduce una cantidad válida para pujar.");
+      }
+      cantidad = valorInput;
+    } else {
+      const precioEl = document.getElementById(`precio-${anuncioId}`);
+      cantidad = parseInt(precioEl.textContent.replace("€", ""), 10);
+    }
+  
     if (!user.username) {
       return alert("⚠️ Debes iniciar sesión para pujar.");
     }
-
+  
     socket.emit("puja_realizada", {
       anuncioId,
       usuario: user.username,
-      cantidad: precio
+      cantidad
     });
-
-    console.log(`✅ Puja enviada: ${user.username} => €${precio}`);
+  
+    console.log(`✅ Puja enviada: ${user.username} => €${cantidad}`);
   });
+  
 
   /**
    * ============================
