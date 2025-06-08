@@ -1,0 +1,22 @@
+#Archivos sensibles
+.env
+
+#Subidas (mantener carpetas pero ignorar archivos dentro)
+public/uploads/*
+!public/uploads/.gitkeep
+
+public/uploads/dni/*
+!public/uploads/dni/.gitkeep
+
+#Archivos del sistema / IDE
+node_modules/
+.DS_Store
+.vscode/
+*.log
+
+#Build output y temporales
+dist/
+build/
+tmp/
+.cache/
+
