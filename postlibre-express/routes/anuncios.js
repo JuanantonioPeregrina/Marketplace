@@ -190,53 +190,80 @@ module.exports = (io) => {
     // Ruta para registrar oferta automática antes del inicio de la subasta
 
 const STEP = 100;     // tu STEP para inglesa
-
 router.post("/oferta-automatica/:id", async (req, res) => {
   try {
     const { user } = req.session;
-    if (!user) {
-      return res.status(403).json({ error: "Debes iniciar sesión." });
-    }
+    if (!user) return res.status(403).json({ error: "Debes iniciar sesión." });
 
     const anuncio = await Anuncio.findById(req.params.id);
-    if (!anuncio) {
-      return res.status(404).json({ error: "No encontrado." });
-    }
+    if (!anuncio) return res.status(404).json({ error: "No encontrado." });
 
-    if (anuncio.auctionType !== "inglesa") {
-      return res.status(400).json({ error: "Solo disponible para subastas inglesas." });
-    }
-
-    const { precioMaximo, incrementoPaso } = req.body;
-    const max = parseInt(precioMaximo, 10);
-    const paso = parseInt(incrementoPaso, 10);
-
-    if (isNaN(max) || max <= 0 || isNaN(paso) || paso <= 0) {
-      return res.status(400).json({ error: "Valores inválidos." });
+    if (!["inglesa", "holandesa"].includes(anuncio.auctionType)) {
+      return res.status(400).json({ error: "Tipo de subasta no soportado." });
     }
 
     if (!anuncio.inscritos.includes(user.username)) {
       return res.status(403).json({ error: "Debes inscribirte primero." });
     }
 
-    anuncio.ofertasAutomaticas.push({
-      usuario: user.username,
-      precioMaximo: max,
-      incrementoPaso: paso,
-      fecha: new Date(),
-    });
+    // 🔹 LÓGICA PARA SUBASTA INGLESA
+    if (anuncio.auctionType === "inglesa") {
+      const { precioMaximo, incrementoPaso } = req.body;
+      const max = parseInt(precioMaximo, 10);
+      const paso = parseInt(incrementoPaso, 10);
 
-    await anuncio.save();
-    res.json({ mensaje: "Oferta automática registrada correctamente." });
+      if (isNaN(max) || max <= 0 || isNaN(paso) || paso <= 0) {
+        return res.status(400).json({ error: "Valores inválidos." });
+      }
+
+      anuncio.ofertasAutomaticas.push({
+        usuario: user.username,
+        precioMaximo: max,
+        incrementoPaso: paso,
+        fecha: new Date(),
+      });
+
+      await anuncio.save();
+      return res.json({ mensaje: "Oferta automática inglesa registrada." });
+    }
+
+    // 🔸 LÓGICA PARA SUBASTA HOLANDESA
+    else if (anuncio.auctionType === "holandesa") {
+      let { precioMaximo } = req.body;
+      if (!precioMaximo) {
+        return res.status(400).json({ error: "Envía al menos una oferta." });
+      }
+      if (!Array.isArray(precioMaximo)) {
+        precioMaximo = [precioMaximo];
+      }
+
+      const validos = precioMaximo
+        .map(x => parseInt(x, 10))
+        .filter(x => !isNaN(x) && x > 0 && x % 100 === 0); // STEP clásico para holandesa
+
+      if (validos.length === 0) {
+        return res
+          .status(400)
+          .json({ error: `Cada oferta debe ser múltiplo de 100 €.` });
+      }
+
+      validos.forEach(precio => {
+        anuncio.ofertasAutomaticas.push({
+          usuario: user.username,
+          precioMaximo: precio,
+          fecha: new Date()
+        });
+      });
+
+      await anuncio.save();
+      return res.json({ mensaje: `Registradas ${validos.length} ofertas automáticas holandesas.` });
+    }
 
   } catch (err) {
     console.error("Error oferta automática:", err);
-    res.status(500).json({ error: "Error interno." });
+    res.status(500).json({ error: "Error interno del servidor." });
   }
 });
-
-
-
     
     // Modificar la lógica de pujas para aplicar oferta automática
     
