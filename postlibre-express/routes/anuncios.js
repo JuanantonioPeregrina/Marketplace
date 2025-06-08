@@ -575,27 +575,62 @@ const inscritosDetallados = await Promise.all(
       
       
   
-      // 🟠 Subasta HOLANDESA: Escoger mejor oferta
       else if (anuncio.auctionType === "holandesa") {
-        const elegibles = anuncio.ofertasAutomaticas.filter(
-          o => o.precioMaximo >= anuncio.precioActual
-        );
-  
-        if (elegibles.length > 0) {
-          const mejor = elegibles.reduce((min, o) =>
-            o.precioMaximo < min.precioMaximo ? o : min, elegibles[0]);
-  
-          anuncio.pujas.push({
-            usuario: mejor.usuario,
-            cantidad: anuncio.precioActual,
-            fecha: new Date(),
-            automatica: true
-          });
-  
-          ganador = mejor.usuario;
+        const STEP = 50;
+        const duracionSeg = 300;
+      
+        const autos = anuncio.ofertasAutomaticas
+          .filter(o => typeof o.precioMaximo === "number")
+          .sort((a, b) => a.fecha - b.fecha); // simulamos el orden temporal
+      
+        if (autos.length === 0) {
+          anuncio.precioActual = anuncio.precioInicial || 0;
+          anuncio.ofertasAutomaticas = [];
+          ganador = null;
+        } else {
+          let precioIni = anuncio.precioActual;
+          const baseDecr = Math.floor(precioIni / duracionSeg);
+          const resto = precioIni - (baseDecr * duracionSeg);
+      
+          let precioActual = precioIni;
+          let segundosPasados = 0;
+          let match = null;
+      
+          while (segundosPasados < duracionSeg && !match) {
+            for (const o of autos) {
+              if (o.precioMaximo >= precioActual) {
+                match = o;
+                break;
+              }
+            }
+      
+            if (match) break;
+      
+            const decr = segundosPasados < resto ? baseDecr + 1 : baseDecr;
+            precioActual = Math.max(0, precioActual - decr);
+            segundosPasados++;
+          }
+      
+          if (match) {
+            anuncio.pujas.push({
+              usuario: match.usuario,
+              cantidad: precioActual,
+              fecha: new Date(),
+              automatica: true
+            });
+      
+            anuncio.precioActual = precioActual;
+            anuncio.inscritoGanador = match.usuario;
+            ganador = match.usuario;
+          } else {
+            anuncio.precioActual = precioActual;
+          }
+      
           anuncio.ofertasAutomaticas = [];
         }
       }
+      
+      
   
       // 🔚 Finalizar subasta
       anuncio.estadoSubasta = "finalizada";
@@ -622,8 +657,6 @@ const inscritosDetallados = await Promise.all(
       res.status(500).send("Error interno.");
     }
   });
-  
-  
   
   
   return router;
