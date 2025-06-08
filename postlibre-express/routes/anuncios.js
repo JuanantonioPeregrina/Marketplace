@@ -536,61 +536,80 @@ const inscritosDetallados = await Promise.all(
         return res.status(400).send("Subasta no activa.");
       }
   
-      anuncio.estadoSubasta = "finalizada";
-      anuncio.estado = anuncio.inscritos.length ? "en_produccion" : "finalizado";
-  
+      const io = req.app.get("io");
       let ganador = null;
   
-      //Caso 1: Subasta HOLANDESA → gana el primero que hubiese aceptado el precio actual
-      if (anuncio.auctionType === "holandesa") {
-        // Simula que algún inscrito acepta el precio actual (ej: el primero)
-        if (anuncio.inscritos.length > 0) {
-          ganador = anuncio.inscritos[0]; // o aleatorio: inscrito[Math.floor(Math.random()*len)]
-          anuncio.pujas.push({
-            usuario: ganador,
-            cantidad: anuncio.precioActual,
-            fecha: new Date(),
-            automatica: false
-          });
+      // 🔵 Subasta INGLESA: Simular progreso completo de ofertas automáticas
+      if (anuncio.auctionType === "inglesa") {
+        const autos = [...anuncio.ofertasAutomaticas];
+        if (autos.length === 0) {
+          return res.redirect(`/anuncios/${anuncio._id}`);
         }
+      
+        // Ordenar de mayor a menor
+        autos.sort((a, b) => b.precioMaximo - a.precioMaximo);
+      
+        const mejor = autos[0];
+        const segundo = autos[1];
+      
+        const incremento = mejor.incrementoPaso || 100;
+        const segundaPujaMax = segundo?.precioMaximo || anuncio.precioActual;
+      
+        // El precio justo es lo mínimo que necesita para ganar
+        const precioGanador = Math.min(
+          mejor.precioMaximo,
+          segundaPujaMax + incremento
+        );
+      
+        anuncio.pujas.push({
+          usuario: mejor.usuario,
+          cantidad: precioGanador,
+          fecha: new Date(),
+          automatica: true
+        });
+      
+        anuncio.precioActual = precioGanador;
+        ganador = mejor.usuario;
+        anuncio.ofertasAutomaticas = []; // limpiar
+      }
+      
+      
   
-      //Caso 2: Subasta INGLESA → simulamos el desenlace natural de las pujas automáticas
-      } else if (anuncio.auctionType === "inglesa") {
-        const activas = anuncio.ofertasAutomaticas
-          .filter(oferta => oferta.precioMaximo > anuncio.precioActual)
-          .sort((a, b) => b.precioMaximo - a.precioMaximo);
+      // 🟠 Subasta HOLANDESA: Escoger mejor oferta
+      else if (anuncio.auctionType === "holandesa") {
+        const elegibles = anuncio.ofertasAutomaticas.filter(
+          o => o.precioMaximo >= anuncio.precioActual
+        );
   
-        if (activas.length > 0) {
-          // simulamos batallas entre las dos mejores automáticas
-          const [mejor, segunda] = activas;
-          const incremento = mejor.incrementoPaso || 100;
-          const limite = Math.min(mejor.precioMaximo, (segunda?.precioMaximo || 0) + incremento);
-          anuncio.precioActual = limite;
-          ganador = mejor.usuario;
+        if (elegibles.length > 0) {
+          const mejor = elegibles.reduce((min, o) =>
+            o.precioMaximo < min.precioMaximo ? o : min, elegibles[0]);
   
           anuncio.pujas.push({
             usuario: mejor.usuario,
-            cantidad: limite,
+            cantidad: anuncio.precioActual,
             fecha: new Date(),
             automatica: true
           });
-        } else if (anuncio.pujas.length > 0) {
-          //no hay automáticas pero sí pujas manuales
-          const ultima = anuncio.pujas[anuncio.pujas.length - 1];
-          ganador = ultima.usuario;
-          anuncio.precioActual = ultima.cantidad;
+  
+          ganador = mejor.usuario;
+          anuncio.ofertasAutomaticas = [];
         }
       }
   
-      anuncio.inscritoGanador = ganador;
+      // 🔚 Finalizar subasta
+      anuncio.estadoSubasta = "finalizada";
+      anuncio.estado = anuncio.inscritos.length ? "en_produccion" : "finalizado";
+      if (ganador) anuncio.inscritoGanador = ganador;
       await anuncio.save();
   
-      const io = req.app.get("io");
+      // Emitir eventos
       io.emit("actualizar_pujas", {
         anuncioId: anuncio._id.toString(),
         pujas: anuncio.pujas,
         precioActual: anuncio.precioActual
       });
+  
       io.emit("subasta_finalizada", {
         anuncioId: anuncio._id.toString(),
         precioFinal: anuncio.precioActual,
@@ -599,10 +618,12 @@ const inscritosDetallados = await Promise.all(
   
       res.redirect(`/anuncios/${anuncio._id}`);
     } catch (err) {
-      console.error("❌ Error al forzar finalización:", err);
+      console.error("❌ Error en finalización anticipada:", err);
       res.status(500).send("Error interno.");
     }
   });
+  
+  
   
   
   return router;

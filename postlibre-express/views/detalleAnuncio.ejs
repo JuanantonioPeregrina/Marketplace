@@ -580,7 +580,7 @@ class="hidden bg-green-50 p-4 rounded mb-6 space-y-4"
 
 
 
-<% if (user?.rol === 'admin') { %>
+<% if (user?.rol === 'admin' && anuncio.estadoSubasta === 'activa') { %>
   <form action="/anuncios/finalizar-ya/<%= anuncio._id %>" method="POST" class="mb-4">
     <button class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">
        Finalizar subasta ya (apto para Admin)
