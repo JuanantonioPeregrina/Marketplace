@@ -47,15 +47,13 @@
     </button>
 </form>
     
+
+
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <% anuncios.forEach(anuncio => { %>
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full p-6">
-              
-
-                
-                         
-               
-                   
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full p-6">             
+                                
  <!-- Enlace al anuncio específico -->
  <a href="/anuncios/<%= anuncio._id %>" class="block relative group">
     <div class="h-56 w-full bg-gray-200 overflow-hidden rounded-md">

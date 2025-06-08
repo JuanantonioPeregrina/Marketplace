@@ -510,7 +510,10 @@ const inscritosDetallados = await Promise.all(
       } else {
         return res.status(403).json({ success: false, error: "No tienes permiso para confirmar." });
       }
-  
+      //  Si ambos confirmaron, marcar como finalizado el anuncio
+      if (anuncio.confirmacion.autor && anuncio.confirmacion.inscrito) {
+        anuncio.estado = "finalizado";
+      }
       await anuncio.save();
   
       io.to(`auction_${anuncio._id}`).emit("confirmacion_actualizada", {
