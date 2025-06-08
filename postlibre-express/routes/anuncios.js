@@ -529,6 +529,82 @@ const inscritosDetallados = await Promise.all(
     }
   });
 
+  router.post("/finalizar-ya/:id", async (req, res) => {
+    try {
+      const anuncio = await Anuncio.findById(req.params.id);
+      if (!anuncio || anuncio.estadoSubasta !== "activa") {
+        return res.status(400).send("Subasta no activa.");
+      }
+  
+      anuncio.estadoSubasta = "finalizada";
+      anuncio.estado = anuncio.inscritos.length ? "en_produccion" : "finalizado";
+  
+      let ganador = null;
+  
+      //Caso 1: Subasta HOLANDESA → gana el primero que hubiese aceptado el precio actual
+      if (anuncio.auctionType === "holandesa") {
+        // Simula que algún inscrito acepta el precio actual (ej: el primero)
+        if (anuncio.inscritos.length > 0) {
+          ganador = anuncio.inscritos[0]; // o aleatorio: inscrito[Math.floor(Math.random()*len)]
+          anuncio.pujas.push({
+            usuario: ganador,
+            cantidad: anuncio.precioActual,
+            fecha: new Date(),
+            automatica: false
+          });
+        }
+  
+      //Caso 2: Subasta INGLESA → simulamos el desenlace natural de las pujas automáticas
+      } else if (anuncio.auctionType === "inglesa") {
+        const activas = anuncio.ofertasAutomaticas
+          .filter(oferta => oferta.precioMaximo > anuncio.precioActual)
+          .sort((a, b) => b.precioMaximo - a.precioMaximo);
+  
+        if (activas.length > 0) {
+          // simulamos batallas entre las dos mejores automáticas
+          const [mejor, segunda] = activas;
+          const incremento = mejor.incrementoPaso || 100;
+          const limite = Math.min(mejor.precioMaximo, (segunda?.precioMaximo || 0) + incremento);
+          anuncio.precioActual = limite;
+          ganador = mejor.usuario;
+  
+          anuncio.pujas.push({
+            usuario: mejor.usuario,
+            cantidad: limite,
+            fecha: new Date(),
+            automatica: true
+          });
+        } else if (anuncio.pujas.length > 0) {
+          //no hay automáticas pero sí pujas manuales
+          const ultima = anuncio.pujas[anuncio.pujas.length - 1];
+          ganador = ultima.usuario;
+          anuncio.precioActual = ultima.cantidad;
+        }
+      }
+  
+      anuncio.inscritoGanador = ganador;
+      await anuncio.save();
+  
+      const io = req.app.get("io");
+      io.emit("actualizar_pujas", {
+        anuncioId: anuncio._id.toString(),
+        pujas: anuncio.pujas,
+        precioActual: anuncio.precioActual
+      });
+      io.emit("subasta_finalizada", {
+        anuncioId: anuncio._id.toString(),
+        precioFinal: anuncio.precioActual,
+        ganador
+      });
+  
+      res.redirect(`/anuncios/${anuncio._id}`);
+    } catch (err) {
+      console.error("❌ Error al forzar finalización:", err);
+      res.status(500).send("Error interno.");
+    }
+  });
+  
+  
   return router;
 };
 
