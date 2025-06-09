@@ -35,35 +35,45 @@
       </div>
     </div>
 
-    <!-- Crear Anuncio -->
-    <div class="card mb-4">
-      <div class="card-header bg-success text-white">2️⃣ Crear un Anuncio (POST)</div>
-      <div class="card-body">
-        <input type="text" id="titulo" class="form-control mb-2" placeholder="Título">
-<input type="text" id="descripcion" class="form-control mb-2" placeholder="Descripción">
-<input type="number" id="precio" class="form-control mb-2" placeholder="Precio">
+   <!-- 🔁 CONTENIDO OMITIDO HASTA LA SECCIÓN 'Crear Anuncio' -->
 
-<select id="categoria" class="form-control mb-2">
-  <option value="">Selecciona una categoría</option>
-  <option value="diseño-grafico">Diseño Gráfico</option>
-  <option value="desarrollo-web">Desarrollo Web</option>
-  <option value="redaccion-traduccion">Redacción y Traducción</option>
-  <option value="marketing-digital">Marketing Digital</option>
-  <option value="servicios-locales">Servicios Locales</option>
-  <option value="fotografia-video">Fotografía y Video</option>
-</select>
+<!-- Crear Anuncio -->
+<div class="card mb-4">
+  <div class="card-header bg-success text-white">2️⃣ Crear un Anuncio (POST)</div>
+  <div class="card-body">
+    <input type="text" id="titulo" class="form-control mb-2" placeholder="Título">
+    <input type="text" id="descripcion" class="form-control mb-2" placeholder="Descripción">
+    <input type="number" id="precio" class="form-control mb-2" placeholder="Precio inicial" value="0" readonly>
 
-<input type="text" id="ubicacion" class="form-control mb-2" placeholder="Ubicación">
-<input type="datetime-local" id="fechaExpiracion" class="form-control mb-2">
-<input type="datetime-local" id="fechaInicioSubasta" class="form-control mb-2">
+    <select id="categoria" class="form-control mb-2">
+      <option value="">Selecciona una categoría</option>
+      <option value="diseño-grafico">Diseño Gráfico</option>
+      <option value="desarrollo-web">Desarrollo Web</option>
+      <option value="redaccion-traduccion">Redacción y Traducción</option>
+      <option value="marketing-digital">Marketing Digital</option>
+      <option value="servicios-locales">Servicios Locales</option>
+      <option value="fotografia-video">Fotografía y Video</option>
+      <option value="lujo-reliquia">Lujo y Reliquia</option>
+    </select>
 
-<input type="file" id="imagen" class="form-control mb-2" accept="image/*">
+    <input type="text" id="ubicacionCrear" class="form-control mb-2" placeholder="Ubicación">
+    <input type="datetime-local" id="fechaInicioSubasta" class="form-control mb-2">
 
-
-        <button class="btn btn-success" id="createAnuncio">Crear Anuncio</button>
-        <pre class="bg-white p-3 border mt-3" id="outputCreate">...</pre>
-      </div>
+    <!--SOLO para subasta inglesa -->
+    <div id="inglesaCampos" style="display: none;">
+      <input type="number" id="inglesaDuracion" class="form-control mb-2" placeholder="Duración total (segundos)" value="30" readonly>
+      <input type="number" id="precioReserva" class="form-control mb-2" placeholder="Precio de reserva (€)">
+      <input type="number" id="inglesaIncremento" value="100" hidden>
+      <input type="number" id="inglesaIntervalo" value="1" hidden>
     </div>
+
+    <input type="file" id="imagen" class="form-control mb-2" accept="image/*">
+
+    <button class="btn btn-success" id="createAnuncio">Crear Anuncio</button>
+    <pre class="bg-white p-3 border mt-3" id="outputCreate">...</pre>
+  </div>
+</div>
+
 
     <!-- Editar Anuncio -->
     <div class="card mb-4">
@@ -162,43 +172,6 @@
       document.getElementById('outputAnuncios').textContent = JSON.stringify(res.result, null, 2);
     });
 
-    document.getElementById('createAnuncio').addEventListener('click', async () => {
-  const apiKey = document.getElementById('apiKey').value.trim();
-  if (!apiKey) {
-    document.getElementById('outputCreate').textContent = "Ingresa una API Key válida.";
-    return;
-  }
-  
-  const imagenFile = document.getElementById('imagen').files[0];
-
-  const formData = new FormData();
-  formData.append("titulo", document.getElementById('titulo').value);
-  formData.append("descripcion", document.getElementById('descripcion').value);
-  formData.append("precio", document.getElementById('precio').value);
-  formData.append("categoria", "desarrollo-web"); // puede hacerse esto dinámico luego
-  formData.append("ubicacion", "Madrid");         // igual aquí
-  formData.append("fechaExpiracion", document.getElementById("fechaExpiracion").value);
-  formData.append("fechaInicioSubasta", document.getElementById("fechaInicioSubasta").value);
-
-  //  añadir imagen en el futuro:
-  formData.append("imagen", imagenFile);
-
-  try {
-    const response = await fetch("/api/anuncios/nuevo", {
-      method: "POST",
-      headers: {
-        "x-api-key": apiKey
-        //  NO PONER Content-Type, lo gestiona FormData automáticamente
-      },
-      body: formData
-    });
-
-    const json = await response.json();
-    document.getElementById('outputCreate').textContent = JSON.stringify(json, null, 2);
-  } catch (error) {
-    document.getElementById('outputCreate').textContent = " Error: " + error.message;
-  }
-});
 
 
     document.getElementById('editAnuncio').addEventListener('click', async () => {
@@ -268,6 +241,60 @@
     document.getElementById('outputAuto').textContent = JSON.stringify(json, null, 2);
   } catch (error) {
     document.getElementById('outputAuto').textContent = " Error: " + error.message;
+  }
+});
+// Mostrar campos adicionales si es subasta inglesa
+document.getElementById('categoria').addEventListener('change', () => {
+  const categoria = document.getElementById('categoria').value;
+  const inglesaFields = document.getElementById('inglesaCampos');
+
+  if (categoria === "lujo-reliquia") {
+    inglesaFields.style.display = "block";
+  } else {
+    inglesaFields.style.display = "none";
+  }
+});
+
+document.getElementById('createAnuncio').addEventListener('click', async () => {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (!apiKey) {
+    document.getElementById('outputCreate').textContent = "Ingresa una API Key válida.";
+    return;
+  }
+
+  const imagenFile = document.getElementById('imagen').files[0];
+  const categoria = document.getElementById('categoria').value;
+
+  const formData = new FormData();
+  formData.append("titulo", document.getElementById('titulo').value);
+  formData.append("descripcion", document.getElementById('descripcion').value);
+  formData.append("precio", document.getElementById('precio').value);
+  formData.append("categoria", categoria);
+  formData.append("ubicacion", document.getElementById('ubicacionCrear').value);
+  formData.append("fechaInicioSubasta", document.getElementById("fechaInicioSubasta").value);
+
+  if (categoria === "lujo-reliquia") {
+    formData.append("inglesaIncremento", document.getElementById("inglesaIncremento").value);
+    formData.append("inglesaIntervalo", document.getElementById("inglesaIntervalo").value);
+    formData.append("inglesaDuracion", document.getElementById("inglesaDuracion").value);
+    formData.append("precioReserva", document.getElementById("precioReserva").value);
+  }
+
+  if (imagenFile) {
+    formData.append("imagen", imagenFile);
+  }
+
+  try {
+    const response = await fetch("/api/anuncios/nuevo", {
+      method: "POST",
+      headers: { "x-api-key": apiKey },
+      body: formData
+    });
+
+    const json = await response.json();
+    document.getElementById('outputCreate').textContent = JSON.stringify(json, null, 2);
+  } catch (error) {
+    document.getElementById('outputCreate').textContent = "Error: " + error.message;
   }
 });
 
