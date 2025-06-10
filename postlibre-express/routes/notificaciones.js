@@ -1,3 +1,5 @@
+const Notificacion = require("../database/models/notificacion.model");
+
 const express = require("express");
 const router = express.Router();
 const Chat = require("../database/models/chat.model");
@@ -64,6 +66,19 @@ router.get("/listado", async (req, res) => {
                 }
             });
         }
+      
+  // Agregar notificaciones por recibo de transferencia
+
+        const otras = await Notificacion.find({ destinatario: username, leido: false });
+
+        otras.forEach(n => {
+          mensajesNoLeidos.push({
+            remitente: n.remitente || "Sistema",
+            fecha: n.fecha,
+            anuncioId: n.anuncioId,
+            mensaje: n.contenido
+          });
+        });
 
         res.json({ success: true, mensajes: mensajesNoLeidos });
 
@@ -74,41 +89,50 @@ router.get("/listado", async (req, res) => {
 });
 
 router.post("/marcar-todas", async (req, res) => {
-    if (!req.session.user) {
-      return res.json({ success: false });
-    }
-  
-    const username = req.session.user.username;
-  
-    try {
-      await Chat.updateMany(
-        {
-          mensajes: {
-            $elemMatch: {
-              leido: false,
-              remitente: { $ne: username }
-            }
-          },
-          $or: [
-            { remitente: username },
-            { destinatario: username }
-          ]
+  if (!req.session.user) {
+    return res.json({ success: false });
+  }
+
+  const username = req.session.user.username;
+
+  try {
+    // Marcar mensajes de chat como leídos
+    await Chat.updateMany(
+      {
+        mensajes: {
+          $elemMatch: {
+            leido: false,
+            remitente: { $ne: username }
+          }
         },
-        {
-          $set: { "mensajes.$[elem].leido": true }
-        },
-        {
-          arrayFilters: [{ "elem.remitente": { $ne: username } }],
-          multi: true
-        }
-      );
-  
-      return res.json({ success: true });
-    } catch (error) {
-      console.error("Error al marcar todas como leídas:", error);
-      return res.json({ success: false });
-    }
-  });
+        $or: [
+          { remitente: username },
+          { destinatario: username }
+        ]
+      },
+      {
+        $set: { "mensajes.$[elem].leido": true }
+      },
+      {
+        arrayFilters: [{ "elem.remitente": { $ne: username } }],
+        multi: true
+      }
+    );
+
+    //Marcar notificaciones tipo "transferencia" como leídas
+    const Notificacion = require("../database/models/notificacion.model");
+    await Notificacion.updateMany(
+      { destinatario: username, leido: false },
+      { $set: { leido: true } }
+    );
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("Error al marcar todas como leídas:", error);
+    return res.json({ success: false });
+  }
+});
+
   
 
 module.exports = router;

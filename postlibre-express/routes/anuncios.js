@@ -514,6 +514,19 @@ const inscritosDetallados = await Promise.all(
       if (anuncio.confirmacion.autor && anuncio.confirmacion.inscrito) {
         anuncio.estado = "finalizado";
       }
+      const Notificacion = require("../database/models/notificacion.model");
+
+      if (anuncio.confirmacion.autor && anuncio.confirmacion.inscrito) {
+        //Añadir notificación al ganador
+        await Notificacion.create({
+          destinatario: anuncio.inscritoGanador,
+          anuncioId: anuncio._id.toString(),
+          remitente: "sistema",
+          contenido: `🎉 Has ganado la subasta "${anuncio.titulo}". Se realizará la transferencia a tu cuenta en un plazo máximo de 48 horas.`,
+          leido: false
+        });
+      }
+
       await anuncio.save();
   
       io.to(`auction_${anuncio._id}`).emit("confirmacion_actualizada", {
@@ -534,12 +547,12 @@ const inscritosDetallados = await Promise.all(
       const anuncio = await Anuncio.findById(req.params.id);
       if (!anuncio || anuncio.estadoSubasta !== "activa") {
         return res.status(400).send("Subasta no activa.");
-      }
+      }f
   
       const io = req.app.get("io");
       let ganador = null;
   
-      // 🔵 Subasta INGLESA: Simular progreso completo de ofertas automáticas
+      //Subasta INGLESA: Simular progreso completo de ofertas automáticas
       if (anuncio.auctionType === "inglesa") {
         const autos = [...anuncio.ofertasAutomaticas];
         if (autos.length === 0) {
