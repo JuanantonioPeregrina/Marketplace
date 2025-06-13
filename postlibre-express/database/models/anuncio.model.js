@@ -9,6 +9,10 @@ const AnuncioSchema = new mongoose.Schema({
   ubicacion: { type: String, required: true },
   imagen: { type: String, required: true },
   categoria: { type: String, required: true },
+  // Filtro opcional por reputación
+  minEstrellas: { type: Number, default: 0 },
+  maxEstrellas: { type: Number, default: 5 },
+
   // Nuevo campo para distinguir tipo de subasta: holandesa (descendente) o inglesa (ascendente)
   auctionType: {
     type: String,

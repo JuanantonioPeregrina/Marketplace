@@ -43,6 +43,8 @@ router.post("/", upload.single("imagen"), async (req, res) => {
     descripcion,
     //precio,                // solo para holandesa
     categoria,
+    minEstrellas,
+    maxEstrellas,
     ubicacion,
     fechaInicioSubasta,    // obligatorio siempre
     precioReservaInglesa,  // solo inglesa
@@ -135,6 +137,8 @@ router.post("/", upload.single("imagen"), async (req, res) => {
       ubicacion,
       imagen,
       categoria,
+      minEstrellas: Number(minEstrellas) || 0,
+      maxEstrellas: Number(maxEstrellas) || 5,
       auctionType,
       fechaInicioSubasta: inicio,
       fechaExpiracion:    expiracion,

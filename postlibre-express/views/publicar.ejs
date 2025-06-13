@@ -25,6 +25,18 @@
             <label for="descripcion">Descripción:</label>
             <textarea name="descripcion" id="descripcion" required class="border p-2 w-full"></textarea>
 
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label for="minEstrellas">Valoración mínima (estrellas):</label>
+                <input type="number" name="minEstrellas" id="minEstrellas" min="0" max="5" step="0.1" value="0" class="border p-2 w-full">
+              </div>
+            
+              <div>
+                <label for="maxEstrellas">Valoración máxima (estrellas):</label>
+                <input type="number" name="maxEstrellas" id="maxEstrellas" min="0" max="5" step="0.1" value="5" class="border p-2 w-full">
+              </div>
+            </div>
+            
            
             <label for="categoria">Categoría:</label>
             <select name="categoria" id="categoria" required class="border p-2 w-full">
