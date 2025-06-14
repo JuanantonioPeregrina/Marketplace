@@ -1,0 +1,183 @@
+{
+	"info": {
+		"_postman_id": "796d0e98-1fe1-4a92-bb11-5bc980b70f02",
+		"name": "TFG POSTLIBRE",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38376837"
+	},
+	"item": [
+		{
+			"name": "holandesa crear",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "69cdb5c1-8e3a-4a95-a86e-7411932f2f04",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "multipart/form-data",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "titulo",
+							"value": "Portada para Linkedin4\n\n",
+							"type": "text"
+						},
+						{
+							"key": "descripcion",
+							"value": "Busco alguien con experiencia que me haga un diseño profesional para mi perfil de la app.",
+							"type": "text"
+						},
+						{
+							"key": "precio",
+							"value": "\n",
+							"type": "text"
+						},
+						{
+							"key": "categoria",
+							"value": "diseño-grafico",
+							"type": "text"
+						},
+						{
+							"key": "ubicacion",
+							"value": "Madrid",
+							"type": "text"
+						},
+						{
+							"key": "fechaInicioSubasta",
+							"value": "2025-06-14, 20:56\n\n\n",
+							"type": "text"
+						},
+						{
+							"key": "imagen",
+							"type": "file",
+							"src": "/Users/maripele/Downloads/linkedin-2935407_960_720.webp"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://postlibre.es/api/anuncios/nuevo",
+					"protocol": "https",
+					"host": [
+						"postlibre",
+						"es"
+					],
+					"path": [
+						"api",
+						"anuncios",
+						"nuevo"
+					]
+				},
+				"description": "CREAR ANUNCIO"
+			},
+			"response": []
+		},
+		{
+			"name": "inglesa crear",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "382a7fd9-a2cf-43b2-822c-5251fb8f26e4",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "multipart/form-data",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "titulo",
+							"value": "inglesa_29",
+							"type": "text"
+						},
+						{
+							"key": "descripcion",
+							"value": "Este es un nuevo anuncio ",
+							"type": "text"
+						},
+						{
+							"key": "precio",
+							"value": "0",
+							"type": "text"
+						},
+						{
+							"key": "categoria",
+							"value": "lujo-reliquia",
+							"type": "text"
+						},
+						{
+							"key": "ubicacion",
+							"value": "Madrid",
+							"type": "text"
+						},
+						{
+							"key": "fechaExpiracion",
+							"value": "2025-05-13",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "imagen",
+							"type": "file",
+							"src": "/Users/maripele/Downloads/istockphoto-1705567435-1024x1024.jpg"
+						},
+						{
+							"key": "fechaInicioSubasta",
+							"value": "2025-06-09 20:34",
+							"type": "text"
+						},
+						{
+							"key": "inglesaIncremento",
+							"value": "50",
+							"type": "text"
+						},
+						{
+							"key": "inglesaIntervalo",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "inglesaDuracion",
+							"value": "30",
+							"type": "text"
+						},
+						{
+							"key": "precioReserva",
+							"value": "50",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://www.postlibre.es/api/anuncios/nuevo",
+					"protocol": "https",
+					"host": [
+						"www",
+						"postlibre",
+						"es"
+					],
+					"path": [
+						"api",
+						"anuncios",
+						"nuevo"
+					]
+				},
+				"description": "CREAR ANUNCIO"
+			},
+			"response": []
+		}
+	]
+}
