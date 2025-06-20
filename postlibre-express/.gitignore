@@ -1,6 +1,5 @@
 #Archivos sensibles
-.env
-
+#.env
 #Subidas (mantener carpetas pero ignorar archivos dentro)
 public/uploads/*
 !public/uploads/.gitkeep
