@@ -117,7 +117,7 @@ io.on("connection", (socket) => {
             });
         }
 
-        // 🔹 Verificamos si la propiedad `mensajes` está definida
+        //Verificamos si la propiedad `mensajes` está definida
         if (!Array.isArray(chat.mensajes)) {
             chat.mensajes = [];
         }
@@ -254,9 +254,9 @@ app.use('/css', express.static(path.join(__dirname, "public/css")));
 app.use('/js', express.static(path.join(__dirname, "public/js")));
 app.use(cookieParser()); // Habilita el uso de cookies
 
-// 🔹 Aumenta el límite de tamaño de `body-parser` para evitar errores con imágenes grandes
-app.use(bodyParser.json({ limit: "50mb" }));  // 👈 Aumenta a 50MB
-app.use(bodyParser.urlencoded({ limit: "50mb", extended: true })); // 👈 También en formularios
+// límite de tamaño de `body-parser` para evitar errores con imágenes grandes
+app.use(bodyParser.json({ limit: "50mb" }));  // Aumenta a 50MB
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true })); // También en formularios
 
 app.use(express.json()); // Para manejar JSON
 app.use(express.urlencoded({ extended: true })); // Para manejar datos del formulario

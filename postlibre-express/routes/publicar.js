@@ -204,7 +204,7 @@ router.post("/", upload.single("imagen"), async (req, res) => {
     res.redirect("/anuncios");
 
   } catch (err) {
-    console.error("❌ Error al guardar anuncio:", err);
+    console.error("Error al guardar anuncio:", err);
     res.status(500).send("Error interno del servidor.");
   }
 });

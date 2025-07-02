@@ -63,7 +63,7 @@ router.post('/update-image', async (req, res) => {
         return res.json({ success: true, imagen_perfil: usuarioActualizado.imagen_perfil });
 
     } catch (error) {
-        console.error("❌ Error al actualizar la imagen:", error);
+        console.error("Error al actualizar la imagen:", error);
         return res.status(500).json({ success: false, message: 'Error al actualizar la imagen de perfil.' });
     }
 });
@@ -72,7 +72,7 @@ router.post('/update-image', async (req, res) => {
 router.get('/cerrar-sesion', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
-            console.error("❌ Error al cerrar sesión:", err);
+            console.error("Error al cerrar sesión:", err);
             return res.status(500).send("Hubo un error al cerrar sesión.");
         }
         res.redirect('/login');

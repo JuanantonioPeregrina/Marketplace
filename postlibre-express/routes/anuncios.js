@@ -51,8 +51,8 @@ module.exports = (io) => {
     
             // PAGINACIÓN: Límite de anuncios por página (20 por defecto)
             const page = parseInt(req.query.page) || 1;  // Página actual
-            const limit = 20;  // 🔹 Solo mostramos 20 anuncios por página
-            const skip = (page - 1) * limit;  // 🔹 Saltamos los registros anteriores
+            const limit = 20;  //Solo mostramos 20 anuncios por página
+            const skip = (page - 1) * limit;  // Saltamos los registros anteriores
     
             // FILTROS: Obtenemos los parámetros de búsqueda
             let filtro = {};
@@ -65,9 +65,6 @@ module.exports = (io) => {
                 filtro.ubicacion = new RegExp(req.query.ubicacion, "i");
             }
             const estado = req.query.estado || 'activos'; //Por defecto "activos"
-
-
-            
 
             // Filtrado por estado
            
@@ -83,9 +80,6 @@ module.exports = (io) => {
             }
 
             
-            
-           
-
             
             // EJECUTAR CONSULTA PAGINADA CON FILTROS
             const anunciosFiltrados = await Anuncio.find(filtro)
@@ -160,8 +154,6 @@ module.exports = (io) => {
             
         }));
 
-        
-        
     
             //Contar TOTAL de anuncios para calcular páginas
             const total = await Anuncio.countDocuments(filtro);
@@ -183,8 +175,6 @@ module.exports = (io) => {
             res.status(500).send("Error al cargar los anuncios.");
         }
     });
-    
-    
     
     
     // Ruta para registrar oferta automática antes del inicio de la subasta
@@ -284,7 +274,7 @@ router.post("/oferta-automatica/:id", async (req, res) => {
             let pujaAutomaticaRealizada = false;
             let mejorOferta = null;
     
-            // 🔎 Buscar la mejor oferta automática
+            // Buscar la mejor oferta automática
             if (anuncio.ofertasAutomaticas.length > 0) {
                 mejorOferta = anuncio.ofertasAutomaticas
                     .filter(oferta => oferta.precioMaximo > precioActual)
@@ -537,7 +527,7 @@ const inscritosDetallados = await Promise.all(
       return res.json({ success: true, redirigirAPago, sessionId });
   
     } catch (err) {
-      console.error("❌ Error en confirmar entrega:", err);
+      console.error("Error en confirmar entrega:", err);
       return res.status(500).json({ success: false, error: "Error interno del servidor." });
     }
   });
@@ -666,7 +656,7 @@ const inscritosDetallados = await Promise.all(
   
       res.redirect(`/anuncios/${anuncio._id}`);
     } catch (err) {
-      console.error("❌ Error en finalización anticipada:", err);
+      console.error("Error en finalización anticipada:", err);
       res.status(500).send("Error interno.");
     }
   });

@@ -31,4 +31,4 @@ router.post("/", async (req, res) => {
 });
 
 
-module.exports = router; //exportar el router correctamente
+module.exports = router; //exportar el router

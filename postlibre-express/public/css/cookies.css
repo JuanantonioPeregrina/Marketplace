@@ -1,4 +1,4 @@
-/* 🎨 Diseño Moderno para Política de Cookies */
+/* Diseño para Política de Cookies */
 .cookies-container {
     max-width: 900px; /* 📏 Más ancho para un diseño más limpio */
     margin: 60px auto; /* 📌 Mejor espaciado */
@@ -8,7 +8,7 @@
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-/* 🏷️ Títulos */
+/* Títulos */
 .cookies-container h1 {
     font-size: 2.8rem;
     font-weight: 800;
@@ -26,7 +26,7 @@
     line-height: 1.8;
 }
 
-/* 🔹 Secciones de información */
+/* Secciones de información */
 .cookie-section {
     background: #f7f7f7;
     padding: 20px;
@@ -40,7 +40,7 @@
     background: #eef5ff;
 }
 
-/* 📂 Estilos de Subtítulos */
+/* Estilos de Subtítulos */
 .cookie-section h2 {
     font-size: 1.8rem;
     font-weight: bold;
@@ -48,7 +48,7 @@
     margin-bottom: 10px;
 }
 
-/* ✅ Estilos de lista */
+/* Estilos de lista */
 .cookie-section ul {
     list-style: none;
     padding: 0;
@@ -66,7 +66,7 @@
     margin-left: 10px;
 }
 
-/* 🎨 Botón de configuración */
+/* Botón de configuración */
 .cookie-button {
     display: flex;
     justify-content: center;

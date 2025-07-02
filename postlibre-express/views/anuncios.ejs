@@ -416,7 +416,7 @@ function buildQuery(pageNum) {
             const id = container.id.replace('countdown-', '');
             const fechaInicio = container.getAttribute('data-inicio');
 
-            // 🔹 Solo pasamos fechaInicio
+            // Solo pasamos fechaInicio
             if (fechaInicio) {
                 iniciarCuentaRegresiva(id, fechaInicio);
             }

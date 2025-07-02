@@ -143,7 +143,7 @@ router.get("/mensajes", async (req, res) => {
 
         res.json({ success: true, mensajes: chat.mensajes });
     } catch (error) {
-        console.error("❌ Error recuperando mensajes:", error);
+        console.error("Error recuperando mensajes:", error);
         res.status(500).json({ success: false, message: "Error al recuperar mensajes" });
     }
 });

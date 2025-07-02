@@ -1,4 +1,4 @@
-/* 🔹 Reset de márgenes y padding global */
+/* Reset de márgenes y padding global */
 * {
     margin: 0;
     padding: 0;
@@ -11,7 +11,7 @@ html, body {
     overflow: hidden; /* Elimina el scroll */
 }
 
-/* 🔹 Sección del perfil */
+/*  Sección del perfil */
 .perfil-section {
     display: flex;
     flex-direction: column;
@@ -28,7 +28,7 @@ html, body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-/* 🔹 Imagen de perfil */
+/*Imagen de perfil */
 .image-upload {
     margin-bottom: 25px;
 }
@@ -47,7 +47,7 @@ html, body {
     border-color: #28a745;
 }
 
-/* 🔹 Nombre del usuario */
+/* Nombre del usuario */
 .email {
     margin-bottom: 20px;
     width: 100%;
@@ -67,7 +67,7 @@ html, body {
     cursor: not-allowed;
 }
 
-/* 🔹 Opciones del usuario */
+/* Opciones del usuario */
 .options {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -98,7 +98,7 @@ html, body {
     transform: translateY(0);
 }
 
-/* 🔹 Botón de cierre de sesión */
+/*Botón de cierre de sesión */
 .option.cerrar-sesion {
     background-color: #e74c3c;
 }
@@ -107,7 +107,7 @@ html, body {
     background-color: #c0392b;
 }
 
-/* 🔹 Responsividad */
+/* Responsividad */
 @media (max-width: 768px) {
     .perfil-section {
         height: 90vh;
