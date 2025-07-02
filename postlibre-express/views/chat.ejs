@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
 
-    <!-- ✅ Importar el header y los estilos correctamente -->
+    <!-- Importar el header y los estilos correctamente -->
     <%- include("partials/header") %>
     
 </head>
@@ -58,7 +58,7 @@
         document.addEventListener("DOMContentLoaded", function() {
             const mensajesDiv = document.getElementById("mensajes");
 
-            // ✅ Cargar mensajes desde la base de datos al abrir el chat
+            // Cargar mensajes desde la base de datos al abrir el chat
             fetch(`/chat/mensajes?anuncioId=${anuncioIdActual}`)
                 .then(response => response.json())
                 .then(data => {
@@ -138,7 +138,7 @@
     `;
     mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
 
-    // 🔔 Notificación si el mensaje es para el usuario actual
+    // Notificación si el mensaje es para el usuario actual
     if (mensaje.destinatario === "<%= user.username %>") {
         const notificacion = document.getElementById("notifButton");
         notificacion.innerText = "🔴 Nuevo mensaje!";

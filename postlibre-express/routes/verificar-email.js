@@ -4,7 +4,7 @@ const Usuario = require("../database/models/user.model");
 
 router.get("/", (req, res) => {
     const { email } = req.query;
-    res.render("verificar-email", { email, title: "Verificar Email", user: null }); // 🛠️ pasa title y user para evitar errores
+    res.render("verificar-email", { email, title: "Verificar Email", user: null }); // pasa title y user para evitar errores
 });
 
 router.post("/", async (req, res) => {

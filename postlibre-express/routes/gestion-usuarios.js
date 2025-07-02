@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Usuario = require('../database/models/user.model'); // Ajusta si tu modelo tiene otro nombre
+const Usuario = require('../database/models/user.model'); 
 const { soloAdmins } = require('../middlewares/auth'); // Importar el middleware compartido
 
 // GET: Mostrar todos los usuarios

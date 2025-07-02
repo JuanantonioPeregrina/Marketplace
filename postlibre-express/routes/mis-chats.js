@@ -47,7 +47,7 @@ router.get("/", soloUsuarios, async (req, res) => {
         });
 
     } catch (error) {
-        console.error("❌ Error cargando chats del usuario:", error);
+        console.error("Error cargando chats del usuario:", error);
         res.status(500).send("Error al cargar los chats.");
     }
 });

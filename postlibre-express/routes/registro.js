@@ -11,7 +11,7 @@ const enviarCorreo = require("../utils/email");
 
 const router = express.Router();
 
-// 📌 Función para limpiar texto OCR y eliminar ruido
+// Función para limpiar texto OCR y eliminar ruido
 function limpiarTextoOCR(texto) {
     return texto
         .toUpperCase()
@@ -21,7 +21,7 @@ function limpiarTextoOCR(texto) {
         .trim();
 }
 
-// 📌 Mejorar imagen antes del OCR
+//Mejorar imagen antes del OCR
 async function mejorarImagen(imagePath) {
     try {
         const extension = path.extname(imagePath);
@@ -34,21 +34,21 @@ async function mejorarImagen(imagePath) {
             .resize(1200, 800, { fit: "inside" })
             .toFile(processedPath);
 
-        console.log(`📄 Imagen preprocesada guardada en: ${processedPath}`);
+        console.log(`Imagen preprocesada guardada en: ${processedPath}`);
         return processedPath;
     } catch (error) {
-        console.error("❌ Error mejorando la imagen:", error);
+        console.error("Error mejorando la imagen:", error);
         throw error;
     }
 }
 
-// 📌 Convertir PDF a Imagen
+// Convertir PDF a Imagen
 async function convertirPDFaImagen(pdfPath) {
     const outputDir = path.dirname(pdfPath);
     const imagePath = path.join(outputDir, `${Date.now()}_pdf_to_image.png`);
 
     try {
-        console.log(`📄 Convirtiendo PDF a imagen: ${pdfPath} → ${imagePath}`);
+        console.log(`Convirtiendo PDF a imagen: ${pdfPath} → ${imagePath}`);
         const converter = pdf2pic.fromPath(pdfPath, {
             density: 300,
             savePath: outputDir,
@@ -61,16 +61,16 @@ async function convertirPDFaImagen(pdfPath) {
         if (!result.path) throw new Error("No se pudo generar la imagen a partir del PDF.");
 
         fs.unlinkSync(pdfPath);
-        console.log(`🗑 Archivo PDF eliminado: ${pdfPath}`);
+        console.log(`Archivo PDF eliminado: ${pdfPath}`);
 
         return result.path;
     } catch (error) {
-        console.error("❌ Error al convertir PDF a imagen:", error);
+        console.error("Error al convertir PDF a imagen:", error);
         throw error;
     }
 }
 
-// 📌 Extraer texto desde imagen con OCR mejorado
+// Extraer texto desde imagen con OCR mejorado
 async function extraerTextoDesdeImagen(imagePath) {
     try {
         const processedPath = await mejorarImagen(imagePath);
@@ -85,12 +85,12 @@ async function extraerTextoDesdeImagen(imagePath) {
         fs.unlinkSync(processedPath);
         return limpiarTextoOCR(data.text);
     } catch (error) {
-        console.error("❌ Error en OCR:", error);
+        console.error("Error en OCR:", error);
         throw error;
     }
 }
 
-// 📌 Configuración de multer
+// Configuración de multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, "public/uploads/dni/"),
     filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
@@ -106,12 +106,12 @@ const upload = multer({
     }
 });
 
-// 📌 Mostrar formulario de registro
+// Mostrar formulario de registro
 router.get("/", (req, res) => {
     res.render("registro", { title: "Registro - LibrePost", user: req.user || null });
 });
 
-// 📌 Procesar el registro
+//Procesar el registro
 router.post("/", upload.single("dni_file"), async (req, res) => {
     try {
         const { username, password, email, nombre_real } = req.body;

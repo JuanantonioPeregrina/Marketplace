@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
         });
 
     } catch (error) {
-        console.error("❌ Error al cargar el perfil:", error);
+        console.error("Error al cargar el perfil:", error);
         res.status(500).send("Error interno del servidor.");
     }
 });
@@ -54,7 +54,7 @@ router.post("/", async (req, res) => {
         await usuario.save();
         res.redirect("/perfil");
     } catch (err) {
-        console.error("❌ Error actualizando perfil:", err);
+        console.error("Error actualizando perfil:", err);
         res.status(500).send("Error al actualizar el perfil");
     }
 });
@@ -111,7 +111,7 @@ router.post("/datos-cobro", async (req, res) => {
       req.session.user.datosCobro = { metodo, numero }; // Refrescar en sesión si lo usas así
       res.redirect("/perfil");
     } catch (err) {
-      console.error("❌ Error guardando datos de cobro:", err);
+      console.error("Error guardando datos de cobro:", err);
       res.status(500).send("Error al guardar los datos de cobro.");
     }
   });

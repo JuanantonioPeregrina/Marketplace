@@ -19,7 +19,7 @@ router.get('/:username', async (req, res) => {
         user: req.session.user || null  
       });
     } catch (error) {
-      console.error("❌ Error al cargar perfil público:", error);
+      console.error("Error al cargar perfil público:", error);
       res.status(500).send("Error al cargar perfil público");
     }
   });

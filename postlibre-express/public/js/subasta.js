@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (anuncioId) {
     socket.emit("join_auction", anuncioId);
-    console.log(`✅ Unido a la sala: auction_${anuncioId}`);
+    console.log(`Unido a la sala: auction_${anuncioId}`);
   }
 
   /**
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
       cantidad
     });
   
-    console.log(`✅ Puja enviada: ${user.username} => €${cantidad}`);
+    console.log(`Puja enviada: ${user.username} => €${cantidad}`);
   });
   
 

@@ -3,7 +3,7 @@ const Anuncio = require("../database/models/anuncio.model");
 async function actualizarEstadosDeAnuncios() {
   const ahora = new Date();
 
-  // 🔄 Subastas que deben comenzar ahora → activa / en_subasta
+  //Subastas que deben comenzar ahora → activa / en_subasta
   await Anuncio.updateMany(
     {
       estadoSubasta: "pendiente",
@@ -18,7 +18,7 @@ async function actualizarEstadosDeAnuncios() {
     }
   );
 
-  // 🔄 Subastas finalizadas CON inscritos → finalizada / en_produccion
+  //Subastas finalizadas CON inscritos → finalizada / en_produccion
   await Anuncio.updateMany(
     {
       estadoSubasta: { $in: ["pendiente", "activa"] },
@@ -33,7 +33,7 @@ async function actualizarEstadosDeAnuncios() {
     }
   );
 
-  // 🔄 Subastas finalizadas SIN inscritos → finalizada / finalizado
+  // Subastas finalizadas SIN inscritos → finalizada / finalizado
   await Anuncio.updateMany(
     {
       estadoSubasta: { $in: ["pendiente", "activa"] },

@@ -106,11 +106,11 @@ async function procesarOfertasAutomaticas(anuncio, io) {
   if (!precioInicial) precioInicial = anuncio.precioInicial || 100;
 
   // ——— LOGS DE DEBUG ———
-  console.log("🏷️ [DEBUG holandesa] categoría:", anuncio.categoria);
-  console.log("🔢 [DEBUG holandesa] autos (ofertasAutomáticas):", autos);
-  console.log("📊 [DEBUG holandesa] mediana local (>=3):",
+  console.log("[DEBUG holandesa] categoría:", anuncio.categoria);
+  console.log("[DEBUG holandesa] autos (ofertasAutomáticas):", autos);
+  console.log("[DEBUG holandesa] mediana local (>=3):",
     autos.length >= MIN_OFERTAS_LOCALES ? calcularMediana(autos) : "n/a");
-  console.log("📜 [DEBUG holandesa] mediana histórica:", await medianaHistorica(anuncio.categoria));
+  console.log("[DEBUG holandesa] mediana histórica:", await medianaHistorica(anuncio.categoria));
   console.log("⚙️ [DEBUG holandesa] precioInicial antes de redondeo:", precioInicial);
 
   // Aseguramos múltiplo de 50 por defecto
@@ -137,7 +137,7 @@ async function procesarOfertasAutomaticas(anuncio, io) {
 
 // Subasta Holandesa (baja progresiva, tiempo fijo con decremento dinámico)
 async function iniciarHolandesa(anuncioDoc, io) {
-  console.log(`🚀 Subasta holandesa iniciada: ${anuncioDoc.titulo}`);
+  console.log(`Subasta holandesa iniciada: ${anuncioDoc.titulo}`);
 
   const duracionSeg   = 300;        // 5 minutos
   const TICK_MS       = 1000;       // 1 segundo entre cada tick
@@ -222,7 +222,7 @@ async function iniciarHolandesa(anuncioDoc, io) {
         clearInterval(iv);
       }
     } catch (err) {
-      console.error("❌ Error en subasta holandesa:", err);
+      console.error("Error en subasta holandesa:", err);
       clearInterval(iv);
     }
   }, TICK_MS);

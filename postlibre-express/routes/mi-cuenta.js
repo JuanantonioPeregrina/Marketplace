@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../database/models/user.model'); // Modelo de usuario
 
-// 📌 Ruta para cargar la cuenta del usuario con datos actualizados
+// Ruta para cargar la cuenta del usuario con datos actualizados
 router.get("/", async (req, res) => {
     if (!req.session.user) {
         return res.redirect("/login"); // Redirigir si no hay usuario en sesión
@@ -33,7 +33,7 @@ router.get("/", async (req, res) => {
 
 
 
-// 📌 Ruta para actualizar la imagen de perfil en la base de datos y sesión
+// Ruta para actualizar la imagen de perfil en la base de datos y sesión
 router.post('/update-image', async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'No autorizado' });
@@ -46,7 +46,7 @@ router.post('/update-image', async (req, res) => {
     }
 
     try {
-        // 🔹 Actualizar la imagen de perfil en la base de datos
+        //  Actualizar la imagen de perfil en la base de datos
         const usuarioActualizado = await User.findOneAndUpdate(
             { email: req.session.user.email }, 
             { $set: { imagen_perfil: image } }, 
@@ -57,7 +57,7 @@ router.post('/update-image', async (req, res) => {
             return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
         }
 
-        // 🔹 Asegurar que la imagen actualizada también se almacene en la sesión
+        //  Asegurar que la imagen actualizada también se almacene en la sesión
         req.session.user.imagen_perfil = usuarioActualizado.imagen_perfil;
 
         return res.json({ success: true, imagen_perfil: usuarioActualizado.imagen_perfil });
@@ -68,7 +68,7 @@ router.post('/update-image', async (req, res) => {
     }
 });
 
-// 📌 Ruta para cerrar sesión
+//Ruta para cerrar sesión
 router.get('/cerrar-sesion', (req, res) => {
     req.session.destroy((err) => {
         if (err) {

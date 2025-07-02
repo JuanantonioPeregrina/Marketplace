@@ -163,7 +163,7 @@ module.exports = (io) => {
         
         
     
-            // 📌 Contar TOTAL de anuncios para calcular páginas
+            //Contar TOTAL de anuncios para calcular páginas
             const total = await Anuncio.countDocuments(filtro);
     
             res.render("anuncios", {
@@ -206,7 +206,7 @@ router.post("/oferta-automatica/:id", async (req, res) => {
       return res.status(403).json({ error: "Debes inscribirte primero." });
     }
 
-    // 🔹 LÓGICA PARA SUBASTA INGLESA
+    //LÓGICA PARA SUBASTA INGLESA
     if (anuncio.auctionType === "inglesa") {
       const { precioMaximo, incrementoPaso } = req.body;
       const max = parseInt(precioMaximo, 10);
@@ -227,7 +227,7 @@ router.post("/oferta-automatica/:id", async (req, res) => {
       return res.json({ mensaje: "Oferta automática inglesa registrada." });
     }
 
-    // 🔸 LÓGICA PARA SUBASTA HOLANDESA
+    //LÓGICA PARA SUBASTA HOLANDESA
     else if (anuncio.auctionType === "holandesa") {
       let { precioMaximo } = req.body;
       if (!precioMaximo) {
@@ -292,21 +292,21 @@ router.post("/oferta-automatica/:id", async (req, res) => {
             }
     
             if (mejorOferta) {
-                // 🔥 Ejecutar puja automática
+                // Ejecutar puja automática
                 precioActual = Math.min(mejorOferta.precioMaximo, precioActual + 100);
                 nuevoPujador = mejorOferta.usuario;
                 pujaAutomaticaRealizada = true;
     
-                // 🔹 REGISTRAR LA PUJA AUTOMÁTICA EN `pujas`
+                // REGISTRAR LA PUJA AUTOMÁTICA EN `pujas`
                 const nuevaPujaAutomatica = {
                     usuario: mejorOferta.usuario,
                     cantidad: precioActual,
                     fecha: new Date(),
-                    automatica: true  // 🔥 Etiquetar como automática
+                    automatica: true  // Etiquetar como automática
                 };
                 anuncio.pujas.push(nuevaPujaAutomatica);
     
-                // 🗑️ ELIMINAR LA OFERTA AUTOMÁTICA SI SE ALCANZA SU MÁXIMO
+                //ELIMINAR LA OFERTA AUTOMÁTICA SI SE ALCANZA SU MÁXIMO
                 if (precioActual >= mejorOferta.precioMaximo) {
                     anuncio.ofertasAutomaticas = anuncio.ofertasAutomaticas.filter(
                         oferta => oferta._id.toString() !== mejorOferta._id.toString()
@@ -314,12 +314,12 @@ router.post("/oferta-automatica/:id", async (req, res) => {
                 }
             }
     
-            // 🔹 REGISTRAR LA PUJA MANUAL
+            //REGISTRAR LA PUJA MANUAL
             const nuevaPuja = {
                 usuario: user.username,
                 cantidad: precioActual,
                 fecha: new Date(),
-                automatica: pujaAutomaticaRealizada // ✅ Ahora se indica si fue automática o manual
+                automatica: pujaAutomaticaRealizada // Ahora se indica si fue automática o manual
             };
     
             anuncio.pujas.push(nuevaPuja);
@@ -327,7 +327,7 @@ router.post("/oferta-automatica/:id", async (req, res) => {
             anuncio.ultimoPujador = nuevoPujador;
             await anuncio.save();
     
-            // 📢 Emitir evento para actualizar la interfaz
+            //Emitir evento para actualizar la interfaz
             io.emit("actualizar_pujas", {
                 anuncioId: req.params.id,
                 usuario: nuevoPujador,
@@ -645,7 +645,7 @@ const inscritosDetallados = await Promise.all(
       
       
   
-      // 🔚 Finalizar subasta
+      // Finalizar subasta
       anuncio.estadoSubasta = "finalizada";
       anuncio.estado = anuncio.inscritos.length ? "en_produccion" : "finalizado";
       if (ganador) anuncio.inscritoGanador = ganador;

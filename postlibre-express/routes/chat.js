@@ -105,14 +105,14 @@ router.get("/", async (req, res) => {
           
           const totalNoLeidos = sinLeer[0]?.noLeidos || 0;
           
-        // ✅ Renderizar con la variable incluida
+        // Renderizar con la variable incluida
         res.render("chat", {
             title: "Chat - LibrePost",
             user: req.session.user,
             anuncioId,
             usuarioDestino,
             conversaciones,
-            notificaciones: totalNoLeidos // 🔥 aquí pasa la variable al EJS
+            notificaciones: totalNoLeidos // aquí pasa la variable al EJS
         });
 
     } catch (error) {
