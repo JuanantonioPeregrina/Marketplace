@@ -1,0 +1,70 @@
+<%- include("partials/header", {}) %>
+<link rel="stylesheet" href="/css/styleL.css">
+<!-- Enlace a tipografía profesional -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<!-- Contenedor principal -->
+<main class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-800 via-indigo-700 to-purple-600 text-white px-4">
+    <div class="bg-white shadow-2xl rounded-lg p-10 max-w-2xl text-center transform transition duration-300 hover:scale-105 text-gray-900 font-[Poppins] relative flex flex-col items-center">
+
+        <!-- Icono decorativo -->
+        <div class="absolute -top-10 left-1/2 transform -translate-x-1/2">
+            <span class="text-5xl">🔐</span>
+        </div>
+
+        <h1 class="text-4xl font-extrabold text-gray-900 mt-6 mb-4">Acceso Exclusivo</h1>
+
+        <p class="text-gray-800 text-lg font-medium mb-3">
+            🎉 ¡Bienvenido, <strong><%= user.username %></strong>! 🎉
+        </p>
+
+        <p class="text-gray-700 leading-relaxed mb-6">
+            Has desbloqueado el acceso premium a nuestra plataforma.  
+            Ahora puedes disfrutar de <strong>funcionalidades avanzadas</strong> para mejorar tu experiencia.
+        </p>
+
+        <!-- Beneficios visuales -->
+        <div class="w-full text-left text-gray-900 space-y-4">
+            <div class="flex items-center gap-4 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                ✅ <span class="font-medium">Publicar y gestionar</span> tus propios anuncios con visibilidad máxima.
+            </div>
+            <div class="flex items-center gap-4 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                🎯 <span class="font-medium">Acceder a oportunidades</span> exclusivas y cerrar acuerdos más rápido.
+            </div>
+            <div class="flex items-center gap-4 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                💬 <span class="font-medium">Chatear en tiempo real</span> con otros usuarios y concretar negocios.
+            </div>
+            <div class="flex items-center gap-4 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                ⚙️ <span class="font-medium">Personalizar tu cuenta</span> para maximizar tu éxito.
+            </div>
+        </div>
+
+        <!-- Ilustración llamativa -->
+        <div class="mt-8">
+            <img src="https://cdn-icons-png.flaticon.com/512/3596/3596006.png" 
+                alt="Premium Access" class="mx-auto w-40 opacity-90">
+        </div>
+
+        <!-- Botones de acción con más impacto -->
+        <div class="mt-8 flex flex-wrap gap-4 justify-center w-full">
+            <a href="/mi-cuenta" 
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 flex items-center gap-2">
+                ⚙️ Mi Cuenta
+            </a>
+            <a href="/publicar" 
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 flex items-center gap-2">
+                📢 Publicar Anuncio
+            </a>
+            <a href="/anuncios" 
+                class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 flex items-center gap-2">
+                👀 Explorar Anuncios
+            </a>
+        </div>
+    </div>
+</main>
+
+<!-- Asegurar que el footer se mantenga en la parte inferior -->
+<footer class="w-full bg-gray-900 text-white text-center py-4 mt-10">
+    © 2025 LibrePost - Todos los derechos reservados.
+</footer>
+

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Registro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    <%- include("partials/header") %>
+
+    <main class="flex-grow flex items-center justify-center">
+        <div class="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Crear cuenta</h1>
+
+            <% if (message) { %>
+                <p class="text-center text-red-500 font-medium"><%= message %></p>
+            <% } %>
+
+            <form method="post" action="/registro" enctype="multipart/form-data" class="space-y-4">
+                
+                <!-- Nombre real -->
+                <div>
+                    <label class="block text-gray-700 font-medium">Nombre Completo</label>
+                    <input required type="text" name="nombre_real" 
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <!-- Usuario -->
+                <div>
+                    <label class="block text-gray-700 font-medium">Usuario</label>
+                    <input required type="text" name="username" 
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <!-- Correo -->
+                <div>
+                    <label class="block text-gray-700 font-medium">Correo</label>
+                    <input required type="email" name="email" 
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <!-- Contraseña -->
+                <div>
+                    <label class="block text-gray-700 font-medium">Contraseña</label>
+                    <input required type="password" name="password" 
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <!-- Subir DNI -->
+                <div>
+                    <label class="block text-gray-700 font-medium">Adjuntar DNI</label>
+                    <input required type="file" name="dni_file" accept=".png,.jpg,.jpeg,.pdf" 
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <button type="submit" 
+                    class="w-full bg-blue-600 text-white p-3 rounded-lg shadow-md hover:bg-blue-700 transition font-semibold">
+                    Registrarse
+                </button>
+            </form>
+
+            <p class="text-center text-gray-600 mt-4">¿Ya tienes cuenta? 
+                <a href="/login" class="text-blue-500 font-medium hover:underline">Inicia sesión aquí</a>
+            </p>
+        </div>
+    </main>
+
+    <%- include("partials/footer") %>
+</body>
+</html>

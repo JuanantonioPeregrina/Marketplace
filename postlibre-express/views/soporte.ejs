@@ -1,0 +1,72 @@
+<%- include("partials/header", {}) %>
+
+<!--Importante para el JS --><body 
+data-user-logged="<%= user?.rol === 'admin' %>" 
+data-username="<%= usuarioNombre %>" 
+data-conversacion-activa="<%= conversacion?.nombre || '' %>"
+data-mensajes-json='<%= JSON.stringify(mensajesJSON).replace(/'/g, "&apos;").replace(/"/g, '&quot;') %>'>
+
+
+<link rel="stylesheet" href="/css/soporte-whats.css">
+
+<div class="chat-wrapper">
+  <!-- Lista de chats -->
+  <aside class="chat-sidebar">
+    <h2>Chats</h2>
+    <% if (user && user.rol !== 'admin') { %>
+      <p style="color: red; font-weight: bold;">
+        Aviso: Si cierras o actualizas la página, se perderá la conversación actual con el soporte.
+      </p>
+    <% } %>
+    
+    
+    <% if (user?.rol === 'admin') { %>
+      <ul id="admin-chats" class="chat-list">
+        <% chats.forEach(chat => { %>
+          <li onclick="window.location.href='/soporte/<%= chat.nombre %>'">
+            <div class="chat-user">
+              <img src="/images/avatar.webp" class="avatar" />
+              <div class="chat-info">
+                <strong><%= chat.nombre %></strong>
+                <p><%= chat.ultimoMensaje %></p>
+              </div>
+              <div class="chat-meta">
+                <span class="fecha"><%= chat.fecha %></span>
+              </div>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+      
+    <% } %>
+  </aside>
+
+  <% if (user?.rol === 'admin') { %>
+    <aside class="admin-chat-sidebar">
+      <h3>Usuarios activos</h3>
+      <ul id="active-guests" class="admin-users-list"></ul>
+    </aside>
+  <% } %>
+
+  <!-- Panel de conversación -->
+  <main class="chat-main">
+    <div class="chat-header">
+      <h3>soporte</h3>
+    </div>
+
+    <ul id="messages" class="chat-messages"></ul>
+
+    <!--Form corregido -->
+    <form id="chat-form" class="chat-form">
+      <input type="text" id="message-input" placeholder="Escribe tu mensaje..." required>
+      <button type="submit">Enviar</button>
+    </form>
+    
+  </main>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/soporte.js"></script>
+
+
+<%- include("partials/footer") %>

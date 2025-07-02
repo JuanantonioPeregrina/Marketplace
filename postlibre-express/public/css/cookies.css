@@ -1,0 +1,91 @@
+/* 🎨 Diseño Moderno para Política de Cookies */
+.cookies-container {
+    max-width: 900px; /* 📏 Más ancho para un diseño más limpio */
+    margin: 60px auto; /* 📌 Mejor espaciado */
+    padding: 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* 🏷️ Títulos */
+.cookies-container h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    text-align: center;
+    color: #222;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+}
+
+.cookies-container p {
+    font-size: 1.2rem;
+    color: #444;
+    text-align: center;
+    line-height: 1.8;
+}
+
+/* 🔹 Secciones de información */
+.cookie-section {
+    background: #f7f7f7;
+    padding: 20px;
+    margin-top: 20px;
+    border-left: 6px solid #007bff;
+    border-radius: 8px;
+    transition: all 0.3s ease-in-out;
+}
+
+.cookie-section:hover {
+    background: #eef5ff;
+}
+
+/* 📂 Estilos de Subtítulos */
+.cookie-section h2 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* ✅ Estilos de lista */
+.cookie-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.cookie-section ul li {
+    display: flex;
+    align-items: center;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.cookie-section ul li span {
+    margin-left: 10px;
+}
+
+/* 🎨 Botón de configuración */
+.cookie-button {
+    display: flex;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.cookie-button button {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.cookie-button button:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}

@@ -1,0 +1,53 @@
+<footer>
+
+  <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 text-center">
+    🍪 Usamos cookies para mejorar tu experiencia. 
+    <a href="/politica-cookies" class="underline">Más info</a>
+
+    <button onclick="aceptarCookies()" class="ml-4 bg-green-500 text-white px-4 py-2 rounded">
+        Aceptar todas
+    </button>
+    <button onclick="rechazarCookies()" class="ml-2 bg-red-500 text-white px-4 py-2 rounded">
+        Rechazar todas
+    </button>
+    <button onclick="configurarCookies()" class="ml-2 bg-blue-500 text-white px-4 py-2 rounded">
+        Configurar
+    </button>
+</div>
+
+
+<script>
+  function setCookie(name, value, days) {
+      let expires = "";
+      if (days) {
+          let date = new Date();
+          date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+          expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + value + "; path=/" + expires;
+  }
+
+  function aceptarCookies() {
+      setCookie("cookies_aceptadas", "true", 30);
+      document.getElementById("cookie-banner").style.display = "none";
+  }
+
+  function rechazarCookies() {
+      setCookie("cookies_aceptadas", "false", 30);
+      document.getElementById("cookie-banner").style.display = "none";
+  }
+
+  function configurarCookies() {
+      alert("En el futuro aquí podrías permitir que los usuarios elijan qué cookies aceptar.");
+  }
+
+  // Ocultar el banner si las cookies ya han sido aceptadas o rechazadas
+  if (document.cookie.includes("cookies_aceptadas=true") || document.cookie.includes("cookies_aceptadas=false")) {
+      document.getElementById("cookie-banner").style.display = "none";
+  }
+</script>
+
+
+    <p>© 2025 LibrePost - Todos los derechos reservados.</p>
+  </footer>
+  

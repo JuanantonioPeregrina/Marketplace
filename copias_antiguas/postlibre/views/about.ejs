@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+
+  </head>
+
+<body class="bg-gray-100 text-gray-900 font-[Poppins] flex flex-col min-h-screen">
+    
+    <%- include("partials/header", {}) %>
+   
+    <main class="flex-grow flex flex-col items-center justify-center px-6 py-16">
+        <div class="bg-white shadow-lg rounded-lg p-10 max-w-2xl text-center">
+          <img src="/images/postlibre.jpeg" alt="Post Libre" class="w-44 mx-auto opacity-80">
+
+            <!-- Icono decorativo -->
+            <br>
+            <div class="text-5xl mb-4">🚀</div>
+
+            <h1 class="text-4xl font-extrabold mb-4"><%= message %></h1>
+            
+            <p>Este proyecto nace con el propósito de revolucionar la compra y venta de productos y servicios, ofreciendo un sistema más dinámico y eficiente. A diferencia de los marketplaces tradicionales, donde los vendedores publican productos con precios fijos y los clientes eligen entre opciones predeterminadas, aquí es el usuario quien define sus necesidades y los vendedores compiten para ofrecerle la mejor solución.</p>
+          <!-- Separador visual -->
+          <div class="border-t border-gray-300 my-6"></div>
+         
+            <p> Desde finales de 2024, nuestra misión ha sido conectar compradores y vendedores, garantizando transacciones seguras y fomentando una comunidad activa. <br>
+
+📌 Para sostener la plataforma, aplicamos una comisión del 5% sobre cada operación realizada con éxito.
+<br>
+🔹 Únete y forma parte de esta nueva forma de comprar y vender. <span class="font-semibold text-blue-600"><br><br>¡Tu necesidad, tu precio!</span>
+</p> 
+            <!-- Separador visual -->
+            <div class="border-t border-gray-300 my-6"></div>
+
+            <!-- Sección de información adicional -->
+            <div class="text-gray-700 space-y-4">
+                <p class="flex items-center justify-center gap-2 font-bold">
+                    🌍 <span>Plataforma en constante evolución.</span>
+                </p>
+                <p class="flex items-center justify-center gap-2 font-bold">
+                    🔧 <span>Optimizando rendimiento y seguridad.</span>
+                </p>
+                <p class="flex items-center justify-center gap-2 font-bold">
+                    💡 <span>Ideas y mejoras siempre bienvenidas.</span>
+                </p>
+            </div>
+            <br><br>
+            <p class="text-lg text-gray-700 font-medium mb-2">
+              Desarrollado por: <span class="font-semibold text-blue-600">Juan Antonio Peregrina</span>
+          </p>
+         
+          <p class="text-gray-600">Versión <span class="font-bold">Beta 1.0.0</span> de <strong>PostLibre</strong> en Node.js + Express</p>
+
+            <!-- Botón de contacto o feedback -->
+            <div class="mt-3">
+                <a href="/feedback" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 flex items-center gap-2">
+                    📩 Enviar Feedback
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <%- include("partials/footer", {}) %>
+
+</body>
+</html>

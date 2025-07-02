@@ -1,0 +1,35 @@
+<%- include('partials/header') %>
+
+<link rel="stylesheet" href="/css/estiloperfildef.css">
+
+<div class="perfil-section">
+    <!-- Imagen de Perfil -->
+    <div class="image-upload">
+        <a href="/editar-perfil" class="perfil-link">
+            <img id="perfil-image" src="<%= user.imagen_perfil || '/images/avatar.webp' %>" 
+                 alt="Foto de perfil" class="perfil-pic">
+        </a>
+    </div>
+    
+    <!-- Nombre del Usuario -->
+    <div class="email">
+        <input type="text" id="nombre" value="<%= user.username %>" placeholder="Nombre completo" disabled>
+    </div>
+
+    <!-- Opciones del Usuario -->
+    <div class="options">
+        <button class="option" onclick="window.location.href='/perfil'">Ver perfil</button>
+        <button class="option" onclick="window.location.href='/favoritos'">Favoritos</button>
+        <button class="option" onclick="window.location.href='/publicar'">Añadir Post</button>
+        <button class="option" onclick="window.location.href='/terminos'">Términos y Condiciones</button>
+        <button class="option cerrar-sesion" onclick="window.location.href='/logout'">Cerrar Sesión</button>
+        <!-- 🔒 Formulario para cambiar contraseña -->
+
+
+    </div>
+</div>
+
+
+<script src="/js/perfil.js"></script>
+
+<%- include('partials/footer') %>

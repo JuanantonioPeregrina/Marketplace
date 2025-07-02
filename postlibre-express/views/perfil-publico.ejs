@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Perfil de <%= usuario.username %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+  <%- include("partials/header") %>
+
+  <main class="max-w-4xl mx-auto pt-24 px-6 bg-white shadow-lg rounded-lg p-8 mt-10">
+    <h1 class="text-3xl font-bold text-center mb-6">🧑 Perfil de <%= usuario.username %></h1>
+
+    <!-- Imagen -->
+    <div class="flex justify-center mb-6">
+      <img src="<%= usuario.imagen_perfil || '/images/avatar.webp' %>" alt="Foto de perfil" class="w-28 h-28 rounded-full shadow">
+    </div>
+
+    <!-- Reseñas como Proveedor -->
+    <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow">
+      <h2 class="text-lg font-semibold mb-3">🧳 Reseñas como Proveedor (Inscrito)</h2>
+      <% if (reseñasComoInscrito.length > 0) { %>
+        <ul class="space-y-3">
+          <% reseñasComoInscrito.forEach(reseña => { %>
+            <li class="bg-white p-4 rounded-lg shadow-md">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-600">👤 Valorado por: <span class="font-semibold"><%= reseña.autor %></span></span>
+                <span class="text-sm text-gray-500"><%= new Date(reseña.fecha).toLocaleDateString() %></span>
+              </div>
+              <div class="flex items-center mb-2">
+                <% for (let i = 1; i <= 5; i++) { %>
+                  <% if (i <= reseña.puntuacion) { %>
+                    <span class="text-yellow-400 text-lg">★</span>
+                  <% } else { %>
+                    <span class="text-gray-300 text-lg">★</span>
+                  <% } %>
+                <% } %>
+              </div>
+              <p class="text-gray-800 italic">"<%= reseña.comentario %>"</p>
+            </li>
+          <% }); %>
+        </ul>
+      <% } else { %>
+        <p class="text-gray-500">No tiene reseñas como inscrito aún.</p>
+      <% } %>
+    </div>
+
+    <!-- Reseñas como Anunciante -->
+    <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow">
+      <h2 class="text-lg font-semibold mb-3">📢 Reseñas como Anunciante</h2>
+      <% if (reseñasComoAnunciante.length > 0) { %>
+        <ul class="space-y-3">
+          <% reseñasComoAnunciante.forEach(reseña => { %>
+            <li class="bg-white p-4 rounded-lg shadow-md">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-600">👤 Valorado por: <span class="font-semibold"><%= reseña.autor %></span></span>
+                <span class="text-sm text-gray-500"><%= new Date(reseña.fecha).toLocaleDateString() %></span>
+              </div>
+              <div class="flex items-center mb-2">
+                <% for (let i = 1; i <= 5; i++) { %>
+                  <% if (i <= reseña.puntuacion) { %>
+                    <span class="text-yellow-400 text-lg">★</span>
+                  <% } else { %>
+                    <span class="text-gray-300 text-lg">★</span>
+                  <% } %>
+                <% } %>
+              </div>
+              <p class="text-gray-800 italic">"<%= reseña.comentario %>"</p>
+            </li>
+          <% }); %>
+        </ul>
+      <% } else { %>
+        <p class="text-gray-500">No tiene reseñas como anunciante aún.</p>
+      <% } %>
+    </div>
+  </main>
+
+  <%- include("partials/footer") %>
+</body>
+</html>

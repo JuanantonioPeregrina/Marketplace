@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador de APIs</title>
+</head>
+<body>
+    <h1>Explorador de APIs</h1>
+
+    <!-- API Key Input -->
+    <label for="apiKey">Introduce tu API Key:</label>
+    <input type="text" id="apiKey" placeholder="Escribe tu API Key aquí">
+
+    <h2>1️⃣ Obtener Anuncios (GET)</h2>
+    <button id="fetchAnuncios">Obtener Anuncios</button>
+    <pre id="outputAnuncios"></pre>
+
+    <h2>📥 Descargar JSON</h2>
+    <button id="downloadJSON">Descargar Anuncios JSON</button>
+
+    <h2>2️⃣ Crear un Anuncio (POST)</h2>
+    <input type="text" id="titulo" placeholder="Título">
+    <input type="text" id="descripcion" placeholder="Descripción">
+    <input type="number" id="precio" placeholder="Precio">
+    <button id="createAnuncio">Crear Anuncio</button>
+    <pre id="outputCreate"></pre>
+
+    <h2>3️⃣ Inscribirse en un Anuncio (POST)</h2>
+    <input type="text" id="anuncioId" placeholder="ID del anuncio">
+    <button id="inscribirse">Inscribirse</button>
+    <pre id="outputInscribirse"></pre>
+
+    <script>
+        async function fetchAPI(url, method = 'GET', body = null) {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (!apiKey) {
+                return "⚠️ Ingresa una API Key válida.";
+            }
+
+            const options = {
+                method,
+                headers: { "Content-Type": "application/json", "x-api-key": apiKey }
+            };
+
+            if (body) options.body = JSON.stringify(body);
+
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                return `Error: ${error.message}`;
+            }
+        }
+
+        document.getElementById('fetchAnuncios').addEventListener('click', async () => {
+            document.getElementById('outputAnuncios').textContent = JSON.stringify(await fetchAPI('/api/anuncios'), null, 2);
+        });
+
+        document.getElementById('createAnuncio').addEventListener('click', async () => {
+            const data = {
+                titulo: document.getElementById('titulo').value,
+                descripcion: document.getElementById('descripcion').value,
+                precioActual: document.getElementById('precio').value
+            };
+            document.getElementById('outputCreate').textContent = JSON.stringify(await fetchAPI('/api/anuncios', 'POST', data), null, 2);
+        });
+
+        document.getElementById('inscribirse').addEventListener('click', async () => {
+            const anuncioId = document.getElementById('anuncioId').value;
+            document.getElementById('outputInscribirse').textContent = JSON.stringify(await fetchAPI(`/api/anuncios/${anuncioId}/inscribirse`, 'POST'), null, 2);
+        });
+
+        document.getElementById('downloadJSON').addEventListener('click', () => {
+            const data = document.getElementById('outputAnuncios').textContent;
+            
+            if (!data || data === "⚠️ Ingresa una API Key válida.") {
+                alert("No hay datos para descargar. Primero obtén los anuncios.");
+                return;
+            }
+
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'anuncios.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+    </script>
+</body>
+</html>

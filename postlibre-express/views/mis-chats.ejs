@@ -1,0 +1,27 @@
+<%- include("partials/header", {}) %>
+
+<div class="container" style="max-width: 800px; margin: 40px auto;">
+  <h2 style="text-align: center; margin-bottom: 30px;">Mis conversaciones activas</h2>
+
+  <% if (chats.length === 0) { %>
+    <div class="no-chats" style="text-align: center; font-size: 1.1em; color: gray;">
+      No tienes chats abiertos aún.
+    </div>
+  <% } else { %>
+    <ul class="chat-list">
+      <% chats.forEach(chat => { %>
+        <li style="list-style: none; background-color: #fff; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; padding: 20px;">
+          <h3 style="margin: 0 0 10px;"><%= chat.titulo %></h3>
+          <p style="margin: 5px 0;"><strong>Con:</strong> <%= chat.con %></p>
+          <p style="margin: 5px 0;"><strong>Último mensaje:</strong> <%= chat.ultimoMensaje %> - <%= chat.fecha %></p>
+          <a href="/chat?anuncioId=<%= chat.anuncioId %>&usuario=<%= chat.con %>" 
+             style="display: inline-block; margin-top: 10px; background-color: #ffc107; color: #000; padding: 8px 16px; border-radius: 5px; text-decoration: none;">
+            Ir al chat
+          </a>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</div>
+
+<%- include("partials/footer") %>
