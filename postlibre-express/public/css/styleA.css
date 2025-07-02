@@ -260,7 +260,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .rating input[type="radio"] {
-  display: none; /* 🔥 Esto oculta el radio button */
+  display: none; /* Esto oculta el radio button */
 }
 
 .rating:not(:checked) > label:before {

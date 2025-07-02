@@ -65,7 +65,7 @@ const userSchema = new mongoose.Schema({
          
 });
 
-// 🔐 Middleware para hashear la contraseña y generar API Key
+// Middleware para hashear la contraseña y generar API Key
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
 

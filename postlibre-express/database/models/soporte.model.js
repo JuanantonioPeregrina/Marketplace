@@ -7,8 +7,7 @@ const MensajeSchema = new mongoose.Schema({
 });
 
 const SoporteChatSchema = new mongoose.Schema({
-    participantes: [String], // IDs únicos (p. ej. socket.id o user.email si luego quieres)
-    mensajes: [MensajeSchema]
+    participantes: [String], // IDs únicos 
 });
 
 module.exports = mongoose.model("SoporteChat", SoporteChatSchema);

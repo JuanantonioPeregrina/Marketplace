@@ -1,7 +1,7 @@
 
 const mongoose = require('mongoose');
 
-const MONGO_URI = "mongodb://localhost:27017/librepost"; // Cambia el nombre según tu base de datos
+const MONGO_URI = "mongodb://localhost:27017/librepost";
 
 mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
