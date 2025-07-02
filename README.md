@@ -1,6 +1,6 @@
 # 📦 PostLibre
 
-**PostLibre** es una plataforma web tipo marketplace que permite a usuarios publicar anuncios, participar en subastas competitivas (inglesas y holandesas), chatear en tiempo real y gestionar su actividad desde un panel personalizado. La plataforma también incluye un panel de administración para validación de usuarios, métricas del sistema y control de reportes.
+**PostLibre** es una plataforma web tipo marketplace que permite a usuarios publicar anuncios, participar en subastas competitivas (inglesas y holandesas), chatear en tiempo real, recibir sugerencias personalizadas, y mucho más. Próximamente, se incluirá también un panel de administración para métricas del sistema y control de reportes.
 
 ---
 
@@ -19,7 +19,7 @@
 - **Autenticación**: express-session + validación de email
 - **Subida de imágenes**: Multer
 - **Envío de emails**: Nodemailer
-- **Despliegue**: AWS (EC2 + MongoDB Atlas)
+- **Despliegue**: AWS (EC2 + NGINX + PM2)
 
 ---
 
