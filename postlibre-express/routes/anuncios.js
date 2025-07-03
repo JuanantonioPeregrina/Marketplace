@@ -537,7 +537,7 @@ const inscritosDetallados = await Promise.all(
       const anuncio = await Anuncio.findById(req.params.id);
       if (!anuncio || anuncio.estadoSubasta !== "activa") {
         return res.status(400).send("Subasta no activa.");
-      }f
+      }
   
       const io = req.app.get("io");
       let ganador = null;
