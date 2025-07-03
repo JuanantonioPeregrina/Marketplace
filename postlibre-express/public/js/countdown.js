@@ -1,8 +1,8 @@
 function iniciarCuentaRegresiva(id) {
   const cont   = document.getElementById(`countdown-${id}`);
-  const boxes  = cont.querySelector(".boxes") || cont; // según tu markup
+  const boxes  = cont.querySelector(".boxes") || cont; // según el markup
   const tInicio = new Date(cont.dataset.inicio).getTime();
-  const tFin    = new Date(cont.dataset.fin).getTime();
+ 
   let intervalo;
 
   function dibujar(diffMs) {
@@ -38,9 +38,12 @@ function iniciarCuentaRegresiva(id) {
 
   function tick() {
     const ahora = Date.now();
-    if (ahora < tInicio)           dibujar(tInicio - ahora);
-    else if (ahora < tFin)         dibujar(tFin - ahora);
-    else {
+
+    if (ahora < tInicio) {
+      // antes del arranque: contamos hacia tInicio
+      dibujar(tInicio - ahora);
+    } else {
+      // ¡ya arrancó! — mostramos 0 y paramos el intervalo
       dibujar(0);
       clearInterval(intervalo);
     }
